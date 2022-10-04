@@ -56,6 +56,14 @@ var managedTools = indexTools([]*Tool{
 	},
 })
 
+func getToolPath(name string) string {
+	tool, ok := managedTools[name]
+	if !ok {
+		panic(fmt.Sprintf("unknown tool %q", name))
+	}
+	return tool.Path()
+}
+
 // Install install specified tool (among defined, see tools.go) in .tools directory
 func (Tools) Install(ctx context.Context, toolName string) error {
 	tool, ok := managedTools[toolName]

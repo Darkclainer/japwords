@@ -1,0 +1,18 @@
+extend type Query {
+  japaneseWords(query: String!): JapaneseWords
+}
+
+type JapaneseWords {
+  Words: [JapaneseWord!]
+}
+
+type JapaneseWord {
+  Kanji: String!
+  Furigana: String
+  Hiragana: String!
+  Acents: String!
+  Meaning: String!
+  # Links to audio files
+  Audio: [String!]
+  Examples: [String!]
+}
