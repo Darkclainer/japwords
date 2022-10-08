@@ -5,14 +5,41 @@ package gqlresolver
 
 import (
 	"context"
-	"fmt"
+
 	"japwords/graphql/gqlgenerated"
 	"japwords/graphql/gqlmodel"
 )
 
+func pstring(v string) *string {
+	return &v
+}
+
 // JapaneseWords is the resolver for the japaneseWords field.
 func (r *queryResolver) JapaneseWords(ctx context.Context, query string) (*gqlmodel.JapaneseWords, error) {
-	panic(fmt.Errorf("not implemented: JapaneseWords - japaneseWords"))
+	return &gqlmodel.JapaneseWords{
+		Words: []*gqlmodel.JapaneseWord{
+			{
+				Kanji:    "犬",
+				Furigana: pstring("犬[いぬ]"),
+				Hiragana: "いぬ",
+				Acents:   "",
+				Meaning:  "dog",
+				Audio:    []string{},
+				Examples: []string{
+					"some example",
+				},
+			},
+			{
+				Kanji:    "来年",
+				Furigana: pstring("来[らい]年[ねん]"),
+				Hiragana: "らいねん",
+				Acents:   "",
+				Meaning:  "next year",
+				Audio:    []string{},
+				Examples: []string{},
+			},
+		},
+	}, nil
 }
 
 // Query returns gqlgenerated.QueryResolver implementation.
