@@ -6,6 +6,7 @@ require (
 	github.com/99designs/gqlgen v0.17.20
 	github.com/knadh/koanf v1.4.3
 	github.com/mitchellh/mapstructure v1.5.0
+	github.com/rs/cors v1.8.2
 	github.com/vektah/gqlparser/v2 v2.5.1
 	go.uber.org/fx v1.18.2
 	go.uber.org/zap v1.23.0

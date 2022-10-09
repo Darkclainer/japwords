@@ -26,5 +26,5 @@ func InvokeApp(
 	server *httpserver.Server,
 	resolver *gqlresolver.Resolver,
 ) {
-	server.RegisterHandler("/query", resolver.Handler())
+	server.RegisterHandler("/api/query", resolver.Handler())
 }

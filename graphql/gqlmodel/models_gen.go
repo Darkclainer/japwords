@@ -3,15 +3,15 @@
 package gqlmodel
 
 type JapaneseWord struct {
-	Kanji    string   `json:"Kanji"`
-	Furigana *string  `json:"Furigana"`
-	Hiragana string   `json:"Hiragana"`
-	Acents   string   `json:"Acents"`
-	Meaning  string   `json:"Meaning"`
-	Audio    []string `json:"Audio"`
-	Examples []string `json:"Examples"`
+	Kanji    string   `json:"kanji"`
+	Furigana *string  `json:"furigana"`
+	Hiragana string   `json:"hiragana"`
+	Acents   string   `json:"acents"`
+	Meaning  string   `json:"meaning"`
+	Audio    []string `json:"audio"`
+	Examples []string `json:"examples"`
 }
 
 type JapaneseWords struct {
-	Words []*JapaneseWord `json:"Words"`
+	Words []*JapaneseWord `json:"words"`
 }

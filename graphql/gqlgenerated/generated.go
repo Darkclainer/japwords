@@ -80,56 +80,56 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 	_ = ec
 	switch typeName + "." + field {
 
-	case "JapaneseWord.Acents":
+	case "JapaneseWord.acents":
 		if e.complexity.JapaneseWord.Acents == nil {
 			break
 		}
 
 		return e.complexity.JapaneseWord.Acents(childComplexity), true
 
-	case "JapaneseWord.Audio":
+	case "JapaneseWord.audio":
 		if e.complexity.JapaneseWord.Audio == nil {
 			break
 		}
 
 		return e.complexity.JapaneseWord.Audio(childComplexity), true
 
-	case "JapaneseWord.Examples":
+	case "JapaneseWord.examples":
 		if e.complexity.JapaneseWord.Examples == nil {
 			break
 		}
 
 		return e.complexity.JapaneseWord.Examples(childComplexity), true
 
-	case "JapaneseWord.Furigana":
+	case "JapaneseWord.furigana":
 		if e.complexity.JapaneseWord.Furigana == nil {
 			break
 		}
 
 		return e.complexity.JapaneseWord.Furigana(childComplexity), true
 
-	case "JapaneseWord.Hiragana":
+	case "JapaneseWord.hiragana":
 		if e.complexity.JapaneseWord.Hiragana == nil {
 			break
 		}
 
 		return e.complexity.JapaneseWord.Hiragana(childComplexity), true
 
-	case "JapaneseWord.Kanji":
+	case "JapaneseWord.kanji":
 		if e.complexity.JapaneseWord.Kanji == nil {
 			break
 		}
 
 		return e.complexity.JapaneseWord.Kanji(childComplexity), true
 
-	case "JapaneseWord.Meaning":
+	case "JapaneseWord.meaning":
 		if e.complexity.JapaneseWord.Meaning == nil {
 			break
 		}
 
 		return e.complexity.JapaneseWord.Meaning(childComplexity), true
 
-	case "JapaneseWords.Words":
+	case "JapaneseWords.words":
 		if e.complexity.JapaneseWords.Words == nil {
 			break
 		}
@@ -205,18 +205,18 @@ var sources = []*ast.Source{
 }
 
 type JapaneseWords {
-  Words: [JapaneseWord!]
+  words: [JapaneseWord!]
 }
 
 type JapaneseWord {
-  Kanji: String!
-  Furigana: String
-  Hiragana: String!
-  Acents: String!
-  Meaning: String!
+  kanji: String!
+  furigana: String
+  hiragana: String!
+  acents: String!
+  meaning: String!
   # Links to audio files
-  Audio: [String!]
-  Examples: [String!]
+  audio: [String!]
+  examples: [String!]
 }
 `, BuiltIn: false},
 }
@@ -294,8 +294,8 @@ func (ec *executionContext) field___Type_fields_args(ctx context.Context, rawArg
 
 // region    **************************** field.gotpl *****************************
 
-func (ec *executionContext) _JapaneseWord_Kanji(ctx context.Context, field graphql.CollectedField, obj *gqlmodel.JapaneseWord) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_JapaneseWord_Kanji(ctx, field)
+func (ec *executionContext) _JapaneseWord_kanji(ctx context.Context, field graphql.CollectedField, obj *gqlmodel.JapaneseWord) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_JapaneseWord_kanji(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -325,7 +325,7 @@ func (ec *executionContext) _JapaneseWord_Kanji(ctx context.Context, field graph
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_JapaneseWord_Kanji(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_JapaneseWord_kanji(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "JapaneseWord",
 		Field:      field,
@@ -338,8 +338,8 @@ func (ec *executionContext) fieldContext_JapaneseWord_Kanji(ctx context.Context,
 	return fc, nil
 }
 
-func (ec *executionContext) _JapaneseWord_Furigana(ctx context.Context, field graphql.CollectedField, obj *gqlmodel.JapaneseWord) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_JapaneseWord_Furigana(ctx, field)
+func (ec *executionContext) _JapaneseWord_furigana(ctx context.Context, field graphql.CollectedField, obj *gqlmodel.JapaneseWord) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_JapaneseWord_furigana(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -366,7 +366,7 @@ func (ec *executionContext) _JapaneseWord_Furigana(ctx context.Context, field gr
 	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_JapaneseWord_Furigana(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_JapaneseWord_furigana(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "JapaneseWord",
 		Field:      field,
@@ -379,8 +379,8 @@ func (ec *executionContext) fieldContext_JapaneseWord_Furigana(ctx context.Conte
 	return fc, nil
 }
 
-func (ec *executionContext) _JapaneseWord_Hiragana(ctx context.Context, field graphql.CollectedField, obj *gqlmodel.JapaneseWord) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_JapaneseWord_Hiragana(ctx, field)
+func (ec *executionContext) _JapaneseWord_hiragana(ctx context.Context, field graphql.CollectedField, obj *gqlmodel.JapaneseWord) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_JapaneseWord_hiragana(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -410,7 +410,7 @@ func (ec *executionContext) _JapaneseWord_Hiragana(ctx context.Context, field gr
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_JapaneseWord_Hiragana(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_JapaneseWord_hiragana(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "JapaneseWord",
 		Field:      field,
@@ -423,8 +423,8 @@ func (ec *executionContext) fieldContext_JapaneseWord_Hiragana(ctx context.Conte
 	return fc, nil
 }
 
-func (ec *executionContext) _JapaneseWord_Acents(ctx context.Context, field graphql.CollectedField, obj *gqlmodel.JapaneseWord) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_JapaneseWord_Acents(ctx, field)
+func (ec *executionContext) _JapaneseWord_acents(ctx context.Context, field graphql.CollectedField, obj *gqlmodel.JapaneseWord) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_JapaneseWord_acents(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -454,7 +454,7 @@ func (ec *executionContext) _JapaneseWord_Acents(ctx context.Context, field grap
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_JapaneseWord_Acents(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_JapaneseWord_acents(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "JapaneseWord",
 		Field:      field,
@@ -467,8 +467,8 @@ func (ec *executionContext) fieldContext_JapaneseWord_Acents(ctx context.Context
 	return fc, nil
 }
 
-func (ec *executionContext) _JapaneseWord_Meaning(ctx context.Context, field graphql.CollectedField, obj *gqlmodel.JapaneseWord) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_JapaneseWord_Meaning(ctx, field)
+func (ec *executionContext) _JapaneseWord_meaning(ctx context.Context, field graphql.CollectedField, obj *gqlmodel.JapaneseWord) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_JapaneseWord_meaning(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -498,7 +498,7 @@ func (ec *executionContext) _JapaneseWord_Meaning(ctx context.Context, field gra
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_JapaneseWord_Meaning(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_JapaneseWord_meaning(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "JapaneseWord",
 		Field:      field,
@@ -511,8 +511,8 @@ func (ec *executionContext) fieldContext_JapaneseWord_Meaning(ctx context.Contex
 	return fc, nil
 }
 
-func (ec *executionContext) _JapaneseWord_Audio(ctx context.Context, field graphql.CollectedField, obj *gqlmodel.JapaneseWord) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_JapaneseWord_Audio(ctx, field)
+func (ec *executionContext) _JapaneseWord_audio(ctx context.Context, field graphql.CollectedField, obj *gqlmodel.JapaneseWord) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_JapaneseWord_audio(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -539,7 +539,7 @@ func (ec *executionContext) _JapaneseWord_Audio(ctx context.Context, field graph
 	return ec.marshalOString2ᚕstringᚄ(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_JapaneseWord_Audio(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_JapaneseWord_audio(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "JapaneseWord",
 		Field:      field,
@@ -552,8 +552,8 @@ func (ec *executionContext) fieldContext_JapaneseWord_Audio(ctx context.Context,
 	return fc, nil
 }
 
-func (ec *executionContext) _JapaneseWord_Examples(ctx context.Context, field graphql.CollectedField, obj *gqlmodel.JapaneseWord) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_JapaneseWord_Examples(ctx, field)
+func (ec *executionContext) _JapaneseWord_examples(ctx context.Context, field graphql.CollectedField, obj *gqlmodel.JapaneseWord) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_JapaneseWord_examples(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -580,7 +580,7 @@ func (ec *executionContext) _JapaneseWord_Examples(ctx context.Context, field gr
 	return ec.marshalOString2ᚕstringᚄ(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_JapaneseWord_Examples(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_JapaneseWord_examples(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "JapaneseWord",
 		Field:      field,
@@ -593,8 +593,8 @@ func (ec *executionContext) fieldContext_JapaneseWord_Examples(ctx context.Conte
 	return fc, nil
 }
 
-func (ec *executionContext) _JapaneseWords_Words(ctx context.Context, field graphql.CollectedField, obj *gqlmodel.JapaneseWords) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_JapaneseWords_Words(ctx, field)
+func (ec *executionContext) _JapaneseWords_words(ctx context.Context, field graphql.CollectedField, obj *gqlmodel.JapaneseWords) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_JapaneseWords_words(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -621,7 +621,7 @@ func (ec *executionContext) _JapaneseWords_Words(ctx context.Context, field grap
 	return ec.marshalOJapaneseWord2ᚕᚖjapwordsᚋgraphqlᚋgqlmodelᚐJapaneseWordᚄ(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_JapaneseWords_Words(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_JapaneseWords_words(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "JapaneseWords",
 		Field:      field,
@@ -629,20 +629,20 @@ func (ec *executionContext) fieldContext_JapaneseWords_Words(ctx context.Context
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
-			case "Kanji":
-				return ec.fieldContext_JapaneseWord_Kanji(ctx, field)
-			case "Furigana":
-				return ec.fieldContext_JapaneseWord_Furigana(ctx, field)
-			case "Hiragana":
-				return ec.fieldContext_JapaneseWord_Hiragana(ctx, field)
-			case "Acents":
-				return ec.fieldContext_JapaneseWord_Acents(ctx, field)
-			case "Meaning":
-				return ec.fieldContext_JapaneseWord_Meaning(ctx, field)
-			case "Audio":
-				return ec.fieldContext_JapaneseWord_Audio(ctx, field)
-			case "Examples":
-				return ec.fieldContext_JapaneseWord_Examples(ctx, field)
+			case "kanji":
+				return ec.fieldContext_JapaneseWord_kanji(ctx, field)
+			case "furigana":
+				return ec.fieldContext_JapaneseWord_furigana(ctx, field)
+			case "hiragana":
+				return ec.fieldContext_JapaneseWord_hiragana(ctx, field)
+			case "acents":
+				return ec.fieldContext_JapaneseWord_acents(ctx, field)
+			case "meaning":
+				return ec.fieldContext_JapaneseWord_meaning(ctx, field)
+			case "audio":
+				return ec.fieldContext_JapaneseWord_audio(ctx, field)
+			case "examples":
+				return ec.fieldContext_JapaneseWord_examples(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type JapaneseWord", field.Name)
 		},
@@ -686,8 +686,8 @@ func (ec *executionContext) fieldContext_Query_japaneseWords(ctx context.Context
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
-			case "Words":
-				return ec.fieldContext_JapaneseWords_Words(ctx, field)
+			case "words":
+				return ec.fieldContext_JapaneseWords_words(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type JapaneseWords", field.Name)
 		},
@@ -2626,45 +2626,45 @@ func (ec *executionContext) _JapaneseWord(ctx context.Context, sel ast.Selection
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("JapaneseWord")
-		case "Kanji":
+		case "kanji":
 
-			out.Values[i] = ec._JapaneseWord_Kanji(ctx, field, obj)
-
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
-		case "Furigana":
-
-			out.Values[i] = ec._JapaneseWord_Furigana(ctx, field, obj)
-
-		case "Hiragana":
-
-			out.Values[i] = ec._JapaneseWord_Hiragana(ctx, field, obj)
+			out.Values[i] = ec._JapaneseWord_kanji(ctx, field, obj)
 
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
-		case "Acents":
+		case "furigana":
 
-			out.Values[i] = ec._JapaneseWord_Acents(ctx, field, obj)
+			out.Values[i] = ec._JapaneseWord_furigana(ctx, field, obj)
 
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
-		case "Meaning":
+		case "hiragana":
 
-			out.Values[i] = ec._JapaneseWord_Meaning(ctx, field, obj)
+			out.Values[i] = ec._JapaneseWord_hiragana(ctx, field, obj)
 
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
-		case "Audio":
+		case "acents":
 
-			out.Values[i] = ec._JapaneseWord_Audio(ctx, field, obj)
+			out.Values[i] = ec._JapaneseWord_acents(ctx, field, obj)
 
-		case "Examples":
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "meaning":
 
-			out.Values[i] = ec._JapaneseWord_Examples(ctx, field, obj)
+			out.Values[i] = ec._JapaneseWord_meaning(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "audio":
+
+			out.Values[i] = ec._JapaneseWord_audio(ctx, field, obj)
+
+		case "examples":
+
+			out.Values[i] = ec._JapaneseWord_examples(ctx, field, obj)
 
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
@@ -2687,9 +2687,9 @@ func (ec *executionContext) _JapaneseWords(ctx context.Context, sel ast.Selectio
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("JapaneseWords")
-		case "Words":
+		case "words":
 
-			out.Values[i] = ec._JapaneseWords_Words(ctx, field, obj)
+			out.Values[i] = ec._JapaneseWords_words(ctx, field, obj)
 
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))

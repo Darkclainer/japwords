@@ -8,6 +8,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/rs/cors"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 )
@@ -37,10 +38,16 @@ func New(in In) (*Server, error) {
 	if addr == "" {
 		addr = "127.0.0.1:8082"
 	}
+	corsHandler := cors.New(cors.Options{
+		AllowedOrigins: []string{
+			"http://127.0.0.1:*",
+			"http://localhost:*",
+		},
+	})
 	srv := &Server{
 		Server: http.Server{
 			ReadHeaderTimeout: time.Second,
-			Handler:           httpLog(logger, mux),
+			Handler:           httpLog(logger, corsHandler.Handler(mux)),
 			Addr:              addr,
 		},
 		mux: mux,

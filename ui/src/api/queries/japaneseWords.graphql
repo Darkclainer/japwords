@@ -1,0 +1,13 @@
+query GetJapaneseWords($query: String!) {
+  japaneseWords(query: $query) {
+    words {
+      kanji
+      furigana
+      hiragana
+      acents
+      meaning
+      audio
+      examples
+    }
+  }
+}

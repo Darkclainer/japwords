@@ -10,10 +10,6 @@ import (
 	"japwords/graphql/gqlmodel"
 )
 
-func pstring(v string) *string {
-	return &v
-}
-
 // JapaneseWords is the resolver for the japaneseWords field.
 func (r *queryResolver) JapaneseWords(ctx context.Context, query string) (*gqlmodel.JapaneseWords, error) {
 	return &gqlmodel.JapaneseWords{
