@@ -5,7 +5,6 @@ package gqlresolver
 
 import (
 	"context"
-
 	"japwords/graphql/gqlgenerated"
 	"japwords/graphql/gqlmodel"
 )
