@@ -10,8 +10,8 @@
 	query = currentQuery;
 </script>
 
-<div class="flex items-center justify-between focus:outline-none">
-	<h2 class="font-semibold text-xl text-slate-900 mb-2">Japanese</h2>
+<div class="flex items-center justify-between">
+	<h2 class="font-semibold text-xl text-slate-900 mb-2 focus:outline-none">Japanese</h2>
 </div>
 <form
 	class="group relative"

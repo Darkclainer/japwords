@@ -3,6 +3,7 @@
 	import Tailwindcss from './Tailwind.svelte';
 	import { Router, Route } from 'svelte-navigator';
 	import { GetJapaneseWords } from './api/generated';
+	import WordBrowser from './components/WordBrowser.svelte';
 
 	let query: string = '';
 	let wordsQuery: ReturnType<typeof GetJapaneseWords>;
@@ -12,6 +13,8 @@
 				query: query
 			}
 		});
+	} else {
+		wordsQuery = null;
 	}
 </script>
 
@@ -22,8 +25,16 @@
 		<Route path="/*">
 			<SearchBar bind:query />
 
-			{#if $wordsQuery}
-				{JSON.stringify($wordsQuery.data?.japaneseWords)}
+			{#if wordsQuery}
+				{#if $wordsQuery.loading}
+					<h1>Loading</h1>
+				{:else if $wordsQuery.error}
+					<h1>Error</h1>
+				{:else}
+					<WordBrowser words={$wordsQuery.data.japaneseWords?.words} />
+				{/if}
+			{:else}
+				<h1>type kanji</h1>
 			{/if}
 		</Route>
 	</Router>
