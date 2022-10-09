@@ -36,7 +36,7 @@ func New(in In) (*Server, error) {
 	)
 	addr := in.Config.Addr
 	if addr == "" {
-		addr = "127.0.0.1:8082"
+		addr = "127.0.0.1:8081"
 	}
 	corsHandler := cors.New(cors.Options{
 		AllowedOrigins: []string{

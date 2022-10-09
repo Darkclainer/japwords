@@ -6,6 +6,7 @@ import (
 	"japwords/graphql/gqlresolver"
 	"japwords/pkg/httpserver"
 	"japwords/pkg/logger"
+	"japwords/ui"
 )
 
 func NewApp(opts []fx.Option) (*fx.App, error) {
@@ -27,4 +28,5 @@ func InvokeApp(
 	resolver *gqlresolver.Resolver,
 ) {
 	server.RegisterHandler("/api/query", resolver.Handler())
+	server.RegisterHandler("/", ui.Handler("/"))
 }
