@@ -21,24 +21,25 @@ var restoreCache = flag.Bool("restore", false, "restore html files")
 // TestParseFiles is meant how real overall pages are parsed.
 func TestParseFiles(t *testing.T) {
 	testCases := map[string]struct {
-		// Slugs are all Lemma's slug that parser should return
-		Slugs []string
+		// Count is a number of lemmas that parser should return
+		Count int
 		// Lemmas are specific lemmas (by index) that parser should return
 		Lemmas map[int]*Lemma
 	}{
-		"犬": {},
+		"犬": {
+			Count: 20,
+			Lemmas: map[int]*Lemma{
+				0: {},
+			},
+		},
 	}
 	for query := range testCases {
 		tc := testCases[query]
 		t.Run(query, func(t *testing.T) {
 			html := getCachedHTML(t, query)
-			lemmas, err := parseHTML(html)
+			lemmas, err := parseHTMLBytes(html)
 			require.NoError(t, err)
-			var gotSlugs []string
-			for _, l := range lemmas {
-				gotSlugs = append(gotSlugs, l.Slug.Word)
-			}
-			require.Equal(t, tc.Slugs, gotSlugs)
+			require.Equal(t, tc.Count, len(lemmas))
 			for i, l := range tc.Lemmas {
 				assert.Equal(t, l, lemmas[i])
 			}

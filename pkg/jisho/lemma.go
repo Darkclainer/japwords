@@ -2,7 +2,7 @@ package jisho
 
 type Lemma struct {
 	Slug  Word
-	JLPT  []string
+	Tags  []string
 	Forms []Word
 	Sense WordSense
 	// Audio is array of links to audio files.
