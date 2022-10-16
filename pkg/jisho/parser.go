@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"regexp"
 	"strings"
 
 	"github.com/PuerkitoBio/goquery"
@@ -66,22 +67,29 @@ var (
 	conceptLightWrapperMatcher        = singleMatcher("div.concept_light-wrapper")
 	conceptLightRepresentationMatcher = singleMatcher("div.concept_light-representation")
 	conceptLightStatusMatcher         = singleMatcher("div.concept_light-status")
+	conceptLightMeaningsMatcher       = singleMatcher("div.concept_light-meanings")
 )
 
 func parseConceptLight(sel *goquery.Selection) (*Lemma, error) {
-	var lemma Lemma
-	lightWrapper := sel.FindMatcher(conceptLightWrapperMatcher)
+	lightWrapper := sel.ChildrenMatcher(conceptLightWrapperMatcher)
 	representation := lightWrapper.FindMatcher(conceptLightRepresentationMatcher)
 	slug, err := parseRepresentation(representation)
 	if err != nil {
 		return nil, err
 	}
-	lemma.Slug = slug
-	status := lightWrapper.ChildrenMatcher(conceptLightWrapperMatcher)
+	status := lightWrapper.ChildrenMatcher(conceptLightStatusMatcher)
 	audio, tags := parseStatus(status)
-	lemma.Audio = audio
-	lemma.Tags = tags
-	return &lemma, nil
+
+	meanings := lightWrapper.NextMatcher(conceptLightMeaningsMatcher).Children()
+	wordSenses, otherForms := parseMeanings(meanings)
+
+	return &Lemma{
+		Slug:   slug,
+		Tags:   tags,
+		Forms:  otherForms,
+		Senses: wordSenses,
+		Audio:  audio,
+	}, nil
 }
 
 var (
@@ -111,6 +119,11 @@ func parseRepresentation(sel *goquery.Selection) (Word, error) {
 		reading.WriteString(rChar)
 		i++
 	}
+	// text is equal to reading only when for no furigana given for any
+	// character in text
+	if text == reading.String() {
+		furigana = nil
+	}
 	return Word{
 		Word:     text,
 		Furigana: furigana,
@@ -118,7 +131,7 @@ func parseRepresentation(sel *goquery.Selection) (Word, error) {
 	}, nil
 }
 
-var conceptLightTagMatcher = matcher("span.concept_light-tag")
+var conceptLightTagMatcher = matcher(".concept_light-tag")
 
 func parseStatus(sel *goquery.Selection) (audio map[string]string, tags []string) {
 	tagSel := sel.ChildrenMatcher(conceptLightTagMatcher)
@@ -126,6 +139,9 @@ func parseStatus(sel *goquery.Selection) (audio map[string]string, tags []string
 		tags = append(tags, strings.TrimSpace(sel.Text()))
 	})
 	sourceSel := sel.ChildrenFiltered("audio").Children()
+	if sourceSel.Length() == 0 {
+		return
+	}
 	audio = make(map[string]string)
 	for _, source := range sourceSel.Nodes {
 		var audioSrc, audioType string
@@ -133,6 +149,14 @@ func parseStatus(sel *goquery.Selection) (audio map[string]string, tags []string
 			switch attr.Key {
 			case "src":
 				audioSrc = attr.Val
+				if strings.HasPrefix(audioSrc, "//") {
+					// TODO: for better handling of this
+					// we need to introduce state for parse* functions
+					// and store html location to resolve
+					// relative links properly.
+					audioSrc = "https:" + audioSrc
+				}
+
 			case "type":
 				audioType = attr.Val
 			}
@@ -145,6 +169,91 @@ func parseStatus(sel *goquery.Selection) (audio map[string]string, tags []string
 		}
 	}
 	return
+}
+
+var meaningDefinitionMatcher = singleMatcher("div.meaning-definition")
+
+// parseMeanings return senses and other forms from `.meaning-wrapper`
+func parseMeanings(sel *goquery.Selection) (senses []WordSense, forms []Word) {
+	// get all tag-meaning pairs
+	sel = sel.Children().First()
+	for sel.Length() != 0 {
+		var partOfSpeech []string
+		if sel.HasClass("meaning-tags") {
+			tagsText := strings.TrimSpace(sel.Text())
+			if tagsText == "Other forms" {
+				sel = sel.Next()
+				break
+			}
+			partOfSpeech = splitPartOfSpeech(tagsText)
+			sel = sel.Next()
+		}
+		if sel.HasClass("meaning-tags") {
+			continue
+		}
+		if sel.HasClass("meaning-wrapper") {
+			meaningDefinition := sel.ChildrenMatcher(meaningDefinitionMatcher)
+			definitions, tags := parseMeaningDefinition(meaningDefinition)
+			if len(definitions) > 0 {
+				senses = append(senses, WordSense{
+					Definition:   definitions,
+					PartOfSpeech: partOfSpeech,
+					Tags:         tags,
+				})
+			}
+		}
+		sel = sel.Next()
+	}
+	// no Other forms provided
+	if sel.Length() == 0 {
+		return
+	}
+	// TODO other forms
+	return
+}
+
+var (
+	meaningMeaningMatcher   = singleMatcher(".meaning-meaning")
+	supplementalInfoMatcher = singleMatcher(".supplemental_info")
+	tagTagMatcher           = matcher(".tag-tag")
+)
+
+func parseMeaningDefinition(sel *goquery.Selection) (definitions []string, tags []string) {
+	rawDefinition := strings.TrimSpace(sel.ChildrenMatcher(meaningMeaningMatcher).Text())
+	for _, definition := range strings.Split(rawDefinition, "; ") {
+		definition = strings.TrimSpace(definition)
+		if definition == "" {
+			continue
+		}
+		definitions = append(definitions, definition)
+	}
+	tagsSel := sel.
+		ChildrenMatcher(supplementalInfoMatcher).
+		ChildrenMatcher(tagTagMatcher)
+	tags = tagsSel.Map(func(_ int, s *goquery.Selection) string {
+		return strings.TrimSpace(s.Text())
+	})
+	return
+}
+
+var partOfSpeechDelimiter = regexp.MustCompile(`, \p{Lu}`)
+
+func splitPartOfSpeech(src string) []string {
+	matches := partOfSpeechDelimiter.FindAllStringIndex(src, -1)
+	var result []string
+	start := 0
+	for _, match := range matches {
+		if match[0]-start > 0 {
+			result = append(result, src[start:match[0]])
+		}
+		// we want uppercase letter to get in our next
+		// selection
+		start = match[1] - 1
+	}
+	if len(src) > start {
+		result = append(result, src[start:])
+	}
+	return result
 }
 
 func matcher(src string) goquery.Matcher {

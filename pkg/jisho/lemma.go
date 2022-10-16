@@ -1,10 +1,10 @@
 package jisho
 
 type Lemma struct {
-	Slug  Word
-	Tags  []string
-	Forms []Word
-	Sense WordSense
+	Slug   Word
+	Tags   []string
+	Forms  []Word
+	Senses []WordSense
 	// Audio is array of links to audio files.
 	// Key is format
 	Audio map[string]string
