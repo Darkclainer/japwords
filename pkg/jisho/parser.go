@@ -123,6 +123,8 @@ func parseRepresentation(sel *goquery.Selection) (Word, error) {
 	// character in text
 	if text == reading.String() {
 		furigana = nil
+		reading.Reset()
+
 	}
 	return Word{
 		Word:     text,

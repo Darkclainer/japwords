@@ -31,8 +31,7 @@ func Test_parseConceptLight(t *testing.T) {
 
 			Expected: &Lemma{
 				Slug: Word{
-					Word:    "he",
-					Reading: "he",
+					Word: "he",
 				},
 			},
 			ErrorAssert: assert.NoError,
@@ -188,8 +187,7 @@ func Test_parseRepresentation(t *testing.T) {
 			Name: "simple",
 			HTML: ` <div id="root"> <span class="text">  he </span> </div> `,
 			Expected: Word{
-				Word:    "he",
-				Reading: "he",
+				Word: "he",
 			},
 			ErrorAssert: assert.NoError,
 		},
@@ -221,8 +219,7 @@ func Test_parseRepresentation(t *testing.T) {
 				<span class="text">元気</span> 
 			</div> `,
 			Expected: Word{
-				Word:    "元気",
-				Reading: "元気",
+				Word: "元気",
 			},
 			ErrorAssert: assert.NoError,
 		},
