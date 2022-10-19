@@ -205,10 +205,12 @@ func parseMeanings(sel *goquery.Selection) (senses []WordSense, forms []Word) {
 		sel = sel.Next()
 	}
 	// no Other forms provided
-	if sel.Length() == 0 {
+	if sel.Length() == 0 || !sel.HasClass("meaning-wrapper") {
 		return
 	}
-	// TODO other forms
+	forms = parseDefinitionOtherForms(
+		sel.ChildrenMatcher(meaningDefinitionMatcher),
+	)
 	return
 }
 
@@ -236,6 +238,22 @@ func parseMeaningDefinition(sel *goquery.Selection) (definitions []string, tags 
 	return
 }
 
+var breakUnitMatcher = matcher(".break-unit")
+
+// parseMeainingOtherForms extracts other forms from last `.meaning-definition`
+func parseDefinitionOtherForms(sel *goquery.Selection) (forms []Word) {
+	meaningSel := sel.ChildrenMatcher(meaningMeaningMatcher)
+	breakUnits := meaningSel.ChildrenMatcher(breakUnitMatcher)
+	breakUnits.Each(func(_ int, s *goquery.Selection) {
+		raw := strings.TrimSpace(s.Text())
+		word, exist := parseOtherForm(raw)
+		if exist {
+			forms = append(forms, word)
+		}
+	})
+	return
+}
+
 var partOfSpeechDelimiter = regexp.MustCompile(`, \p{Lu}`)
 
 func splitPartOfSpeech(src string) []string {
@@ -254,6 +272,19 @@ func splitPartOfSpeech(src string) []string {
 		result = append(result, src[start:])
 	}
 	return result
+}
+
+var otherFormRegex = regexp.MustCompile(`([^【\t\n\f\r ]+)(?:\s*【([^】]+)】)?`)
+
+func parseOtherForm(src string) (Word, bool) {
+	matches := otherFormRegex.FindStringSubmatch(src)
+	if len(matches) == 0 {
+		return Word{}, false
+	}
+	return Word{
+		Word:    matches[1],
+		Reading: matches[2],
+	}, true
 }
 
 func matcher(src string) goquery.Matcher {

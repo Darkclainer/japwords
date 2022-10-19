@@ -38,7 +38,7 @@ func Test_parseConceptLight(t *testing.T) {
 			ErrorAssert: assert.NoError,
 		},
 		{
-			Name: "real",
+			Name: "real light wrapper",
 			HTML: `
 		<div id="root">
 			<div class="concept_light-wrapper  columns zero-padding">
@@ -58,6 +58,109 @@ func Test_parseConceptLight(t *testing.T) {
 				},
 			},
 			ErrorAssert: assert.NoError,
+		},
+		{
+			Name: "full",
+			HTML: `
+		<div id="root">
+			<div class="concept_light-wrapper  columns zero-padding">
+				<div class="concept_light-readings japanese japanese_gothic" lang="ja">
+					<div class="concept_light-representation">
+						<span class="furigana">
+							<span class="kanji-2-up kanji">いぬ</span>
+						</span>
+						<span class="text">犬</span>
+					</div>
+				</div>
+				<div class="concept_light-status">
+					<span class="concept_light-tag concept_light-common success label">Common word</span>
+					<span class="concept_light-tag label">
+						<a href="http://wanikani.com/">Wanikani level 2</a>
+					</span>
+					<audio id="audio_犬:いぬ" preload="none">
+						<source src="audio1" type="audio/mpeg">
+						<source src="audio2" type="audio/ogg">
+					</audio>
+				</div>
+			</div>
+			<div class="concept_light-meanings medium-9 columns">
+    				<div class="meanings-wrapper">
+					<div class="meaning-tags">Noun</div>
+					<div class="meaning-wrapper">
+						<div class="meaning-definition zero-padding">
+							<span class="meaning-definition-section_divider">1. </span>
+							<span class="meaning-meaning">dog</span>
+						</div>
+					</div>
+					<div class="meaning-tags">Noun</div>
+					<div class="meaning-wrapper">
+						<div class="meaning-definition zero-padding">
+							<span class="meaning-definition-section_divider">2. </span>
+							<span class="meaning-meaning">squealer; rat</span>
+							<span class="supplemental_info">
+								<span class="sense-tag tag-tag">Derogatory</span>,
+								<span class="sense-tag tag-tag">Usually</span>, 
+							</span>
+						</div>
+					</div>
+					<div class="meaning-tags">Other forms</div>
+					<div class="meaning-wrapper">
+						<div class="meaning-definition zero-padding">
+							<span class="meaning-meaning">
+								<span class="break-unit">狗 【いぬ】</span>、
+								<span class="break-unit">イヌ</span>
+							</span>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>`,
+			Expected: &Lemma{
+				Slug: Word{Word: "犬", Furigana: newTestFurigana("犬", "いぬ"), Reading: "いぬ"},
+				Tags: []string{
+					"Common word",
+					"Wanikani level 2",
+				},
+				Forms: []Word{
+					{
+						Word:    "狗",
+						Reading: "いぬ",
+					},
+					{
+						Word: "イヌ",
+					},
+				},
+				Senses: []WordSense{
+					{
+						Definition:   []string{"dog"},
+						PartOfSpeech: []string{"Noun"},
+					},
+					{
+						Definition:   []string{"squealer", "rat"},
+						PartOfSpeech: []string{"Noun"},
+						Tags:         []string{"Derogatory", "Usually"},
+					},
+				},
+				Audio: map[string]string{
+					"audio/mpeg": "audio1",
+					"audio/ogg":  "audio2",
+				},
+			},
+			ErrorAssert: assert.NoError,
+		},
+		{
+			Name: "no slug",
+			HTML: `
+		<div id="root"> 
+			<div class="concept_light-wrapper">
+				<div class="concept_light-readings">
+					<div class="concept_light-representation">
+					</div>
+				</div>
+			</div>
+		</div>`,
+
+			ErrorAssert: assert.Error,
 		},
 	}
 	for i := range testCases {
@@ -328,6 +431,38 @@ func Test_parseMeanings(t *testing.T) {
 				},
 			},
 		},
+		{
+			Name: "one definition with other form",
+			Src: `
+		<div id="root">
+			<div class="meaning-tags">Noun</div>
+			<div class="meaning-wrapper">
+				<div class="meaning-definition">
+					<span class="meaning-meaning">hello</span>
+				</div>
+			</div>
+			<div class="meaning-tags">Other forms</div>
+			<div class="meaning-wrapper">
+				<div class="meaning-definition">
+					<span class="meaning-meaning">
+						<span class="break-unit">狗 【いぬ】</span>
+					</span>
+				</div>
+			</div>
+		</div>`,
+			Senses: []WordSense{
+				{
+					Definition:   []string{"hello"},
+					PartOfSpeech: []string{"Noun"},
+				},
+			},
+			Forms: []Word{
+				{
+					Word:    "狗",
+					Reading: "いぬ",
+				},
+			},
+		},
 	}
 	for i := range testCases {
 		tc := testCases[i]
@@ -402,6 +537,62 @@ func Test_parseMeaningDefinition(t *testing.T) {
 	}
 }
 
+func Test_parseDefinitionOtherForms(t *testing.T) {
+	testCases := []struct {
+		Name  string
+		Src   string
+		Forms []Word
+	}{
+		{
+			Name: "empty",
+			Src:  `<div id="root"></div>`,
+		},
+		{
+			Name: "one form",
+			Src: `
+		<div id="root">
+			<span class="meaning-meaning">
+				<span class="break-unit">狗 【いぬ】</span>
+			</span>
+		</div>`,
+			Forms: []Word{
+				{
+					Word:    "狗",
+					Reading: "いぬ",
+				},
+			},
+		},
+		{
+			Name: "two forms",
+			Src: `
+		<div id="root">
+			<span class="meaning-meaning">
+				<span class="break-unit">狗 【いぬ】</span>
+				<span class="break-unit">イヌ</span>
+			</span>
+		</div>`,
+			Forms: []Word{
+				{
+					Word:    "狗",
+					Reading: "いぬ",
+				},
+				{
+					Word: "イヌ",
+				},
+			},
+		},
+	}
+	for i := range testCases {
+		tc := testCases[i]
+		t.Run(tc.Name, func(t *testing.T) {
+			forms := parseDefinitionOtherForms(
+				mustRootSelection(t, tc.Src),
+			)
+			assert.Equal(t, tc.Forms, forms, "forms")
+		})
+	}
+}
+
 func Test_splitPartOfSpeech(t *testing.T) {
 	testCases := []struct {
 		Name     string
@@ -447,6 +638,61 @@ func Test_splitPartOfSpeech(t *testing.T) {
 		t.Run(tc.Name, func(t *testing.T) {
 			got := splitPartOfSpeech(tc.Src)
 			assert.Equal(t, tc.Expected, got)
+		})
+	}
+}
+
+func Test_parseOtherForm(t *testing.T) {
+	testCases := []struct {
+		Name  string
+		Src   string
+		Word  Word
+		Exist bool
+	}{
+		{
+			Name: "empty",
+		},
+		{
+			Name: "kanji without reading",
+			Src:  "hello",
+			Word: Word{
+				Word: "hello",
+			},
+			Exist: true,
+		},
+		{
+			Name: "kanji with reading",
+			Src:  "hello 【world】",
+			Word: Word{
+				Word:    "hello",
+				Reading: "world",
+			},
+			Exist: true,
+		},
+		{
+			Name: "kanji with reading without whitespace",
+			Src:  "hello【world】",
+			Word: Word{
+				Word:    "hello",
+				Reading: "world",
+			},
+			Exist: true,
+		},
+		{
+			Name: "kanji with unfinished reading",
+			Src:  "hello【world",
+			Word: Word{
+				Word: "hello",
+			},
+			Exist: true,
+		},
+	}
+	for i := range testCases {
+		tc := testCases[i]
+		t.Run(tc.Name, func(t *testing.T) {
+			word, exist := parseOtherForm(tc.Src)
+			assert.Equal(t, tc.Exist, exist, "exist")
+			assert.Equal(t, tc.Word, word, "word")
 		})
 	}
 }
