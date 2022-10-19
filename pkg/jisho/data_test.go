@@ -29,7 +29,74 @@ func TestParseFiles(t *testing.T) {
 		"犬": {
 			Count: 20,
 			Lemmas: map[int]*Lemma{
-				0: {},
+				0: {
+					Slug: Word{
+						Word:    "犬",
+						Reading: "いぬ",
+						Furigana: []FuriganaChar{
+							{
+								Kanji:    "犬",
+								Hiragana: "いぬ",
+							},
+						},
+					},
+					Tags: []string{
+						"Common word",
+						"JLPT N5",
+						"Wanikani level 2",
+					},
+					Forms: []Word{
+						{
+							Word:    "狗",
+							Reading: "いぬ",
+						},
+						{
+							Word: "イヌ",
+						},
+					},
+					Senses: []WordSense{
+						{
+							Definition:   []string{"dog (Canis (lupus) familiaris)"},
+							PartOfSpeech: []string{"Noun"},
+						},
+						{
+							Definition: []string{
+								"squealer",
+								"rat",
+								"snitch",
+								"informer",
+								"informant",
+								"spy",
+							},
+							PartOfSpeech: []string{"Noun"},
+							Tags: []string{
+								"Derogatory",
+								"Usually written using kana alone",
+							},
+						},
+						{
+							Definition: []string{
+								"loser",
+								"asshole",
+							},
+							PartOfSpeech: []string{"Noun"},
+							Tags:         []string{"Derogatory"},
+						},
+						{
+							Definition: []string{
+								"counterfeit",
+								"inferior",
+								"useless",
+								"wasteful",
+							},
+							PartOfSpeech: []string{"Noun, used as a prefix"},
+						},
+					},
+					Audio: map[string]string{
+						"audio/mpeg": "https://d1vjc5dkcd3yh2.cloudfront.net/audio/10ce3f5eb7b4a9a03c4dafce2af60e28.mp3",
+						"audio/ogg":  "https://d1vjc5dkcd3yh2.cloudfront.net/audio_ogg/10ce3f5eb7b4a9a03c4dafce2af60e28.ogg",
+					},
+				},
 			},
 		},
 	}

@@ -9,6 +9,213 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func Test_parseHTML(t *testing.T) {
+	testCases := []struct {
+		Name        string
+		HTML        string
+		Expected    []*Lemma
+		ErrorAssert assert.ErrorAssertionFunc
+	}{
+		{
+			Name: "simple",
+			HTML: `
+	<html><body>
+		<div id="page_container"><div id="main_results"></div></div>
+	</body></html>`,
+			ErrorAssert: assert.NoError,
+		},
+		{
+			Name: "one lemma",
+			HTML: `
+	<html><body>
+		<div id="page_container"><div id="main_results">
+			<div id="primary"><div class="exact_block">
+				<div class="concept_light">
+					<div class="concept_light-wrapper">
+						<div class="concept_light-readings">
+							<div class="concept_light-representation">
+								<span class="text">hello</span>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div></div>
+		</div></div>
+	</body></html>`,
+			Expected: []*Lemma{
+				{
+					Slug: Word{
+						Word: "hello",
+					},
+				},
+			},
+			ErrorAssert: assert.NoError,
+		},
+		{
+			Name: "no main_results",
+			HTML: `
+	<html><body>
+		<div id="page_container"></div>
+	</body></html>`,
+			ErrorAssert: func(t assert.TestingT, err error, _ ...interface{}) bool {
+				return assert.ErrorContains(t, err, "main_results")
+			},
+		},
+		{
+			Name: "no page_container",
+			HTML: `
+	<html><body>
+		<div id="main_results"></div>
+	</body></html>`,
+			ErrorAssert: func(t assert.TestingT, err error, _ ...interface{}) bool {
+				return assert.ErrorContains(t, err, "main_results")
+			},
+		},
+	}
+	for i := range testCases {
+		tc := testCases[i]
+		t.Run(tc.Name, func(t *testing.T) {
+			lemmas, err := parseHTML(strings.NewReader(tc.HTML))
+			tc.ErrorAssert(t, err)
+			assert.Equal(t, tc.Expected, lemmas)
+		})
+	}
+}
+
+func Test_parseMainResults(t *testing.T) {
+	testCases := []struct {
+		Name        string
+		HTML        string
+		Expected    []*Lemma
+		ErrorAssert assert.ErrorAssertionFunc
+	}{
+		{
+			Name:        "simple",
+			HTML:        `<div id="root"> </div>`,
+			ErrorAssert: assert.NoError,
+		},
+		{
+			Name: "one lemma",
+			HTML: `
+	<div id="root">
+	<div id="primary"><div class="exact_block">
+		<div class="concept_light">
+			<div class="concept_light-wrapper">
+				<div class="concept_light-readings">
+					<div class="concept_light-representation">
+						<span class="text">hello</span>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div></div>
+	</div>`,
+			Expected: []*Lemma{
+				{
+					Slug: Word{
+						Word: "hello",
+					},
+				},
+			},
+			ErrorAssert: assert.NoError,
+		},
+		{
+			Name: "two lemmas",
+			HTML: `
+	<div id="root">
+	<div id="primary"><div class="exact_block">
+		<div class="concept_light">
+			<div class="concept_light-wrapper">
+				<div class="concept_light-readings">
+					<div class="concept_light-representation">
+						<span class="text">hello</span>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="concept_light">
+			<div class="concept_light-wrapper">
+				<div class="concept_light-readings">
+					<div class="concept_light-representation">
+						<span class="text">world</span>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div></div>
+	</div>`,
+			Expected: []*Lemma{
+				{
+					Slug: Word{
+						Word: "hello",
+					},
+				},
+				{
+					Slug: Word{
+						Word: "world",
+					},
+				},
+			},
+			ErrorAssert: assert.NoError,
+		},
+		{
+			Name: "lemmas with error",
+			HTML: `
+	<div id="root">
+	<div id="primary"><div class="exact_block">
+		<div class="concept_light">
+			<div class="concept_light-wrapper">
+				<div class="concept_light-readings">
+					<div class="concept_light-representation">
+						<span class="text">hello</span>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="concept_light">
+			<div class="concept_light-wrapper">
+				<div class="concept_light-readings">
+					<div class="concept_light-representation">
+					</div>
+				</div>
+			</div>
+		</div>
+	</div></div>
+	</div>`,
+			Expected: []*Lemma{
+				{
+					Slug: Word{
+						Word: "hello",
+					},
+				},
+			},
+			ErrorAssert: func(t assert.TestingT, err error, _ ...interface{}) bool {
+				var batchErr *LemmaBatchError
+				if !assert.ErrorAs(t, err, &batchErr) {
+					return false
+				}
+				if !assert.Len(t, batchErr.Errs, 1) {
+					return false
+				}
+				var lemmaErr *LemmaError
+				if !assert.ErrorAs(t, batchErr.Errs[0], &lemmaErr) {
+					return false
+				}
+				return assert.Equal(t, 1, lemmaErr.ID)
+			},
+		},
+	}
+	for i := range testCases {
+		tc := testCases[i]
+		t.Run(tc.Name, func(t *testing.T) {
+			sel := mustRootSelection(t, tc.HTML)
+			lemmas, err := parseMainResults(sel)
+			tc.ErrorAssert(t, err)
+			assert.Equal(t, tc.Expected, lemmas)
+		})
+	}
+}
+
 func Test_parseConceptLight(t *testing.T) {
 	testCases := []struct {
 		Name        string

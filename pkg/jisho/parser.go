@@ -10,7 +10,6 @@ import (
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/andybalholm/cascadia"
-	"go.uber.org/multierr"
 )
 
 func parseHTMLBytes(html []byte) ([]*Lemma, error) {
@@ -21,6 +20,8 @@ func parseHTMLBytes(html []byte) ([]*Lemma, error) {
 // More complex selector is needed to ensure that we are parsing correct page
 var mainResultsMatcher = singleMatcher("#page_container #main_results")
 
+// TODO: make seperate type for concept parser error
+// TODO: test errors in parseHTML
 func parseHTML(src io.Reader) ([]*Lemma, error) {
 	document, err := goquery.NewDocumentFromReader(src)
 	if err != nil {
@@ -53,14 +54,20 @@ func parseMainResults(sel *goquery.Selection) ([]*Lemma, error) {
 		if err != nil {
 			errs = append(
 				errs,
-				fmt.Errorf("failed to process concept %d: %w", i, err),
+				&LemmaError{
+					ID:  i,
+					Err: err,
+				},
 			)
 		}
 		if lemma != nil {
 			lemmas = append(lemmas, lemma)
 		}
 	})
-	return lemmas, multierr.Combine(errs...)
+	if len(errs) != 0 {
+		return lemmas, &LemmaBatchError{Errs: errs}
+	}
+	return lemmas, nil
 }
 
 var (
