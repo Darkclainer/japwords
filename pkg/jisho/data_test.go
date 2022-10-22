@@ -12,6 +12,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
+	"japwords/pkg/basicdict"
 	"japwords/pkg/fetcher"
 )
 
@@ -128,14 +129,15 @@ func getCachedHTML(t *testing.T, query string) []byte {
 }
 
 func restoreHTML(t *testing.T, query string) []byte {
-	client, err := fetcher.New(fetcher.In{
+	fetcherClient, err := fetcher.New(fetcher.In{
 		Config: &fetcher.Config{},
 	})
 	require.NoError(t, err)
+	client := basicdict.New(fetcherClient)
 	j := New(client, "")
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
 	defer cancel()
-	html, err := j.queryHTML(ctx, query)
+	html, err := client.Query(ctx, j.queryURL(query))
 	require.NoError(t, err)
 	err = os.WriteFile(getHTMLName(query), html, 0o540)
 	require.NoError(t, err)

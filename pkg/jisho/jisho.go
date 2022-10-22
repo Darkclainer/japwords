@@ -1,27 +1,22 @@
 package jisho
 
 import (
-	"bytes"
 	"context"
-	"errors"
-	"fmt"
-	"io"
-	"net/http"
 	"net/url"
 )
 
 const defaultBaseURL = "https://jisho.org/search/"
 
 type Jisho struct {
-	client  Fetcher
+	client  BasicDict
 	baseURL string
 }
 
-type Fetcher interface {
-	Do(*http.Request) (*http.Response, error)
+type BasicDict interface {
+	Query(context.Context, string) ([]byte, error)
 }
 
-func New(client Fetcher, baseURL string) *Jisho {
+func New(client BasicDict, baseURL string) *Jisho {
 	if baseURL == "" {
 		baseURL = defaultBaseURL
 	}
@@ -32,33 +27,12 @@ func New(client Fetcher, baseURL string) *Jisho {
 }
 
 func (j *Jisho) Query(ctx context.Context, query string) ([]*Lemma, error) {
-	// htmlBody, err := j.queryHTML(ctx, query)
-	return nil, errors.New("unimplemented")
-}
-
-func (j *Jisho) queryHTML(ctx context.Context, query string) ([]byte, error) {
-	req, err := http.NewRequestWithContext(
-		ctx,
-		"GET",
-		j.queryURL(query),
-		nil,
-	)
+	url := j.queryURL(query)
+	htmlBody, err := j.client.Query(ctx, url)
 	if err != nil {
-		return nil, fmt.Errorf("request construction failed: %w", err)
+		return nil, err
 	}
-	resp, err := j.client.Do(req)
-	if err != nil {
-		return nil, fmt.Errorf("request failed: %w", err)
-	}
-	defer resp.Body.Close()
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("response status %d != 200", resp.StatusCode)
-	}
-	var body bytes.Buffer
-	if _, err := io.Copy(&body, resp.Body); err != nil {
-		return nil, fmt.Errorf("failed to read response body: %w", err)
-	}
-	return body.Bytes(), nil
+	return parseHTMLBytes(htmlBody)
 }
 
 func (j *Jisho) queryURL(query string) string {
