@@ -42,27 +42,48 @@ type DirectiveRoot struct {
 }
 
 type ComplexityRoot struct {
-	JapaneseWord struct {
-		Acents   func(childComplexity int) int
-		Audio    func(childComplexity int) int
-		Examples func(childComplexity int) int
-		Furigana func(childComplexity int) int
-		Hiragana func(childComplexity int) int
-		Kanji    func(childComplexity int) int
-		Meaning  func(childComplexity int) int
+	Audio struct {
+		Source func(childComplexity int) int
+		Type   func(childComplexity int) int
 	}
 
-	JapaneseWords struct {
-		Words func(childComplexity int) int
+	Furigana struct {
+		Hiragana func(childComplexity int) int
+		Kanji    func(childComplexity int) int
+	}
+
+	Lemma struct {
+		Accents  func(childComplexity int) int
+		Audio    func(childComplexity int) int
+		Forms    func(childComplexity int) int
+		Meanings func(childComplexity int) int
+		Slug     func(childComplexity int) int
+		Tags     func(childComplexity int) int
+	}
+
+	Lemmas struct {
+		Lemmas func(childComplexity int) int
+	}
+
+	Meaning struct {
+		Definition   func(childComplexity int) int
+		PartOfSpeech func(childComplexity int) int
+		Tags         func(childComplexity int) int
 	}
 
 	Query struct {
-		JapaneseWords func(childComplexity int, query string) int
+		Lemmas func(childComplexity int, query string) int
+	}
+
+	Word struct {
+		Furigana func(childComplexity int) int
+		Reading  func(childComplexity int) int
+		Word     func(childComplexity int) int
 	}
 }
 
 type QueryResolver interface {
-	JapaneseWords(ctx context.Context, query string) (*gqlmodel.JapaneseWords, error)
+	Lemmas(ctx context.Context, query string) (*gqlmodel.Lemmas, error)
 }
 
 type executableSchema struct {
@@ -80,73 +101,136 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 	_ = ec
 	switch typeName + "." + field {
 
-	case "JapaneseWord.acents":
-		if e.complexity.JapaneseWord.Acents == nil {
+	case "Audio.source":
+		if e.complexity.Audio.Source == nil {
 			break
 		}
 
-		return e.complexity.JapaneseWord.Acents(childComplexity), true
+		return e.complexity.Audio.Source(childComplexity), true
 
-	case "JapaneseWord.audio":
-		if e.complexity.JapaneseWord.Audio == nil {
+	case "Audio.type":
+		if e.complexity.Audio.Type == nil {
 			break
 		}
 
-		return e.complexity.JapaneseWord.Audio(childComplexity), true
+		return e.complexity.Audio.Type(childComplexity), true
 
-	case "JapaneseWord.examples":
-		if e.complexity.JapaneseWord.Examples == nil {
+	case "Furigana.hiragana":
+		if e.complexity.Furigana.Hiragana == nil {
 			break
 		}
 
-		return e.complexity.JapaneseWord.Examples(childComplexity), true
+		return e.complexity.Furigana.Hiragana(childComplexity), true
 
-	case "JapaneseWord.furigana":
-		if e.complexity.JapaneseWord.Furigana == nil {
+	case "Furigana.kanji":
+		if e.complexity.Furigana.Kanji == nil {
 			break
 		}
 
-		return e.complexity.JapaneseWord.Furigana(childComplexity), true
+		return e.complexity.Furigana.Kanji(childComplexity), true
 
-	case "JapaneseWord.hiragana":
-		if e.complexity.JapaneseWord.Hiragana == nil {
+	case "Lemma.accents":
+		if e.complexity.Lemma.Accents == nil {
 			break
 		}
 
-		return e.complexity.JapaneseWord.Hiragana(childComplexity), true
+		return e.complexity.Lemma.Accents(childComplexity), true
 
-	case "JapaneseWord.kanji":
-		if e.complexity.JapaneseWord.Kanji == nil {
+	case "Lemma.audio":
+		if e.complexity.Lemma.Audio == nil {
 			break
 		}
 
-		return e.complexity.JapaneseWord.Kanji(childComplexity), true
+		return e.complexity.Lemma.Audio(childComplexity), true
 
-	case "JapaneseWord.meaning":
-		if e.complexity.JapaneseWord.Meaning == nil {
+	case "Lemma.forms":
+		if e.complexity.Lemma.Forms == nil {
 			break
 		}
 
-		return e.complexity.JapaneseWord.Meaning(childComplexity), true
+		return e.complexity.Lemma.Forms(childComplexity), true
 
-	case "JapaneseWords.words":
-		if e.complexity.JapaneseWords.Words == nil {
+	case "Lemma.meanings":
+		if e.complexity.Lemma.Meanings == nil {
 			break
 		}
 
-		return e.complexity.JapaneseWords.Words(childComplexity), true
+		return e.complexity.Lemma.Meanings(childComplexity), true
 
-	case "Query.japaneseWords":
-		if e.complexity.Query.JapaneseWords == nil {
+	case "Lemma.slug":
+		if e.complexity.Lemma.Slug == nil {
 			break
 		}
 
-		args, err := ec.field_Query_japaneseWords_args(context.TODO(), rawArgs)
+		return e.complexity.Lemma.Slug(childComplexity), true
+
+	case "Lemma.tags":
+		if e.complexity.Lemma.Tags == nil {
+			break
+		}
+
+		return e.complexity.Lemma.Tags(childComplexity), true
+
+	case "Lemmas.lemmas":
+		if e.complexity.Lemmas.Lemmas == nil {
+			break
+		}
+
+		return e.complexity.Lemmas.Lemmas(childComplexity), true
+
+	case "Meaning.definition":
+		if e.complexity.Meaning.Definition == nil {
+			break
+		}
+
+		return e.complexity.Meaning.Definition(childComplexity), true
+
+	case "Meaning.partOfSpeech":
+		if e.complexity.Meaning.PartOfSpeech == nil {
+			break
+		}
+
+		return e.complexity.Meaning.PartOfSpeech(childComplexity), true
+
+	case "Meaning.tags":
+		if e.complexity.Meaning.Tags == nil {
+			break
+		}
+
+		return e.complexity.Meaning.Tags(childComplexity), true
+
+	case "Query.Lemmas":
+		if e.complexity.Query.Lemmas == nil {
+			break
+		}
+
+		args, err := ec.field_Query_Lemmas_args(context.TODO(), rawArgs)
 		if err != nil {
 			return 0, false
 		}
 
-		return e.complexity.Query.JapaneseWords(childComplexity, args["query"].(string)), true
+		return e.complexity.Query.Lemmas(childComplexity, args["query"].(string)), true
+
+	case "Word.furigana":
+		if e.complexity.Word.Furigana == nil {
+			break
+		}
+
+		return e.complexity.Word.Furigana(childComplexity), true
+
+	case "Word.reading":
+		if e.complexity.Word.Reading == nil {
+			break
+		}
+
+		return e.complexity.Word.Reading(childComplexity), true
+
+	case "Word.word":
+		if e.complexity.Word.Word == nil {
+			break
+		}
+
+		return e.complexity.Word.Word(childComplexity), true
 
 	}
 	return 0, false
@@ -201,22 +285,44 @@ func (ec *executionContext) introspectType(name string) (*introspection.Type, er
 
 var sources = []*ast.Source{
 	{Name: "../schema/japanese.graphqls", Input: `extend type Query {
-  japaneseWords(query: String!): JapaneseWords
+  Lemmas(query: String!): Lemmas
 }
 
-type JapaneseWords {
-  words: [JapaneseWord!]
+type Lemmas {
+  lemmas: [Lemma!]!
 }
 
-type JapaneseWord {
-  kanji: String!
-  furigana: String
-  hiragana: String!
-  acents: String!
-  meaning: String!
+type Lemma {
+  slug: Word!
+  tags: [String!]!
+  accents: String!
+  forms: [Word!]!
+  meanings: [Meaning!]!
   # Links to audio files
-  audio: [String!]
-  examples: [String!]
+  audio: [Audio!]!
+}
+
+type Word {
+  word: String!
+  reading: String
+  furigana: Furigana
+}
+
+type Furigana {
+  kanji: [String!]!
+  hiragana: [String!]!
+}
+
+type Audio {
+  type: String!
+  source: String!
+}
+
+type Meaning {
+  definition: [String!]!
+  partOfSpeech: [String!]!
+  tags: [String!]!
+
 }
 `, BuiltIn: false},
 }
@@ -225,6 +331,21 @@ var parsedSchema = gqlparser.MustLoadSchema(sources...)
 // endregion ************************** generated!.gotpl **************************
 
 // region    ***************************** args.gotpl *****************************
+
+func (ec *executionContext) field_Query_Lemmas_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["query"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("query"))
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["query"] = arg0
+	return args, nil
+}
 
 func (ec *executionContext) field_Query___type_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
@@ -238,21 +359,6 @@ func (ec *executionContext) field_Query___type_args(ctx context.Context, rawArgs
 		}
 	}
 	args["name"] = arg0
-	return args, nil
-}
-
-func (ec *executionContext) field_Query_japaneseWords_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
-	var err error
-	args := map[string]interface{}{}
-	var arg0 string
-	if tmp, ok := rawArgs["query"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("query"))
-		arg0, err = ec.unmarshalNString2string(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["query"] = arg0
 	return args, nil
 }
 
@@ -294,8 +400,96 @@ func (ec *executionContext) field___Type_fields_args(ctx context.Context, rawArg
 
 // region    **************************** field.gotpl *****************************
 
-func (ec *executionContext) _JapaneseWord_kanji(ctx context.Context, field graphql.CollectedField, obj *gqlmodel.JapaneseWord) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_JapaneseWord_kanji(ctx, field)
+func (ec *executionContext) _Audio_type(ctx context.Context, field graphql.CollectedField, obj *gqlmodel.Audio) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Audio_type(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Type, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Audio_type(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Audio",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Audio_source(ctx context.Context, field graphql.CollectedField, obj *gqlmodel.Audio) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Audio_source(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Source, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Audio_source(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Audio",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Furigana_kanji(ctx context.Context, field graphql.CollectedField, obj *gqlmodel.Furigana) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Furigana_kanji(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -320,14 +514,14 @@ func (ec *executionContext) _JapaneseWord_kanji(ctx context.Context, field graph
 		}
 		return graphql.Null
 	}
-	res := resTmp.(string)
+	res := resTmp.([]string)
 	fc.Result = res
-	return ec.marshalNString2string(ctx, field.Selections, res)
+	return ec.marshalNString2ᚕstringᚄ(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_JapaneseWord_kanji(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Furigana_kanji(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
-		Object:     "JapaneseWord",
+		Object:     "Furigana",
 		Field:      field,
 		IsMethod:   false,
 		IsResolver: false,
@@ -338,49 +532,8 @@ func (ec *executionContext) fieldContext_JapaneseWord_kanji(ctx context.Context,
 	return fc, nil
 }
 
-func (ec *executionContext) _JapaneseWord_furigana(ctx context.Context, field graphql.CollectedField, obj *gqlmodel.JapaneseWord) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_JapaneseWord_furigana(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Furigana, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*string)
-	fc.Result = res
-	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_JapaneseWord_furigana(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "JapaneseWord",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _JapaneseWord_hiragana(ctx context.Context, field graphql.CollectedField, obj *gqlmodel.JapaneseWord) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_JapaneseWord_hiragana(ctx, field)
+func (ec *executionContext) _Furigana_hiragana(ctx context.Context, field graphql.CollectedField, obj *gqlmodel.Furigana) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Furigana_hiragana(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -405,14 +558,14 @@ func (ec *executionContext) _JapaneseWord_hiragana(ctx context.Context, field gr
 		}
 		return graphql.Null
 	}
-	res := resTmp.(string)
+	res := resTmp.([]string)
 	fc.Result = res
-	return ec.marshalNString2string(ctx, field.Selections, res)
+	return ec.marshalNString2ᚕstringᚄ(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_JapaneseWord_hiragana(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Furigana_hiragana(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
-		Object:     "JapaneseWord",
+		Object:     "Furigana",
 		Field:      field,
 		IsMethod:   false,
 		IsResolver: false,
@@ -423,8 +576,8 @@ func (ec *executionContext) fieldContext_JapaneseWord_hiragana(ctx context.Conte
 	return fc, nil
 }
 
-func (ec *executionContext) _JapaneseWord_acents(ctx context.Context, field graphql.CollectedField, obj *gqlmodel.JapaneseWord) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_JapaneseWord_acents(ctx, field)
+func (ec *executionContext) _Lemma_slug(ctx context.Context, field graphql.CollectedField, obj *gqlmodel.Lemma) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Lemma_slug(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -437,7 +590,103 @@ func (ec *executionContext) _JapaneseWord_acents(ctx context.Context, field grap
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Acents, nil
+		return obj.Slug, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*gqlmodel.Word)
+	fc.Result = res
+	return ec.marshalNWord2ᚖjapwordsᚋgraphqlᚋgqlmodelᚐWord(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Lemma_slug(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Lemma",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "word":
+				return ec.fieldContext_Word_word(ctx, field)
+			case "reading":
+				return ec.fieldContext_Word_reading(ctx, field)
+			case "furigana":
+				return ec.fieldContext_Word_furigana(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Word", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Lemma_tags(ctx context.Context, field graphql.CollectedField, obj *gqlmodel.Lemma) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Lemma_tags(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Tags, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]string)
+	fc.Result = res
+	return ec.marshalNString2ᚕstringᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Lemma_tags(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Lemma",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Lemma_accents(ctx context.Context, field graphql.CollectedField, obj *gqlmodel.Lemma) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Lemma_accents(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Accents, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -454,9 +703,9 @@ func (ec *executionContext) _JapaneseWord_acents(ctx context.Context, field grap
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_JapaneseWord_acents(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Lemma_accents(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
-		Object:     "JapaneseWord",
+		Object:     "Lemma",
 		Field:      field,
 		IsMethod:   false,
 		IsResolver: false,
@@ -467,8 +716,8 @@ func (ec *executionContext) fieldContext_JapaneseWord_acents(ctx context.Context
 	return fc, nil
 }
 
-func (ec *executionContext) _JapaneseWord_meaning(ctx context.Context, field graphql.CollectedField, obj *gqlmodel.JapaneseWord) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_JapaneseWord_meaning(ctx, field)
+func (ec *executionContext) _Lemma_forms(ctx context.Context, field graphql.CollectedField, obj *gqlmodel.Lemma) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Lemma_forms(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -481,7 +730,7 @@ func (ec *executionContext) _JapaneseWord_meaning(ctx context.Context, field gra
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Meaning, nil
+		return obj.Forms, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -493,26 +742,86 @@ func (ec *executionContext) _JapaneseWord_meaning(ctx context.Context, field gra
 		}
 		return graphql.Null
 	}
-	res := resTmp.(string)
+	res := resTmp.([]*gqlmodel.Word)
 	fc.Result = res
-	return ec.marshalNString2string(ctx, field.Selections, res)
+	return ec.marshalNWord2ᚕᚖjapwordsᚋgraphqlᚋgqlmodelᚐWordᚄ(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_JapaneseWord_meaning(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Lemma_forms(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
-		Object:     "JapaneseWord",
+		Object:     "Lemma",
 		Field:      field,
 		IsMethod:   false,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
+			switch field.Name {
+			case "word":
+				return ec.fieldContext_Word_word(ctx, field)
+			case "reading":
+				return ec.fieldContext_Word_reading(ctx, field)
+			case "furigana":
+				return ec.fieldContext_Word_furigana(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Word", field.Name)
 		},
 	}
 	return fc, nil
 }
 
-func (ec *executionContext) _JapaneseWord_audio(ctx context.Context, field graphql.CollectedField, obj *gqlmodel.JapaneseWord) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_JapaneseWord_audio(ctx, field)
+func (ec *executionContext) _Lemma_meanings(ctx context.Context, field graphql.CollectedField, obj *gqlmodel.Lemma) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Lemma_meanings(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Meanings, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*gqlmodel.Meaning)
+	fc.Result = res
+	return ec.marshalNMeaning2ᚕᚖjapwordsᚋgraphqlᚋgqlmodelᚐMeaningᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Lemma_meanings(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Lemma",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "definition":
+				return ec.fieldContext_Meaning_definition(ctx, field)
+			case "partOfSpeech":
+				return ec.fieldContext_Meaning_partOfSpeech(ctx, field)
+			case "tags":
+				return ec.fieldContext_Meaning_tags(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Meaning", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Lemma_audio(ctx context.Context, field graphql.CollectedField, obj *gqlmodel.Lemma) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Lemma_audio(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -532,126 +841,37 @@ func (ec *executionContext) _JapaneseWord_audio(ctx context.Context, field graph
 		return graphql.Null
 	}
 	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.([]string)
-	fc.Result = res
-	return ec.marshalOString2ᚕstringᚄ(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_JapaneseWord_audio(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "JapaneseWord",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _JapaneseWord_examples(ctx context.Context, field graphql.CollectedField, obj *gqlmodel.JapaneseWord) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_JapaneseWord_examples(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
 		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Examples, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
 		return graphql.Null
 	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.([]string)
+	res := resTmp.([]*gqlmodel.Audio)
 	fc.Result = res
-	return ec.marshalOString2ᚕstringᚄ(ctx, field.Selections, res)
+	return ec.marshalNAudio2ᚕᚖjapwordsᚋgraphqlᚋgqlmodelᚐAudioᚄ(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_JapaneseWord_examples(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Lemma_audio(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
-		Object:     "JapaneseWord",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _JapaneseWords_words(ctx context.Context, field graphql.CollectedField, obj *gqlmodel.JapaneseWords) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_JapaneseWords_words(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Words, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.([]*gqlmodel.JapaneseWord)
-	fc.Result = res
-	return ec.marshalOJapaneseWord2ᚕᚖjapwordsᚋgraphqlᚋgqlmodelᚐJapaneseWordᚄ(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_JapaneseWords_words(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "JapaneseWords",
+		Object:     "Lemma",
 		Field:      field,
 		IsMethod:   false,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
-			case "kanji":
-				return ec.fieldContext_JapaneseWord_kanji(ctx, field)
-			case "furigana":
-				return ec.fieldContext_JapaneseWord_furigana(ctx, field)
-			case "hiragana":
-				return ec.fieldContext_JapaneseWord_hiragana(ctx, field)
-			case "acents":
-				return ec.fieldContext_JapaneseWord_acents(ctx, field)
-			case "meaning":
-				return ec.fieldContext_JapaneseWord_meaning(ctx, field)
-			case "audio":
-				return ec.fieldContext_JapaneseWord_audio(ctx, field)
-			case "examples":
-				return ec.fieldContext_JapaneseWord_examples(ctx, field)
+			case "type":
+				return ec.fieldContext_Audio_type(ctx, field)
+			case "source":
+				return ec.fieldContext_Audio_source(ctx, field)
 			}
-			return nil, fmt.Errorf("no field named %q was found under type JapaneseWord", field.Name)
+			return nil, fmt.Errorf("no field named %q was found under type Audio", field.Name)
 		},
 	}
 	return fc, nil
 }
 
-func (ec *executionContext) _Query_japaneseWords(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Query_japaneseWords(ctx, field)
+func (ec *executionContext) _Lemmas_lemmas(ctx context.Context, field graphql.CollectedField, obj *gqlmodel.Lemmas) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Lemmas_lemmas(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -664,7 +884,197 @@ func (ec *executionContext) _Query_japaneseWords(ctx context.Context, field grap
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().JapaneseWords(rctx, fc.Args["query"].(string))
+		return obj.Lemmas, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*gqlmodel.Lemma)
+	fc.Result = res
+	return ec.marshalNLemma2ᚕᚖjapwordsᚋgraphqlᚋgqlmodelᚐLemmaᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Lemmas_lemmas(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Lemmas",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "slug":
+				return ec.fieldContext_Lemma_slug(ctx, field)
+			case "tags":
+				return ec.fieldContext_Lemma_tags(ctx, field)
+			case "accents":
+				return ec.fieldContext_Lemma_accents(ctx, field)
+			case "forms":
+				return ec.fieldContext_Lemma_forms(ctx, field)
+			case "meanings":
+				return ec.fieldContext_Lemma_meanings(ctx, field)
+			case "audio":
+				return ec.fieldContext_Lemma_audio(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Lemma", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Meaning_definition(ctx context.Context, field graphql.CollectedField, obj *gqlmodel.Meaning) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Meaning_definition(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Definition, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]string)
+	fc.Result = res
+	return ec.marshalNString2ᚕstringᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Meaning_definition(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Meaning",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Meaning_partOfSpeech(ctx context.Context, field graphql.CollectedField, obj *gqlmodel.Meaning) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Meaning_partOfSpeech(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.PartOfSpeech, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]string)
+	fc.Result = res
+	return ec.marshalNString2ᚕstringᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Meaning_partOfSpeech(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Meaning",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Meaning_tags(ctx context.Context, field graphql.CollectedField, obj *gqlmodel.Meaning) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Meaning_tags(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Tags, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]string)
+	fc.Result = res
+	return ec.marshalNString2ᚕstringᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Meaning_tags(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Meaning",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_Lemmas(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_Lemmas(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().Lemmas(rctx, fc.Args["query"].(string))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -673,12 +1083,12 @@ func (ec *executionContext) _Query_japaneseWords(ctx context.Context, field grap
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(*gqlmodel.JapaneseWords)
+	res := resTmp.(*gqlmodel.Lemmas)
 	fc.Result = res
-	return ec.marshalOJapaneseWords2ᚖjapwordsᚋgraphqlᚋgqlmodelᚐJapaneseWords(ctx, field.Selections, res)
+	return ec.marshalOLemmas2ᚖjapwordsᚋgraphqlᚋgqlmodelᚐLemmas(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Query_japaneseWords(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Query_Lemmas(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Query",
 		Field:      field,
@@ -686,10 +1096,10 @@ func (ec *executionContext) fieldContext_Query_japaneseWords(ctx context.Context
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
-			case "words":
-				return ec.fieldContext_JapaneseWords_words(ctx, field)
+			case "lemmas":
+				return ec.fieldContext_Lemmas_lemmas(ctx, field)
 			}
-			return nil, fmt.Errorf("no field named %q was found under type JapaneseWords", field.Name)
+			return nil, fmt.Errorf("no field named %q was found under type Lemmas", field.Name)
 		},
 	}
 	defer func() {
@@ -699,7 +1109,7 @@ func (ec *executionContext) fieldContext_Query_japaneseWords(ctx context.Context
 		}
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Query_japaneseWords_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+	if fc.Args, err = ec.field_Query_Lemmas_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return
 	}
@@ -830,6 +1240,138 @@ func (ec *executionContext) fieldContext_Query___schema(ctx context.Context, fie
 				return ec.fieldContext___Schema_directives(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type __Schema", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Word_word(ctx context.Context, field graphql.CollectedField, obj *gqlmodel.Word) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Word_word(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Word, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Word_word(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Word",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Word_reading(ctx context.Context, field graphql.CollectedField, obj *gqlmodel.Word) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Word_reading(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Reading, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Word_reading(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Word",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Word_furigana(ctx context.Context, field graphql.CollectedField, obj *gqlmodel.Word) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Word_furigana(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Furigana, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*gqlmodel.Furigana)
+	fc.Result = res
+	return ec.marshalOFurigana2ᚖjapwordsᚋgraphqlᚋgqlmodelᚐFurigana(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Word_furigana(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Word",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "kanji":
+				return ec.fieldContext_Furigana_kanji(ctx, field)
+			case "hiragana":
+				return ec.fieldContext_Furigana_hiragana(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Furigana", field.Name)
 		},
 	}
 	return fc, nil
@@ -2616,56 +3158,30 @@ func (ec *executionContext) fieldContext___Type_specifiedByURL(ctx context.Conte
 
 // region    **************************** object.gotpl ****************************
 
-var japaneseWordImplementors = []string{"JapaneseWord"}
+var audioImplementors = []string{"Audio"}
 
-func (ec *executionContext) _JapaneseWord(ctx context.Context, sel ast.SelectionSet, obj *gqlmodel.JapaneseWord) graphql.Marshaler {
-	fields := graphql.CollectFields(ec.OperationContext, sel, japaneseWordImplementors)
+func (ec *executionContext) _Audio(ctx context.Context, sel ast.SelectionSet, obj *gqlmodel.Audio) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, audioImplementors)
 	out := graphql.NewFieldSet(fields)
 	var invalids uint32
 	for i, field := range fields {
 		switch field.Name {
 		case "__typename":
-			out.Values[i] = graphql.MarshalString("JapaneseWord")
-		case "kanji":
+			out.Values[i] = graphql.MarshalString("Audio")
+		case "type":
 
-			out.Values[i] = ec._JapaneseWord_kanji(ctx, field, obj)
-
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
-		case "furigana":
-
-			out.Values[i] = ec._JapaneseWord_furigana(ctx, field, obj)
-
-		case "hiragana":
-
-			out.Values[i] = ec._JapaneseWord_hiragana(ctx, field, obj)
+			out.Values[i] = ec._Audio_type(ctx, field, obj)
 
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
-		case "acents":
+		case "source":
 
-			out.Values[i] = ec._JapaneseWord_acents(ctx, field, obj)
-
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
-		case "meaning":
-
-			out.Values[i] = ec._JapaneseWord_meaning(ctx, field, obj)
+			out.Values[i] = ec._Audio_source(ctx, field, obj)
 
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
-		case "audio":
-
-			out.Values[i] = ec._JapaneseWord_audio(ctx, field, obj)
-
-		case "examples":
-
-			out.Values[i] = ec._JapaneseWord_examples(ctx, field, obj)
-
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -2677,20 +3193,163 @@ func (ec *executionContext) _JapaneseWord(ctx context.Context, sel ast.Selection
 	return out
 }
 
-var japaneseWordsImplementors = []string{"JapaneseWords"}
+var furiganaImplementors = []string{"Furigana"}
 
-func (ec *executionContext) _JapaneseWords(ctx context.Context, sel ast.SelectionSet, obj *gqlmodel.JapaneseWords) graphql.Marshaler {
-	fields := graphql.CollectFields(ec.OperationContext, sel, japaneseWordsImplementors)
+func (ec *executionContext) _Furigana(ctx context.Context, sel ast.SelectionSet, obj *gqlmodel.Furigana) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, furiganaImplementors)
 	out := graphql.NewFieldSet(fields)
 	var invalids uint32
 	for i, field := range fields {
 		switch field.Name {
 		case "__typename":
-			out.Values[i] = graphql.MarshalString("JapaneseWords")
-		case "words":
+			out.Values[i] = graphql.MarshalString("Furigana")
+		case "kanji":
 
-			out.Values[i] = ec._JapaneseWords_words(ctx, field, obj)
+			out.Values[i] = ec._Furigana_kanji(ctx, field, obj)
 
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "hiragana":
+
+			out.Values[i] = ec._Furigana_hiragana(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var lemmaImplementors = []string{"Lemma"}
+
+func (ec *executionContext) _Lemma(ctx context.Context, sel ast.SelectionSet, obj *gqlmodel.Lemma) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, lemmaImplementors)
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("Lemma")
+		case "slug":
+
+			out.Values[i] = ec._Lemma_slug(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "tags":
+
+			out.Values[i] = ec._Lemma_tags(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "accents":
+
+			out.Values[i] = ec._Lemma_accents(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "forms":
+
+			out.Values[i] = ec._Lemma_forms(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "meanings":
+
+			out.Values[i] = ec._Lemma_meanings(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "audio":
+
+			out.Values[i] = ec._Lemma_audio(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var lemmasImplementors = []string{"Lemmas"}
+
+func (ec *executionContext) _Lemmas(ctx context.Context, sel ast.SelectionSet, obj *gqlmodel.Lemmas) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, lemmasImplementors)
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("Lemmas")
+		case "lemmas":
+
+			out.Values[i] = ec._Lemmas_lemmas(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var meaningImplementors = []string{"Meaning"}
+
+func (ec *executionContext) _Meaning(ctx context.Context, sel ast.SelectionSet, obj *gqlmodel.Meaning) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, meaningImplementors)
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("Meaning")
+		case "definition":
+
+			out.Values[i] = ec._Meaning_definition(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "partOfSpeech":
+
+			out.Values[i] = ec._Meaning_partOfSpeech(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "tags":
+
+			out.Values[i] = ec._Meaning_tags(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -2721,7 +3380,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("Query")
-		case "japaneseWords":
+		case "Lemmas":
 			field := field
 
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
@@ -2730,7 +3389,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._Query_japaneseWords(ctx, field)
+				res = ec._Query_Lemmas(ctx, field)
 				return res
 			}
 
@@ -2752,6 +3411,42 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Query___schema(ctx, field)
 			})
+
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var wordImplementors = []string{"Word"}
+
+func (ec *executionContext) _Word(ctx context.Context, sel ast.SelectionSet, obj *gqlmodel.Word) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, wordImplementors)
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("Word")
+		case "word":
+
+			out.Values[i] = ec._Word_word(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "reading":
+
+			out.Values[i] = ec._Word_reading(ctx, field, obj)
+
+		case "furigana":
+
+			out.Values[i] = ec._Word_furigana(ctx, field, obj)
 
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
@@ -3082,6 +3777,60 @@ func (ec *executionContext) ___Type(ctx context.Context, sel ast.SelectionSet, o
 
 // region    ***************************** type.gotpl *****************************
 
+func (ec *executionContext) marshalNAudio2ᚕᚖjapwordsᚋgraphqlᚋgqlmodelᚐAudioᚄ(ctx context.Context, sel ast.SelectionSet, v []*gqlmodel.Audio) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNAudio2ᚖjapwordsᚋgraphqlᚋgqlmodelᚐAudio(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) marshalNAudio2ᚖjapwordsᚋgraphqlᚋgqlmodelᚐAudio(ctx context.Context, sel ast.SelectionSet, v *gqlmodel.Audio) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._Audio(ctx, sel, v)
+}
+
 func (ec *executionContext) unmarshalNBoolean2bool(ctx context.Context, v interface{}) (bool, error) {
 	res, err := graphql.UnmarshalBoolean(v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -3097,14 +3846,112 @@ func (ec *executionContext) marshalNBoolean2bool(ctx context.Context, sel ast.Se
 	return res
 }
 
-func (ec *executionContext) marshalNJapaneseWord2ᚖjapwordsᚋgraphqlᚋgqlmodelᚐJapaneseWord(ctx context.Context, sel ast.SelectionSet, v *gqlmodel.JapaneseWord) graphql.Marshaler {
+func (ec *executionContext) marshalNLemma2ᚕᚖjapwordsᚋgraphqlᚋgqlmodelᚐLemmaᚄ(ctx context.Context, sel ast.SelectionSet, v []*gqlmodel.Lemma) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNLemma2ᚖjapwordsᚋgraphqlᚋgqlmodelᚐLemma(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) marshalNLemma2ᚖjapwordsᚋgraphqlᚋgqlmodelᚐLemma(ctx context.Context, sel ast.SelectionSet, v *gqlmodel.Lemma) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
 		}
 		return graphql.Null
 	}
-	return ec._JapaneseWord(ctx, sel, v)
+	return ec._Lemma(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNMeaning2ᚕᚖjapwordsᚋgraphqlᚋgqlmodelᚐMeaningᚄ(ctx context.Context, sel ast.SelectionSet, v []*gqlmodel.Meaning) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNMeaning2ᚖjapwordsᚋgraphqlᚋgqlmodelᚐMeaning(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) marshalNMeaning2ᚖjapwordsᚋgraphqlᚋgqlmodelᚐMeaning(ctx context.Context, sel ast.SelectionSet, v *gqlmodel.Meaning) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._Meaning(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalNString2string(ctx context.Context, v interface{}) (string, error) {
@@ -3120,6 +3967,92 @@ func (ec *executionContext) marshalNString2string(ctx context.Context, sel ast.S
 		}
 	}
 	return res
+}
+
+func (ec *executionContext) unmarshalNString2ᚕstringᚄ(ctx context.Context, v interface{}) ([]string, error) {
+	var vSlice []interface{}
+	if v != nil {
+		vSlice = graphql.CoerceList(v)
+	}
+	var err error
+	res := make([]string, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalNString2string(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
+func (ec *executionContext) marshalNString2ᚕstringᚄ(ctx context.Context, sel ast.SelectionSet, v []string) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	for i := range v {
+		ret[i] = ec.marshalNString2string(ctx, sel, v[i])
+	}
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) marshalNWord2ᚕᚖjapwordsᚋgraphqlᚋgqlmodelᚐWordᚄ(ctx context.Context, sel ast.SelectionSet, v []*gqlmodel.Word) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNWord2ᚖjapwordsᚋgraphqlᚋgqlmodelᚐWord(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) marshalNWord2ᚖjapwordsᚋgraphqlᚋgqlmodelᚐWord(ctx context.Context, sel ast.SelectionSet, v *gqlmodel.Word) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._Word(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalN__Directive2githubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐDirective(ctx context.Context, sel ast.SelectionSet, v introspection.Directive) graphql.Marshaler {
@@ -3401,96 +4334,18 @@ func (ec *executionContext) marshalOBoolean2ᚖbool(ctx context.Context, sel ast
 	return res
 }
 
-func (ec *executionContext) marshalOJapaneseWord2ᚕᚖjapwordsᚋgraphqlᚋgqlmodelᚐJapaneseWordᚄ(ctx context.Context, sel ast.SelectionSet, v []*gqlmodel.JapaneseWord) graphql.Marshaler {
+func (ec *executionContext) marshalOFurigana2ᚖjapwordsᚋgraphqlᚋgqlmodelᚐFurigana(ctx context.Context, sel ast.SelectionSet, v *gqlmodel.Furigana) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
-	ret := make(graphql.Array, len(v))
-	var wg sync.WaitGroup
-	isLen1 := len(v) == 1
-	if !isLen1 {
-		wg.Add(len(v))
-	}
-	for i := range v {
-		i := i
-		fc := &graphql.FieldContext{
-			Index:  &i,
-			Result: &v[i],
-		}
-		ctx := graphql.WithFieldContext(ctx, fc)
-		f := func(i int) {
-			defer func() {
-				if r := recover(); r != nil {
-					ec.Error(ctx, ec.Recover(ctx, r))
-					ret = nil
-				}
-			}()
-			if !isLen1 {
-				defer wg.Done()
-			}
-			ret[i] = ec.marshalNJapaneseWord2ᚖjapwordsᚋgraphqlᚋgqlmodelᚐJapaneseWord(ctx, sel, v[i])
-		}
-		if isLen1 {
-			f(i)
-		} else {
-			go f(i)
-		}
-
-	}
-	wg.Wait()
-
-	for _, e := range ret {
-		if e == graphql.Null {
-			return graphql.Null
-		}
-	}
-
-	return ret
+	return ec._Furigana(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalOJapaneseWords2ᚖjapwordsᚋgraphqlᚋgqlmodelᚐJapaneseWords(ctx context.Context, sel ast.SelectionSet, v *gqlmodel.JapaneseWords) graphql.Marshaler {
+func (ec *executionContext) marshalOLemmas2ᚖjapwordsᚋgraphqlᚋgqlmodelᚐLemmas(ctx context.Context, sel ast.SelectionSet, v *gqlmodel.Lemmas) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
-	return ec._JapaneseWords(ctx, sel, v)
-}
-
-func (ec *executionContext) unmarshalOString2ᚕstringᚄ(ctx context.Context, v interface{}) ([]string, error) {
-	if v == nil {
-		return nil, nil
-	}
-	var vSlice []interface{}
-	if v != nil {
-		vSlice = graphql.CoerceList(v)
-	}
-	var err error
-	res := make([]string, len(vSlice))
-	for i := range vSlice {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
-		res[i], err = ec.unmarshalNString2string(ctx, vSlice[i])
-		if err != nil {
-			return nil, err
-		}
-	}
-	return res, nil
-}
-
-func (ec *executionContext) marshalOString2ᚕstringᚄ(ctx context.Context, sel ast.SelectionSet, v []string) graphql.Marshaler {
-	if v == nil {
-		return graphql.Null
-	}
-	ret := make(graphql.Array, len(v))
-	for i := range v {
-		ret[i] = ec.marshalNString2string(ctx, sel, v[i])
-	}
-
-	for _, e := range ret {
-		if e == graphql.Null {
-			return graphql.Null
-		}
-	}
-
-	return ret
+	return ec._Lemmas(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalOString2ᚖstring(ctx context.Context, v interface{}) (*string, error) {

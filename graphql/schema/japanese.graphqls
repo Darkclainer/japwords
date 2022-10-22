@@ -1,18 +1,40 @@
 extend type Query {
-  japaneseWords(query: String!): JapaneseWords
+  Lemmas(query: String!): Lemmas
 }
 
-type JapaneseWords {
-  words: [JapaneseWord!]
+type Lemmas {
+  lemmas: [Lemma!]!
 }
 
-type JapaneseWord {
-  kanji: String!
-  furigana: String
-  hiragana: String!
-  acents: String!
-  meaning: String!
+type Lemma {
+  slug: Word!
+  tags: [String!]!
+  accents: String!
+  forms: [Word!]!
+  meanings: [Meaning!]!
   # Links to audio files
-  audio: [String!]
-  examples: [String!]
+  audio: [Audio!]!
+}
+
+type Word {
+  word: String!
+  reading: String
+  furigana: Furigana
+}
+
+type Furigana {
+  kanji: [String!]!
+  hiragana: [String!]!
+}
+
+type Audio {
+  type: String!
+  source: String!
+}
+
+type Meaning {
+  definition: [String!]!
+  partOfSpeech: [String!]!
+  tags: [String!]!
+
 }

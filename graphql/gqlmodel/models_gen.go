@@ -2,16 +2,37 @@
 
 package gqlmodel
 
-type JapaneseWord struct {
-	Kanji    string   `json:"kanji"`
-	Furigana *string  `json:"furigana"`
-	Hiragana string   `json:"hiragana"`
-	Acents   string   `json:"acents"`
-	Meaning  string   `json:"meaning"`
-	Audio    []string `json:"audio"`
-	Examples []string `json:"examples"`
+type Audio struct {
+	Type   string `json:"type"`
+	Source string `json:"source"`
 }
 
-type JapaneseWords struct {
-	Words []*JapaneseWord `json:"words"`
+type Furigana struct {
+	Kanji    []string `json:"kanji"`
+	Hiragana []string `json:"hiragana"`
+}
+
+type Lemma struct {
+	Slug     *Word      `json:"slug"`
+	Tags     []string   `json:"tags"`
+	Accents  string     `json:"accents"`
+	Forms    []*Word    `json:"forms"`
+	Meanings []*Meaning `json:"meanings"`
+	Audio    []*Audio   `json:"audio"`
+}
+
+type Lemmas struct {
+	Lemmas []*Lemma `json:"lemmas"`
+}
+
+type Meaning struct {
+	Definition   []string `json:"definition"`
+	PartOfSpeech []string `json:"partOfSpeech"`
+	Tags         []string `json:"tags"`
+}
+
+type Word struct {
+	Word     string    `json:"word"`
+	Reading  *string   `json:"reading"`
+	Furigana *Furigana `json:"furigana"`
 }
