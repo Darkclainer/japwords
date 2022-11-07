@@ -31,9 +31,7 @@ func (w *Wadoku) Query(ctx context.Context, query string) ([]*Lemma, error) {
 	if err != nil {
 		return nil, err
 	}
-	_ = htmlBody
-	return nil, nil
-	// return parseHTMLBytes(htmlBody)
+	return parseHTMLBytes(htmlBody)
 }
 
 func (j *Wadoku) queryURL(query string) string {

@@ -1,4 +1,4 @@
-package jisho
+package wadoku
 
 import (
 	"testing"
@@ -16,22 +16,22 @@ func Test_queryURL(t *testing.T) {
 		{
 			Name:        "zero query",
 			Query:       "",
-			ExpectedURL: "https://jisho.org/search/",
+			ExpectedURL: "https://www.wadoku.de/search/",
 		},
 		{
 			Name:        "english",
 			Query:       "inu",
-			ExpectedURL: "https://jisho.org/search/inu",
+			ExpectedURL: "https://www.wadoku.de/search/inu",
 		},
 		{
 			Name:        "japanese",
 			Query:       "東口",
-			ExpectedURL: "https://jisho.org/search/%E6%9D%B1%E5%8F%A3",
+			ExpectedURL: "https://www.wadoku.de/search/%E6%9D%B1%E5%8F%A3",
 		},
 		{
 			Name:        "with slash",
 			Query:       "hel/lo",
-			ExpectedURL: "https://jisho.org/search/hel%2Flo",
+			ExpectedURL: "https://www.wadoku.de/search/hel%2Flo",
 		},
 		{
 			Name:        "another basename",

@@ -3,8 +3,6 @@ package fetcher
 import (
 	"net/http"
 	"time"
-
-	"go.uber.org/fx"
 )
 
 // Fetcher is a wrapper for http.Client that provides means
@@ -15,18 +13,12 @@ type Fetcher struct {
 	extraHeaders map[string]string
 }
 
-type In struct {
-	fx.In
-
-	Config *Config
-}
-
-func New(in In) (*Fetcher, error) {
+func New(conf *Config) (*Fetcher, error) {
 	fetcher := Fetcher{
 		client: http.Client{
 			Timeout: time.Second * 30,
 		},
-		extraHeaders: in.Config.Headers,
+		extraHeaders: conf.Headers,
 	}
 	return &fetcher, nil
 }

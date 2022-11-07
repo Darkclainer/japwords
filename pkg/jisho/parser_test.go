@@ -4,9 +4,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/PuerkitoBio/goquery"
+	"japwords/pkg/htmltest"
+
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 func Test_parseHTML(t *testing.T) {
@@ -208,7 +208,7 @@ func Test_parseMainResults(t *testing.T) {
 	for i := range testCases {
 		tc := testCases[i]
 		t.Run(tc.Name, func(t *testing.T) {
-			sel := mustRootSelection(t, tc.HTML)
+			sel := htmltest.MustRootSelection(t, tc.HTML)
 			lemmas, err := parseMainResults(sel)
 			tc.ErrorAssert(t, err)
 			assert.Equal(t, tc.Expected, lemmas)
@@ -372,7 +372,7 @@ func Test_parseConceptLight(t *testing.T) {
 	for i := range testCases {
 		tc := testCases[i]
 		t.Run(tc.Name, func(t *testing.T) {
-			sel := mustRootSelection(t, tc.HTML)
+			sel := htmltest.MustRootSelection(t, tc.HTML)
 			lemma, err := parseConceptLight(sel)
 			tc.ErrorAssert(t, err)
 			if err != nil {
@@ -439,7 +439,7 @@ func Test_parseRepresentation(t *testing.T) {
 	for i := range testCases {
 		tc := testCases[i]
 		t.Run(tc.Name, func(t *testing.T) {
-			sel := mustRootSelection(t, tc.HTML)
+			sel := htmltest.MustRootSelection(t, tc.HTML)
 			slug, err := parseRepresentation(sel)
 			tc.ErrorAssert(t, err)
 			if err != nil {
@@ -520,7 +520,7 @@ func Test_parseStatus(t *testing.T) {
 	for i := range testCases {
 		tc := testCases[i]
 		t.Run(tc.Name, func(t *testing.T) {
-			sel := mustRootSelection(t, tc.HTML)
+			sel := htmltest.MustRootSelection(t, tc.HTML)
 			audio, tags := parseStatus(sel)
 			assert.Equal(t, tc.Audio, audio)
 			assert.Equal(t, tc.Tags, tags)
@@ -672,7 +672,7 @@ func Test_parseMeanings(t *testing.T) {
 		tc := testCases[i]
 		t.Run(tc.Name, func(t *testing.T) {
 			senses, forms := parseMeanings(
-				mustRootSelection(t, tc.Src),
+				htmltest.MustRootSelection(t, tc.Src),
 			)
 			assert.Equal(t, tc.Senses, senses, "senses")
 			assert.Equal(t, tc.Forms, forms, "forms")
@@ -733,7 +733,7 @@ func Test_parseMeaningDefinition(t *testing.T) {
 		tc := testCases[i]
 		t.Run(tc.Name, func(t *testing.T) {
 			definitions, tags := parseMeaningDefinition(
-				mustRootSelection(t, tc.Src),
+				htmltest.MustRootSelection(t, tc.Src),
 			)
 			assert.Equal(t, tc.Definitions, definitions, "definitions")
 			assert.Equal(t, tc.Tags, tags, "tags")
@@ -790,7 +790,7 @@ func Test_parseDefinitionOtherForms(t *testing.T) {
 		tc := testCases[i]
 		t.Run(tc.Name, func(t *testing.T) {
 			forms := parseDefinitionOtherForms(
-				mustRootSelection(t, tc.Src),
+				htmltest.MustRootSelection(t, tc.Src),
 			)
 			assert.Equal(t, tc.Forms, forms, "forms")
 		})
@@ -913,21 +913,4 @@ func newTestFurigana(parts ...string) Furigana {
 		})
 	}
 	return furigana
-}
-
-func mustDocument(t *testing.T, src string) *goquery.Document {
-	t.Helper()
-	doc, err := goquery.NewDocumentFromReader(strings.NewReader(src))
-	require.NoError(t, err)
-	return doc
-}
-
-func mustRootSelection(t *testing.T, src string) *goquery.Selection {
-	t.Helper()
-	doc := mustDocument(t, src)
-	sel := doc.Find("#root")
-	if sel.Length() != 1 {
-		t.Fatal("document should contain one #root node")
-	}
-	return sel
 }

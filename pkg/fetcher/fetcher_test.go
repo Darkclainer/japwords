@@ -19,13 +19,12 @@ func TestCustomHeader(t *testing.T) {
 		},
 	))
 
-	fetcher, err := New(In{
-		Config: &Config{
-			Headers: map[string]string{
-				"User-Agent": "test-user-agent",
-			},
+	fetcher, err := New(&Config{
+		Headers: map[string]string{
+			"User-Agent": "test-user-agent",
 		},
-	})
+	},
+	)
 	require.NoError(t, err)
 
 	req, err := http.NewRequest(http.MethodGet, "http://"+serverAddr, nil)
