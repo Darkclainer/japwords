@@ -3,6 +3,8 @@ package jisho
 import (
 	"context"
 	"net/url"
+
+	"japwords/pkg/lemma"
 )
 
 const defaultBaseURL = "https://jisho.org/search/"
@@ -26,7 +28,7 @@ func New(client BasicDict, baseURL string) *Jisho {
 	}
 }
 
-func (j *Jisho) Query(ctx context.Context, query string) ([]*Lemma, error) {
+func (j *Jisho) Query(ctx context.Context, query string) ([]*lemma.Lemma, error) {
 	url := j.queryURL(query)
 	htmlBody, err := j.client.Query(ctx, url)
 	if err != nil {

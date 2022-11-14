@@ -9,6 +9,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"japwords/pkg/basicdict/basicdicttest"
+	"japwords/pkg/lemma"
 )
 
 // TestParseFiles checks how real pages are parsed.
@@ -17,16 +18,16 @@ func TestParseFiles(t *testing.T) {
 		// Count is a number of lemmas that parser should return
 		Count int
 		// Lemmas are specific lemmas (by index) that parser should return
-		Lemmas map[int]*Lemma
+		Lemmas map[int]*lemma.Lemma
 	}{
 		"犬": {
 			Count: 20,
-			Lemmas: map[int]*Lemma{
+			Lemmas: map[int]*lemma.Lemma{
 				0: {
-					Slug: Word{
-						Word:    "犬",
-						Reading: "いぬ",
-						Furigana: []FuriganaChar{
+					Slug: lemma.Word{
+						Word:     "犬",
+						Hiragana: "いぬ",
+						Furigana: []lemma.FuriganaChar{
 							{
 								Kanji:    "犬",
 								Hiragana: "いぬ",
@@ -38,16 +39,16 @@ func TestParseFiles(t *testing.T) {
 						"JLPT N5",
 						"Wanikani level 2",
 					},
-					Forms: []Word{
+					Forms: []lemma.Word{
 						{
-							Word:    "狗",
-							Reading: "いぬ",
+							Word:     "狗",
+							Hiragana: "いぬ",
 						},
 						{
 							Word: "イヌ",
 						},
 					},
-					Senses: []WordSense{
+					Senses: []lemma.WordSense{
 						{
 							Definition:   []string{"dog (Canis (lupus) familiaris)"},
 							PartOfSpeech: []string{"Noun"},

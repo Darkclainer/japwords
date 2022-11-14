@@ -4,16 +4,17 @@ import (
 	"strings"
 	"testing"
 
-	"japwords/pkg/htmltest"
-
 	"github.com/stretchr/testify/assert"
+
+	"japwords/pkg/htmltest"
+	"japwords/pkg/lemma"
 )
 
 func Test_parseHTML(t *testing.T) {
 	testCases := []struct {
 		Name        string
 		HTML        string
-		Expected    []*Lemma
+		Expected    []*lemma.WadokuLemma
 		ErrorAssert assert.ErrorAssertionFunc
 	}{
 		{
@@ -55,16 +56,14 @@ func Test_parseHTML(t *testing.T) {
 			</tr>
 		</tbody></table>
 	</section></body></html>`,
-			Expected: []*Lemma{
+			Expected: []*lemma.WadokuLemma{
 				{
-					Slug: "hello",
-					Reading: Reading{
-						Hiragana: "world",
-						Pitches: []Pitch{
-							{
-								Position: 5,
-								IsHigh:   true,
-							},
+					Slug:     "hello",
+					Hiragana: "world",
+					Pitches: []lemma.Pitch{
+						{
+							Position: 5,
+							IsHigh:   true,
 						},
 					},
 				},
@@ -86,7 +85,7 @@ func Test_parseContentSection(t *testing.T) {
 	testCases := []struct {
 		Name        string
 		HTML        string
-		Expected    []*Lemma
+		Expected    []*lemma.WadokuLemma
 		ErrorAssert assert.ErrorAssertionFunc
 	}{
 		{
@@ -115,16 +114,14 @@ func Test_parseContentSection(t *testing.T) {
 			</td>
 		</tr>
 	</tbody></table></div>`,
-			Expected: []*Lemma{
+			Expected: []*lemma.WadokuLemma{
 				{
-					Slug: "hello",
-					Reading: Reading{
-						Hiragana: "world",
-						Pitches: []Pitch{
-							{
-								Position: 5,
-								IsHigh:   true,
-							},
+					Slug:     "hello",
+					Hiragana: "world",
+					Pitches: []lemma.Pitch{
+						{
+							Position: 5,
+							IsHigh:   true,
 						},
 					},
 				},
@@ -164,28 +161,24 @@ func Test_parseContentSection(t *testing.T) {
 			</td>
 		</tr>
 	</tbody></table></div>`,
-			Expected: []*Lemma{
+			Expected: []*lemma.WadokuLemma{
 				{
-					Slug: "hello",
-					Reading: Reading{
-						Hiragana: "world",
-						Pitches: []Pitch{
-							{
-								Position: 5,
-								IsHigh:   true,
-							},
+					Slug:     "hello",
+					Hiragana: "world",
+					Pitches: []lemma.Pitch{
+						{
+							Position: 5,
+							IsHigh:   true,
 						},
 					},
 				},
 				{
-					Slug: "greetings",
-					Reading: Reading{
-						Hiragana: "world",
-						Pitches: []Pitch{
-							{
-								Position: 5,
-								IsHigh:   true,
-							},
+					Slug:     "greetings",
+					Hiragana: "world",
+					Pitches: []lemma.Pitch{
+						{
+							Position: 5,
+							IsHigh:   true,
 						},
 					},
 				},
@@ -225,16 +218,14 @@ func Test_parseContentSection(t *testing.T) {
 			</td>
 		</tr>
 	</tbody></table></div>`,
-			Expected: []*Lemma{
+			Expected: []*lemma.WadokuLemma{
 				{
-					Slug: "hello",
-					Reading: Reading{
-						Hiragana: "world",
-						Pitches: []Pitch{
-							{
-								Position: 5,
-								IsHigh:   true,
-							},
+					Slug:     "hello",
+					Hiragana: "world",
+					Pitches: []lemma.Pitch{
+						{
+							Position: 5,
+							IsHigh:   true,
 						},
 					},
 				},
@@ -273,7 +264,7 @@ func Test_parseRowResult(t *testing.T) {
 	testCases := []struct {
 		Name        string
 		HTML        string
-		Expected    []*Lemma
+		Expected    []*lemma.WadokuLemma
 		ErrorAssert assert.ErrorAssertionFunc
 	}{
 		{
@@ -293,16 +284,14 @@ func Test_parseRowResult(t *testing.T) {
 			</div>
 		</td>
 	</tr></tbody></table>`,
-			Expected: []*Lemma{
+			Expected: []*lemma.WadokuLemma{
 				{
-					Slug: "hello",
-					Reading: Reading{
-						Hiragana: "world",
-						Pitches: []Pitch{
-							{
-								Position: 5,
-								IsHigh:   true,
-							},
+					Slug:     "hello",
+					Hiragana: "world",
+					Pitches: []lemma.Pitch{
+						{
+							Position: 5,
+							IsHigh:   true,
 						},
 					},
 				},
@@ -330,28 +319,24 @@ func Test_parseRowResult(t *testing.T) {
 			</div>
 		</td>
 	</tr></tbody></table>`,
-			Expected: []*Lemma{
+			Expected: []*lemma.WadokuLemma{
 				{
-					Slug: "hello",
-					Reading: Reading{
-						Hiragana: "world",
-						Pitches: []Pitch{
-							{
-								Position: 5,
-								IsHigh:   true,
-							},
+					Slug:     "hello",
+					Hiragana: "world",
+					Pitches: []lemma.Pitch{
+						{
+							Position: 5,
+							IsHigh:   true,
 						},
 					},
 				},
 				{
-					Slug: "nothello",
-					Reading: Reading{
-						Hiragana: "world",
-						Pitches: []Pitch{
-							{
-								Position: 5,
-								IsHigh:   true,
-							},
+					Slug:     "nothello",
+					Hiragana: "world",
+					Pitches: []lemma.Pitch{
+						{
+							Position: 5,
+							IsHigh:   true,
 						},
 					},
 				},
@@ -535,7 +520,7 @@ func Test_parseReading(t *testing.T) {
 	testCases := []struct {
 		Name        string
 		HTML        string
-		Expected    *Reading
+		Expected    *reading
 		ErrorAssert assert.ErrorAssertionFunc
 	}{
 		{
@@ -570,9 +555,9 @@ func Test_parseReading(t *testing.T) {
 				</span>
 			</span>
 		</div>`,
-			Expected: &Reading{
+			Expected: &reading{
 				Hiragana: "hello",
-				Pitches: []Pitch{
+				Pitches: []lemma.Pitch{
 					{
 						Position: 5,
 						IsHigh:   true,
@@ -591,9 +576,9 @@ func Test_parseReading(t *testing.T) {
 				</span>
 			</span>
 		</div>`,
-			Expected: &Reading{
+			Expected: &reading{
 				Hiragana: "worlds",
-				Pitches: []Pitch{
+				Pitches: []lemma.Pitch{
 					{
 						Position: 6,
 						IsHigh:   false,
@@ -615,9 +600,9 @@ func Test_parseReading(t *testing.T) {
 				</span>
 			</span>
 		</div>`,
-			Expected: &Reading{
+			Expected: &reading{
 				Hiragana: "hello",
-				Pitches: []Pitch{
+				Pitches: []lemma.Pitch{
 					{
 						Position: 3,
 						IsHigh:   true,
@@ -643,9 +628,9 @@ func Test_parseReading(t *testing.T) {
 				</span>
 			</span>
 		</div>`,
-			Expected: &Reading{
+			Expected: &reading{
 				Hiragana: "hello",
-				Pitches: []Pitch{
+				Pitches: []lemma.Pitch{
 					{
 						Position: 3,
 						IsHigh:   false,
@@ -671,9 +656,9 @@ func Test_parseReading(t *testing.T) {
 				</span>
 			</span>
 		</div>`,
-			Expected: &Reading{
+			Expected: &reading{
 				Hiragana: "hello",
-				Pitches: []Pitch{
+				Pitches: []lemma.Pitch{
 					{
 						Position: 3,
 						IsHigh:   false,
@@ -703,9 +688,9 @@ func Test_parseReading(t *testing.T) {
 				</span>
 			</span>
 		</div>`,
-			Expected: &Reading{
+			Expected: &reading{
 				Hiragana: "hello",
-				Pitches: []Pitch{
+				Pitches: []lemma.Pitch{
 					{
 						Position: 3,
 						IsHigh:   true,
@@ -732,10 +717,10 @@ func Test_parseReading(t *testing.T) {
 				<span class="b">こ</span>
 			</span>
 		</div>`,
-			Expected: &Reading{
+			Expected: &reading{
 				Hiragana: "いぬねこ",
 				// len(い) = len(ぬ) = len(ね) = len(こ) = 3
-				Pitches: []Pitch{
+				Pitches: []lemma.Pitch{
 					{
 						Position: 3,
 						IsHigh:   false,

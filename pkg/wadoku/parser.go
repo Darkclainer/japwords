@@ -10,16 +10,23 @@ import (
 	"github.com/PuerkitoBio/goquery"
 	"github.com/andybalholm/cascadia"
 	"golang.org/x/net/html"
+
+	"japwords/pkg/lemma"
 )
 
-func parseHTMLBytes(html []byte) ([]*Lemma, error) {
+type reading struct {
+	Hiragana string
+	Pitches  []lemma.Pitch
+}
+
+func parseHTMLBytes(html []byte) ([]*lemma.WadokuLemma, error) {
 	buffer := bytes.NewBuffer(html)
 	return parseHTML(buffer)
 }
 
 var contentSectionMatcher = singleMatcher("section#content")
 
-func parseHTML(src io.Reader) ([]*Lemma, error) {
+func parseHTML(src io.Reader) ([]*lemma.WadokuLemma, error) {
 	document, err := goquery.NewDocumentFromReader(src)
 	if err != nil {
 		return nil, fmt.Errorf("can not parse page: %w", err)
@@ -39,13 +46,13 @@ var (
 	rowResultMatcher       = matcher("tr.resultline")
 )
 
-func parseContentSection(sel *goquery.Selection) ([]*Lemma, error) {
+func parseContentSection(sel *goquery.Selection) ([]*lemma.WadokuLemma, error) {
 	tableBody := sel.FindMatcher(tableResultBodyMatcher)
 	rows := tableBody.ChildrenMatcher(rowResultMatcher)
 	if rows.Length() == 0 {
 		return nil, nil
 	}
-	var lemmas []*Lemma
+	var lemmas []*lemma.WadokuLemma
 	var errs []*LemmaError
 	rows.Each(func(i int, row *goquery.Selection) {
 		newLemmas, err := parseRowResult(row)
@@ -74,7 +81,7 @@ var (
 	readingMather       = singleMatcher(".reading")
 )
 
-func parseRowResult(sel *goquery.Selection) ([]*Lemma, error) {
+func parseRowResult(sel *goquery.Selection) ([]*lemma.WadokuLemma, error) {
 	resultDetail := sel.ChildrenMatcher(resultDetailMatcher)
 	japaneseSel := resultDetail.ChildrenMatcher(japaneseMatcher)
 	japaneseVariants, err := parseJapanese(japaneseSel)
@@ -94,11 +101,12 @@ func parseRowResult(sel *goquery.Selection) ([]*Lemma, error) {
 		// we also don't need result with filtered readings
 		return nil, nil
 	}
-	lemmas := make([]*Lemma, 0, len(japaneseVariants))
+	lemmas := make([]*lemma.WadokuLemma, 0, len(japaneseVariants))
 	for _, variant := range japaneseVariants {
-		lemmas = append(lemmas, &Lemma{
-			Slug:    variant,
-			Reading: *reading,
+		lemmas = append(lemmas, &lemma.WadokuLemma{
+			Slug:     variant,
+			Hiragana: reading.Hiragana,
+			Pitches:  reading.Pitches,
 		})
 	}
 	return lemmas, nil
@@ -146,27 +154,27 @@ func parseJapanese(sel *goquery.Selection) ([]string, error) {
 
 var pronAccentMatcher = singleMatcher(".pron.accent")
 
-func parseReading(sel *goquery.Selection) (*Reading, error) {
+func parseReading(sel *goquery.Selection) (*reading, error) {
 	accentParts := sel.FindMatcher(pronAccentMatcher).Children()
 	if accentParts.Length() == 0 {
 		return nil, nil
 	}
 	var (
 		buffer   strings.Builder
-		pitches  []Pitch
+		pitches  []lemma.Pitch
 		position = 0
 	)
 	accentParts.Each(func(_ int, s *goquery.Selection) {
 		readingPart := extractReading(s)
 		n, _ := buffer.WriteString(readingPart)
 		position += n
-		pitches = append(pitches, Pitch{
+		pitches = append(pitches, lemma.Pitch{
 			Position: position,
 			IsHigh:   s.HasClass("t"), // `t` stands for top
 		})
 	})
 	if accentParts.Last().HasClass("r") {
-		pitches = append(pitches, Pitch{
+		pitches = append(pitches, lemma.Pitch{
 			Position: position,
 			IsHigh:   !pitches[len(pitches)-1].IsHigh,
 		})
@@ -175,7 +183,7 @@ func parseReading(sel *goquery.Selection) (*Reading, error) {
 		// that means we wasn't able to extract actual reading, I see this as a bug
 		return nil, errors.New("no reading found despite section with accent was")
 	}
-	return &Reading{
+	return &reading{
 		Hiragana: buffer.String(),
 		Pitches:  pitches,
 	}, nil

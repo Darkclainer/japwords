@@ -4,16 +4,17 @@ import (
 	"strings"
 	"testing"
 
-	"japwords/pkg/htmltest"
-
 	"github.com/stretchr/testify/assert"
+
+	"japwords/pkg/htmltest"
+	"japwords/pkg/lemma"
 )
 
 func Test_parseHTML(t *testing.T) {
 	testCases := []struct {
 		Name        string
 		HTML        string
-		Expected    []*Lemma
+		Expected    []*lemma.Lemma
 		ErrorAssert assert.ErrorAssertionFunc
 	}{
 		{
@@ -42,9 +43,9 @@ func Test_parseHTML(t *testing.T) {
 			</div></div>
 		</div></div>
 	</body></html>`,
-			Expected: []*Lemma{
+			Expected: []*lemma.Lemma{
 				{
-					Slug: Word{
+					Slug: lemma.Word{
 						Word: "hello",
 					},
 				},
@@ -86,7 +87,7 @@ func Test_parseMainResults(t *testing.T) {
 	testCases := []struct {
 		Name        string
 		HTML        string
-		Expected    []*Lemma
+		Expected    []*lemma.Lemma
 		ErrorAssert assert.ErrorAssertionFunc
 	}{
 		{
@@ -110,9 +111,9 @@ func Test_parseMainResults(t *testing.T) {
 		</div>
 	</div></div>
 	</div>`,
-			Expected: []*Lemma{
+			Expected: []*lemma.Lemma{
 				{
-					Slug: Word{
+					Slug: lemma.Word{
 						Word: "hello",
 					},
 				},
@@ -144,14 +145,14 @@ func Test_parseMainResults(t *testing.T) {
 		</div>
 	</div></div>
 	</div>`,
-			Expected: []*Lemma{
+			Expected: []*lemma.Lemma{
 				{
-					Slug: Word{
+					Slug: lemma.Word{
 						Word: "hello",
 					},
 				},
 				{
-					Slug: Word{
+					Slug: lemma.Word{
 						Word: "world",
 					},
 				},
@@ -182,9 +183,9 @@ func Test_parseMainResults(t *testing.T) {
 		</div>
 	</div></div>
 	</div>`,
-			Expected: []*Lemma{
+			Expected: []*lemma.Lemma{
 				{
-					Slug: Word{
+					Slug: lemma.Word{
 						Word: "hello",
 					},
 				},
@@ -220,7 +221,7 @@ func Test_parseConceptLight(t *testing.T) {
 	testCases := []struct {
 		Name        string
 		HTML        string
-		Expected    *Lemma
+		Expected    *lemma.Lemma
 		ErrorAssert assert.ErrorAssertionFunc
 	}{
 		{
@@ -236,8 +237,8 @@ func Test_parseConceptLight(t *testing.T) {
 			</div>
 		</div>`,
 
-			Expected: &Lemma{
-				Slug: Word{
+			Expected: &lemma.Lemma{
+				Slug: lemma.Word{
 					Word: "he",
 				},
 			},
@@ -256,11 +257,11 @@ func Test_parseConceptLight(t *testing.T) {
 				</div>
 			</div>
 		</div>`,
-			Expected: &Lemma{
-				Slug: Word{
+			Expected: &lemma.Lemma{
+				Slug: lemma.Word{
 					Word:     "犬",
 					Furigana: newTestFurigana("犬", "いぬ"),
-					Reading:  "いぬ",
+					Hiragana: "いぬ",
 				},
 			},
 			ErrorAssert: assert.NoError,
@@ -321,22 +322,22 @@ func Test_parseConceptLight(t *testing.T) {
 				</div>
 			</div>
 		</div>`,
-			Expected: &Lemma{
-				Slug: Word{Word: "犬", Furigana: newTestFurigana("犬", "いぬ"), Reading: "いぬ"},
+			Expected: &lemma.Lemma{
+				Slug: lemma.Word{Word: "犬", Furigana: newTestFurigana("犬", "いぬ"), Hiragana: "いぬ"},
 				Tags: []string{
 					"Common word",
 					"Wanikani level 2",
 				},
-				Forms: []Word{
+				Forms: []lemma.Word{
 					{
-						Word:    "狗",
-						Reading: "いぬ",
+						Word:     "狗",
+						Hiragana: "いぬ",
 					},
 					{
 						Word: "イヌ",
 					},
 				},
-				Senses: []WordSense{
+				Senses: []lemma.WordSense{
 					{
 						Definition:   []string{"dog"},
 						PartOfSpeech: []string{"Noun"},
@@ -387,13 +388,13 @@ func Test_parseRepresentation(t *testing.T) {
 	testCases := []struct {
 		Name        string
 		HTML        string
-		Expected    Word
+		Expected    lemma.Word
 		ErrorAssert assert.ErrorAssertionFunc
 	}{
 		{
 			Name: "simple",
 			HTML: ` <div id="root"> <span class="text">  he </span> </div> `,
-			Expected: Word{
+			Expected: lemma.Word{
 				Word: "he",
 			},
 			ErrorAssert: assert.NoError,
@@ -408,10 +409,10 @@ func Test_parseRepresentation(t *testing.T) {
 				</span>
 				<span class="text">元気</span> 
 			</div> `,
-			Expected: Word{
+			Expected: lemma.Word{
 				Word:     "元気",
 				Furigana: newTestFurigana("元", "げん", "気", "き"),
-				Reading:  "げんき",
+				Hiragana: "げんき",
 			},
 			ErrorAssert: assert.NoError,
 		},
@@ -425,7 +426,7 @@ func Test_parseRepresentation(t *testing.T) {
 				</span>
 				<span class="text">元気</span> 
 			</div> `,
-			Expected: Word{
+			Expected: lemma.Word{
 				Word: "元気",
 			},
 			ErrorAssert: assert.NoError,
@@ -532,8 +533,8 @@ func Test_parseMeanings(t *testing.T) {
 	testCases := []struct {
 		Name   string
 		Src    string
-		Senses []WordSense
-		Forms  []Word
+		Senses []lemma.WordSense
+		Forms  []lemma.Word
 	}{
 		{
 			Name: "empty",
@@ -549,7 +550,7 @@ func Test_parseMeanings(t *testing.T) {
 				</div>
 			</div>
 		</div>`,
-			Senses: []WordSense{
+			Senses: []lemma.WordSense{
 				{
 					Definition: []string{"hello"},
 				},
@@ -581,7 +582,7 @@ func Test_parseMeanings(t *testing.T) {
 					</div>
 				</div>
 		</div>`,
-			Senses: []WordSense{
+			Senses: []lemma.WordSense{
 				{
 					Definition:   []string{"foo"},
 					PartOfSpeech: []string{"Noun"},
@@ -604,7 +605,7 @@ func Test_parseMeanings(t *testing.T) {
 				</div>
 			</div>
 		</div>`,
-			Senses: []WordSense{
+			Senses: []lemma.WordSense{
 				{
 					Definition:   []string{"hello"},
 					PartOfSpeech: []string{"Noun"},
@@ -627,7 +628,7 @@ func Test_parseMeanings(t *testing.T) {
 				</div>
 			</div>
 		</div>`,
-			Senses: []WordSense{
+			Senses: []lemma.WordSense{
 				{
 					Definition:   []string{"squealer", "rat"},
 					PartOfSpeech: []string{"Noun"},
@@ -654,16 +655,16 @@ func Test_parseMeanings(t *testing.T) {
 				</div>
 			</div>
 		</div>`,
-			Senses: []WordSense{
+			Senses: []lemma.WordSense{
 				{
 					Definition:   []string{"hello"},
 					PartOfSpeech: []string{"Noun"},
 				},
 			},
-			Forms: []Word{
+			Forms: []lemma.Word{
 				{
-					Word:    "狗",
-					Reading: "いぬ",
+					Word:     "狗",
+					Hiragana: "いぬ",
 				},
 			},
 		},
@@ -745,7 +746,7 @@ func Test_parseDefinitionOtherForms(t *testing.T) {
 	testCases := []struct {
 		Name  string
 		Src   string
-		Forms []Word
+		Forms []lemma.Word
 	}{
 		{
 			Name: "empty",
@@ -759,10 +760,10 @@ func Test_parseDefinitionOtherForms(t *testing.T) {
 				<span class="break-unit">狗 【いぬ】</span>
 			</span>
 		</div>`,
-			Forms: []Word{
+			Forms: []lemma.Word{
 				{
-					Word:    "狗",
-					Reading: "いぬ",
+					Word:     "狗",
+					Hiragana: "いぬ",
 				},
 			},
 		},
@@ -775,10 +776,10 @@ func Test_parseDefinitionOtherForms(t *testing.T) {
 				<span class="break-unit">イヌ</span>
 			</span>
 		</div>`,
-			Forms: []Word{
+			Forms: []lemma.Word{
 				{
-					Word:    "狗",
-					Reading: "いぬ",
+					Word:     "狗",
+					Hiragana: "いぬ",
 				},
 				{
 					Word: "イヌ",
@@ -850,7 +851,7 @@ func Test_parseOtherForm(t *testing.T) {
 	testCases := []struct {
 		Name  string
 		Src   string
-		Word  Word
+		Word  lemma.Word
 		Exist bool
 	}{
 		{
@@ -859,7 +860,7 @@ func Test_parseOtherForm(t *testing.T) {
 		{
 			Name: "kanji without reading",
 			Src:  "hello",
-			Word: Word{
+			Word: lemma.Word{
 				Word: "hello",
 			},
 			Exist: true,
@@ -867,25 +868,25 @@ func Test_parseOtherForm(t *testing.T) {
 		{
 			Name: "kanji with reading",
 			Src:  "hello 【world】",
-			Word: Word{
-				Word:    "hello",
-				Reading: "world",
+			Word: lemma.Word{
+				Word:     "hello",
+				Hiragana: "world",
 			},
 			Exist: true,
 		},
 		{
 			Name: "kanji with reading without whitespace",
 			Src:  "hello【world】",
-			Word: Word{
-				Word:    "hello",
-				Reading: "world",
+			Word: lemma.Word{
+				Word:     "hello",
+				Hiragana: "world",
 			},
 			Exist: true,
 		},
 		{
 			Name: "kanji with unfinished reading",
 			Src:  "hello【world",
-			Word: Word{
+			Word: lemma.Word{
 				Word: "hello",
 			},
 			Exist: true,
@@ -901,13 +902,13 @@ func Test_parseOtherForm(t *testing.T) {
 	}
 }
 
-func newTestFurigana(parts ...string) Furigana {
+func newTestFurigana(parts ...string) lemma.Furigana {
 	if len(parts)%2 == 1 {
 		panic("number of parts should be even")
 	}
-	var furigana Furigana
+	var furigana lemma.Furigana
 	for i := 1; i < len(parts); i += 2 {
-		furigana = append(furigana, FuriganaChar{
+		furigana = append(furigana, lemma.FuriganaChar{
 			Kanji:    parts[i-1],
 			Hiragana: parts[i],
 		})

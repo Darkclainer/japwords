@@ -10,9 +10,11 @@ import (
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/andybalholm/cascadia"
+
+	"japwords/pkg/lemma"
 )
 
-func parseHTMLBytes(html []byte) ([]*Lemma, error) {
+func parseHTMLBytes(html []byte) ([]*lemma.Lemma, error) {
 	buffer := bytes.NewBuffer(html)
 	return parseHTML(buffer)
 }
@@ -20,7 +22,7 @@ func parseHTMLBytes(html []byte) ([]*Lemma, error) {
 // More complex selector is needed to ensure that we are parsing correct page
 var mainResultsMatcher = singleMatcher("#page_container #main_results")
 
-func parseHTML(src io.Reader) ([]*Lemma, error) {
+func parseHTML(src io.Reader) ([]*lemma.Lemma, error) {
 	document, err := goquery.NewDocumentFromReader(src)
 	if err != nil {
 		return nil, fmt.Errorf("can not parse page: %w", err)
@@ -40,11 +42,11 @@ var (
 	conceptLightMatcher = matcher("div.concept_light")
 )
 
-func parseMainResults(sel *goquery.Selection) ([]*Lemma, error) {
+func parseMainResults(sel *goquery.Selection) ([]*lemma.Lemma, error) {
 	primary := sel.FindMatcher(primaryMatcher)
 	conceptLight := primary.Children().ChildrenMatcher(conceptLightMatcher)
 	var (
-		lemmas []*Lemma
+		lemmas []*lemma.Lemma
 		errs   []error
 	)
 	conceptLight.Each(func(i int, sel *goquery.Selection) {
@@ -75,7 +77,7 @@ var (
 	conceptLightMeaningsMatcher       = singleMatcher("div.concept_light-meanings")
 )
 
-func parseConceptLight(sel *goquery.Selection) (*Lemma, error) {
+func parseConceptLight(sel *goquery.Selection) (*lemma.Lemma, error) {
 	lightWrapper := sel.ChildrenMatcher(conceptLightWrapperMatcher)
 	representation := lightWrapper.FindMatcher(conceptLightRepresentationMatcher)
 	slug, err := parseRepresentation(representation)
@@ -88,7 +90,7 @@ func parseConceptLight(sel *goquery.Selection) (*Lemma, error) {
 	meanings := lightWrapper.NextMatcher(conceptLightMeaningsMatcher).Children()
 	wordSenses, otherForms := parseMeanings(meanings)
 
-	return &Lemma{
+	return &lemma.Lemma{
 		Slug:   slug,
 		Tags:   tags,
 		Forms:  otherForms,
@@ -102,19 +104,19 @@ var (
 	furiganaMatcher = singleMatcher(".furigana")
 )
 
-func parseRepresentation(sel *goquery.Selection) (Word, error) {
+func parseRepresentation(sel *goquery.Selection) (lemma.Word, error) {
 	text := strings.TrimSpace(sel.FindMatcher(textMatcher).Text())
 	if text == "" {
-		return Word{}, errors.New("no text representation found for word")
+		return lemma.Word{}, errors.New("no text representation found for word")
 	}
-	var furigana Furigana
+	var furigana lemma.Furigana
 	var reading strings.Builder
 	furiganaSpans := sel.FindMatcher(furiganaMatcher).Children()
 	i := 0
 	for _, r := range text {
 		f := strings.TrimSpace(furiganaSpans.Eq(i).Text())
 		rChar := string(r)
-		furigana = append(furigana, FuriganaChar{
+		furigana = append(furigana, lemma.FuriganaChar{
 			Kanji:    rChar,
 			Hiragana: f,
 		})
@@ -131,10 +133,10 @@ func parseRepresentation(sel *goquery.Selection) (Word, error) {
 		reading.Reset()
 
 	}
-	return Word{
+	return lemma.Word{
 		Word:     text,
 		Furigana: furigana,
-		Reading:  reading.String(),
+		Hiragana: reading.String(),
 	}, nil
 }
 
@@ -181,7 +183,7 @@ func parseStatus(sel *goquery.Selection) (audio map[string]string, tags []string
 var meaningDefinitionMatcher = singleMatcher("div.meaning-definition")
 
 // parseMeanings return senses and other forms from `.meaning-wrapper`
-func parseMeanings(sel *goquery.Selection) (senses []WordSense, forms []Word) {
+func parseMeanings(sel *goquery.Selection) (senses []lemma.WordSense, forms []lemma.Word) {
 	// get all tag-meaning pairs
 	sel = sel.Children().First()
 	for sel.Length() != 0 {
@@ -202,7 +204,7 @@ func parseMeanings(sel *goquery.Selection) (senses []WordSense, forms []Word) {
 			meaningDefinition := sel.ChildrenMatcher(meaningDefinitionMatcher)
 			definitions, tags := parseMeaningDefinition(meaningDefinition)
 			if len(definitions) > 0 {
-				senses = append(senses, WordSense{
+				senses = append(senses, lemma.WordSense{
 					Definition:   definitions,
 					PartOfSpeech: partOfSpeech,
 					Tags:         tags,
@@ -248,7 +250,7 @@ func parseMeaningDefinition(sel *goquery.Selection) (definitions []string, tags 
 var breakUnitMatcher = matcher(".break-unit")
 
 // parseMeainingOtherForms extracts other forms from last `.meaning-definition`
-func parseDefinitionOtherForms(sel *goquery.Selection) (forms []Word) {
+func parseDefinitionOtherForms(sel *goquery.Selection) (forms []lemma.Word) {
 	meaningSel := sel.ChildrenMatcher(meaningMeaningMatcher)
 	breakUnits := meaningSel.ChildrenMatcher(breakUnitMatcher)
 	breakUnits.Each(func(_ int, s *goquery.Selection) {
@@ -283,14 +285,14 @@ func splitPartOfSpeech(src string) []string {
 
 var otherFormRegex = regexp.MustCompile(`([^【\t\n\f\r ]+)(?:\s*【([^】]+)】)?`)
 
-func parseOtherForm(src string) (Word, bool) {
+func parseOtherForm(src string) (lemma.Word, bool) {
 	matches := otherFormRegex.FindStringSubmatch(src)
 	if len(matches) == 0 {
-		return Word{}, false
+		return lemma.Word{}, false
 	}
-	return Word{
-		Word:    matches[1],
-		Reading: matches[2],
+	return lemma.Word{
+		Word:     matches[1],
+		Hiragana: matches[2],
 	}, true
 }
 

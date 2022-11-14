@@ -1,12 +1,21 @@
-package wadoku
+// lemma is like model package. It contains structure for jisho and wadoku
+// packages and also can compose results from them.
+package lemma
 
 type Lemma struct {
-	Slug    string
-	Reading Reading
+	Slug   Word
+	Tags   []string
+	Forms  []Word
+	Senses []WordSense
+	// Audio is array of links to audio files.
+	// Key is format
+	Audio map[string]string
 }
 
-type Reading struct {
+type Word struct {
+	Word     string
 	Hiragana string
+	Furigana Furigana
 	// Pitches are encoded japanese pitch accent.
 	// Every element of Pitches describe what accent (high or low)
 	// should be used from previous element of Pitches up to and including
@@ -19,8 +28,8 @@ type Reading struct {
 	//
 	// []Pitch{
 	// 	{ Position: 3, IsHigh: false },
-	// 	{ Position: 6, IsHigh: true  },
-	// 	{ Position: 6, IsHigh: false },
+	// 	{ Position: 6, IsHigh: true  }
+	// 	{ Position: 9, IsHigh: false },
 	// }
 	//
 	// That means that 紙が will read as:
@@ -35,4 +44,18 @@ type Reading struct {
 type Pitch struct {
 	Position int
 	IsHigh   bool
+}
+
+type Furigana []FuriganaChar
+
+type FuriganaChar struct {
+	Kanji    string
+	Hiragana string
+}
+
+type WordSense struct {
+	// Definition is slice of synonymous definitions in english
+	Definition   []string
+	PartOfSpeech []string
+	Tags         []string
 }

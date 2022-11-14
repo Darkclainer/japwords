@@ -9,6 +9,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"japwords/pkg/basicdict/basicdicttest"
+	"japwords/pkg/lemma"
 )
 
 // TestParseFiles checks how web page is parsed.
@@ -25,43 +26,39 @@ func TestParseFiles(t *testing.T) {
 		// Lemmas are specific lemmas that should be found in results
 		// and should be equal to lemmas in results. They are searched
 		// by slug
-		Lemmas []*Lemma
+		Lemmas []*lemma.WadokuLemma
 	}{
 		"犬": {
-			Lemmas: []*Lemma{
+			Lemmas: []*lemma.WadokuLemma{
 				{
-					Slug: "犬",
-					Reading: Reading{
-						Hiragana: "いぬ",
-						Pitches: []Pitch{
-							{
-								Position: 3,
-								IsHigh:   false,
-							},
-							{
-								Position: 6,
-								IsHigh:   true,
-							},
-							{
-								Position: 6,
-								IsHigh:   false,
-							},
+					Slug:     "犬",
+					Hiragana: "いぬ",
+					Pitches: []lemma.Pitch{
+						{
+							Position: 3,
+							IsHigh:   false,
+						},
+						{
+							Position: 6,
+							IsHigh:   true,
+						},
+						{
+							Position: 6,
+							IsHigh:   false,
 						},
 					},
 				},
 				{
-					Slug: "犬走り",
-					Reading: Reading{
-						Hiragana: "いぬばしり",
-						Pitches: []Pitch{
-							{
-								Position: 3,
-								IsHigh:   false,
-							},
-							{
-								Position: 15,
-								IsHigh:   true,
-							},
+					Slug:     "犬走り",
+					Hiragana: "いぬばしり",
+					Pitches: []lemma.Pitch{
+						{
+							Position: 3,
+							IsHigh:   false,
+						},
+						{
+							Position: 15,
+							IsHigh:   true,
 						},
 					},
 				},
@@ -80,7 +77,7 @@ func TestParseFiles(t *testing.T) {
 			require.NoError(t, err)
 			// store all result lemmas in map where key is slug.
 			// I store them in reversed order to deal with duplicates (if there are some)
-			results := map[string]*Lemma{}
+			results := map[string]*lemma.WadokuLemma{}
 			for i := len(lemmas) - 1; i >= 0; i-- {
 				results[lemmas[i].Slug] = lemmas[i]
 			}
