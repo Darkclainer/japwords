@@ -26,10 +26,10 @@ func TestParseFiles(t *testing.T) {
 		// Lemmas are specific lemmas that should be found in results
 		// and should be equal to lemmas in results. They are searched
 		// by slug
-		Lemmas []*lemma.WadokuLemma
+		Lemmas []*lemma.PitchedLemma
 	}{
 		"犬": {
-			Lemmas: []*lemma.WadokuLemma{
+			Lemmas: []*lemma.PitchedLemma{
 				{
 					Slug:     "犬",
 					Hiragana: "いぬ",
@@ -77,7 +77,7 @@ func TestParseFiles(t *testing.T) {
 			require.NoError(t, err)
 			// store all result lemmas in map where key is slug.
 			// I store them in reversed order to deal with duplicates (if there are some)
-			results := map[string]*lemma.WadokuLemma{}
+			results := map[string]*lemma.PitchedLemma{}
 			for i := len(lemmas) - 1; i >= 0; i-- {
 				results[lemmas[i].Slug] = lemmas[i]
 			}

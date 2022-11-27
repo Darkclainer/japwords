@@ -8,10 +8,10 @@ import (
 
 func Test_Enrich(t *testing.T) {
 	testCases := []struct {
-		Name     string
-		Lemmas   []*Lemma
-		Readings []*WadokuLemma
-		Expected []*Lemma
+		Name         string
+		Lemmas       []*Lemma
+		PitchedLemma []*PitchedLemma
+		Expected     []*Lemma
 	}{
 		{
 			Name: "empty",
@@ -45,7 +45,7 @@ func Test_Enrich(t *testing.T) {
 					},
 				},
 			},
-			Readings: []*WadokuLemma{
+			PitchedLemma: []*PitchedLemma{
 				{
 					Slug:     "hello",
 					Hiragana: "world",
@@ -88,7 +88,7 @@ func Test_Enrich(t *testing.T) {
 					},
 				},
 			},
-			Readings: []*WadokuLemma{
+			PitchedLemma: []*PitchedLemma{
 				{
 					Slug:     "hello",
 					Hiragana: "world",
@@ -137,7 +137,7 @@ func Test_Enrich(t *testing.T) {
 					},
 				},
 			},
-			Readings: []*WadokuLemma{
+			PitchedLemma: []*PitchedLemma{
 				{
 					Slug:     "hello",
 					Hiragana: "world",
@@ -190,7 +190,7 @@ func Test_Enrich(t *testing.T) {
 					},
 				},
 			},
-			Readings: []*WadokuLemma{
+			PitchedLemma: []*PitchedLemma{
 				{
 					Slug:     "hello",
 					Hiragana: "world",
@@ -240,7 +240,7 @@ func Test_Enrich(t *testing.T) {
 	for i := range testCases {
 		tc := testCases[i]
 		t.Run(tc.Name, func(t *testing.T) {
-			Enrich(tc.Lemmas, tc.Readings)
+			Enrich(tc.Lemmas, tc.PitchedLemma)
 			assert.Equal(t, tc.Expected, tc.Lemmas)
 		})
 	}

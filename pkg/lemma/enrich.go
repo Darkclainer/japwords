@@ -5,21 +5,21 @@ type slugReading struct {
 	Reading string
 }
 
-// Enrich add infom from reading to lemmas. Modifies lemmas, if you need: make copy.
-func Enrich(lemmas []*Lemma, readings []*WadokuLemma) {
+// Enrich add pitch infromation from pitches to lemmas. Modifies lemmas, if you need: make copy.
+func Enrich(lemmas []*Lemma, pitchedLemmas []*PitchedLemma) {
 	wordMap := map[slugReading][]*Word{}
 	for _, lemma := range lemmas {
 		addLemmaWords(wordMap, lemma)
 	}
-	for i := len(readings) - 1; i >= 0; i-- {
-		reading := readings[i]
+	for i := len(pitchedLemmas) - 1; i >= 0; i-- {
+		pitched := pitchedLemmas[i]
 		key := slugReading{
-			Slug:    reading.Slug,
-			Reading: reading.Hiragana,
+			Slug:    pitched.Slug,
+			Reading: pitched.Hiragana,
 		}
 		words := wordMap[key]
 		for _, word := range words {
-			word.Pitches = reading.Pitches
+			word.Pitches = pitched.Pitches
 		}
 	}
 }

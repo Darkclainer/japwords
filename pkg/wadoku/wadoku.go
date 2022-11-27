@@ -27,7 +27,7 @@ func New(client BasicDict, baseURL string) *Wadoku {
 	}
 }
 
-func (w *Wadoku) Query(ctx context.Context, query string) ([]*lemma.WadokuLemma, error) {
+func (w *Wadoku) Query(ctx context.Context, query string) ([]*lemma.PitchedLemma, error) {
 	url := w.queryURL(query)
 	htmlBody, err := w.client.Query(ctx, url)
 	if err != nil {

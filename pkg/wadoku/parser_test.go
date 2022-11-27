@@ -14,7 +14,7 @@ func Test_parseHTML(t *testing.T) {
 	testCases := []struct {
 		Name        string
 		HTML        string
-		Expected    []*lemma.WadokuLemma
+		Expected    []*lemma.PitchedLemma
 		ErrorAssert assert.ErrorAssertionFunc
 	}{
 		{
@@ -56,7 +56,7 @@ func Test_parseHTML(t *testing.T) {
 			</tr>
 		</tbody></table>
 	</section></body></html>`,
-			Expected: []*lemma.WadokuLemma{
+			Expected: []*lemma.PitchedLemma{
 				{
 					Slug:     "hello",
 					Hiragana: "world",
@@ -85,7 +85,7 @@ func Test_parseContentSection(t *testing.T) {
 	testCases := []struct {
 		Name        string
 		HTML        string
-		Expected    []*lemma.WadokuLemma
+		Expected    []*lemma.PitchedLemma
 		ErrorAssert assert.ErrorAssertionFunc
 	}{
 		{
@@ -114,7 +114,7 @@ func Test_parseContentSection(t *testing.T) {
 			</td>
 		</tr>
 	</tbody></table></div>`,
-			Expected: []*lemma.WadokuLemma{
+			Expected: []*lemma.PitchedLemma{
 				{
 					Slug:     "hello",
 					Hiragana: "world",
@@ -161,7 +161,7 @@ func Test_parseContentSection(t *testing.T) {
 			</td>
 		</tr>
 	</tbody></table></div>`,
-			Expected: []*lemma.WadokuLemma{
+			Expected: []*lemma.PitchedLemma{
 				{
 					Slug:     "hello",
 					Hiragana: "world",
@@ -218,7 +218,7 @@ func Test_parseContentSection(t *testing.T) {
 			</td>
 		</tr>
 	</tbody></table></div>`,
-			Expected: []*lemma.WadokuLemma{
+			Expected: []*lemma.PitchedLemma{
 				{
 					Slug:     "hello",
 					Hiragana: "world",
@@ -264,7 +264,7 @@ func Test_parseRowResult(t *testing.T) {
 	testCases := []struct {
 		Name        string
 		HTML        string
-		Expected    []*lemma.WadokuLemma
+		Expected    []*lemma.PitchedLemma
 		ErrorAssert assert.ErrorAssertionFunc
 	}{
 		{
@@ -284,7 +284,7 @@ func Test_parseRowResult(t *testing.T) {
 			</div>
 		</td>
 	</tr></tbody></table>`,
-			Expected: []*lemma.WadokuLemma{
+			Expected: []*lemma.PitchedLemma{
 				{
 					Slug:     "hello",
 					Hiragana: "world",
@@ -319,7 +319,7 @@ func Test_parseRowResult(t *testing.T) {
 			</div>
 		</td>
 	</tr></tbody></table>`,
-			Expected: []*lemma.WadokuLemma{
+			Expected: []*lemma.PitchedLemma{
 				{
 					Slug:     "hello",
 					Hiragana: "world",

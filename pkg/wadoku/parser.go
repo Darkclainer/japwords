@@ -19,14 +19,14 @@ type reading struct {
 	Pitches  []lemma.Pitch
 }
 
-func parseHTMLBytes(html []byte) ([]*lemma.WadokuLemma, error) {
+func parseHTMLBytes(html []byte) ([]*lemma.PitchedLemma, error) {
 	buffer := bytes.NewBuffer(html)
 	return parseHTML(buffer)
 }
 
 var contentSectionMatcher = singleMatcher("section#content")
 
-func parseHTML(src io.Reader) ([]*lemma.WadokuLemma, error) {
+func parseHTML(src io.Reader) ([]*lemma.PitchedLemma, error) {
 	document, err := goquery.NewDocumentFromReader(src)
 	if err != nil {
 		return nil, fmt.Errorf("can not parse page: %w", err)
@@ -46,13 +46,13 @@ var (
 	rowResultMatcher       = matcher("tr.resultline")
 )
 
-func parseContentSection(sel *goquery.Selection) ([]*lemma.WadokuLemma, error) {
+func parseContentSection(sel *goquery.Selection) ([]*lemma.PitchedLemma, error) {
 	tableBody := sel.FindMatcher(tableResultBodyMatcher)
 	rows := tableBody.ChildrenMatcher(rowResultMatcher)
 	if rows.Length() == 0 {
 		return nil, nil
 	}
-	var lemmas []*lemma.WadokuLemma
+	var lemmas []*lemma.PitchedLemma
 	var errs []*LemmaError
 	rows.Each(func(i int, row *goquery.Selection) {
 		newLemmas, err := parseRowResult(row)
@@ -81,7 +81,7 @@ var (
 	readingMather       = singleMatcher(".reading")
 )
 
-func parseRowResult(sel *goquery.Selection) ([]*lemma.WadokuLemma, error) {
+func parseRowResult(sel *goquery.Selection) ([]*lemma.PitchedLemma, error) {
 	resultDetail := sel.ChildrenMatcher(resultDetailMatcher)
 	japaneseSel := resultDetail.ChildrenMatcher(japaneseMatcher)
 	japaneseVariants, err := parseJapanese(japaneseSel)
@@ -101,9 +101,9 @@ func parseRowResult(sel *goquery.Selection) ([]*lemma.WadokuLemma, error) {
 		// we also don't need result with filtered readings
 		return nil, nil
 	}
-	lemmas := make([]*lemma.WadokuLemma, 0, len(japaneseVariants))
+	lemmas := make([]*lemma.PitchedLemma, 0, len(japaneseVariants))
 	for _, variant := range japaneseVariants {
-		lemmas = append(lemmas, &lemma.WadokuLemma{
+		lemmas = append(lemmas, &lemma.PitchedLemma{
 			Slug:     variant,
 			Hiragana: reading.Hiragana,
 			Pitches:  reading.Pitches,
