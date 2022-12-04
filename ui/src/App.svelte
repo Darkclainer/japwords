@@ -1,4 +1,6 @@
 <script lang="ts">
+	import Notifications from 'svelte-notifications';
+	import Notification from './components/Notification.svelte';
 	import SearchBar from './components/SearchBar.svelte';
 	import Tailwindcss from './Tailwind.svelte';
 	import { Router, Route } from 'svelte-navigator';
@@ -21,21 +23,23 @@
 <Tailwindcss />
 
 <main class="bg-white space-y-4 p-4 md:max-w-4xl mx-auto">
-	<Router>
-		<Route path="/*">
-			<SearchBar bind:query />
+	<Notifications item={Notification}>
+		<Router>
+			<Route path="/*">
+				<SearchBar bind:query />
 
-			{#if lemmasQuery}
-				{#if $lemmasQuery.loading}
-					<h1>Loading</h1>
-				{:else if $lemmasQuery.error}
-					<h1>Error</h1>
+				{#if lemmasQuery}
+					{#if $lemmasQuery.loading}
+						<h1>Loading</h1>
+					{:else if $lemmasQuery.error}
+						<h1>Error</h1>
+					{:else}
+						<LemmaBrowser lemmas={$lemmasQuery.data.Lemmas.lemmas} />
+					{/if}
 				{:else}
-					<LemmaBrowser lemmas={$lemmasQuery.data.Lemmas.lemmas} />
+					<h1>type kanji</h1>
 				{/if}
-			{:else}
-				<h1>type kanji</h1>
-			{/if}
-		</Route>
-	</Router>
+			</Route>
+		</Router>
+	</Notifications>
 </main>

@@ -1,7 +1,19 @@
 <script lang="ts">
+	import { getNotificationsContext } from 'svelte-notifications';
 	import { Lemma, PitchType } from '../api/generated';
 	import PlayIcon from './PlayIcon.svelte';
+
 	export let lemma: Lemma;
+
+	const { addNotification } = getNotificationsContext();
+	const copy_kanji = () => {
+		navigator.clipboard.writeText(lemma.slug.word);
+		addNotification({
+			text: 'Copied ' + lemma.slug.word,
+			position: 'bottom-right',
+			removeAfter: 2000
+		});
+	};
 
 	let audio: HTMLAudioElement;
 	const play_mouse_up = () => {
@@ -15,22 +27,28 @@
 <div class="flex justify-between shadow-md rounded-md bg-gray my-4 px-8 pt-10 pb-7">
 	<div class="grow divide-y divide-blue flex-1">
 		<div>
-			<h1 class="text-5xl pb-4">
-				{#if lemma.slug.furigana.length == 0}
-					{lemma.slug.word}
-				{:else}
-					<ruby>
-						{#each lemma.slug.furigana as furigana}
-							{#if furigana.kanji}
-								{furigana.kanji}<rp>[</rp><rt class="text-dark-gray text-xl">{furigana.hiragana}</rt
-								><rp>]</rp>
-							{:else}
-								{furigana.hiragana}<rp>[</rp><rt /><rp>]</rp>
-							{/if}
-						{/each}
-					</ruby>
-				{/if}
-			</h1>
+			<button
+				on:mouseup={copy_kanji}
+				class="hover:text-blue active:text-dark-blue transition-colors duration-300"
+			>
+				<h1 class="text-5xl pb-4">
+					{#if lemma.slug.furigana.length == 0}
+						{lemma.slug.word}
+					{:else}
+						<ruby>
+							{#each lemma.slug.furigana as furigana}
+								{#if furigana.kanji}
+									{furigana.kanji}<rp>[</rp><rt class="text-dark-gray text-xl"
+										>{furigana.hiragana}</rt
+									><rp>]</rp>
+								{:else}
+									{furigana.hiragana}<rp>[</rp><rt /><rp>]</rp>
+								{/if}
+							{/each}
+						</ruby>
+					{/if}
+				</h1>
+			</button>
 		</div>
 		<div class="text-xl py-4">
 			{#if lemma.slug.pitch.length == 0}
@@ -62,14 +80,14 @@
 		{#if lemma.forms.length != 0}
 			<div class="text-xl pt-4">
 				<p class="text-base text-blue">Other Forms</p>
-				<p class="">
-					{#each lemma.forms as form, i}
-						<span
-							>{form.word}
-							{#if form.hiragana}「{form.hiragana}」{/if}</span
-						>{#if i != lemma.forms.length - 1}、{/if}
+				<div class="flex flex-col">
+					{#each lemma.forms as form}
+						<p>
+							{form.word}
+							{#if form.hiragana}「{form.hiragana}」{/if}
+						</p>
 					{/each}
-				</p>
+				</div>
 			</div>
 		{/if}
 	</div>
