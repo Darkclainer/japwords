@@ -52,22 +52,24 @@
 				</h1>
 			</button>
 		</div>
-		<div class="text-xl py-4">
-			{#if lemma.slug.pitch.length == 0}
-				{#each lemma.slug.furigana as furigana}
-					{furigana.hiragana}
-				{/each}
-			{:else}
-				{#each lemma.slug.pitch as pitch}
-					<span
-						class:border-t={pitch.pitch.includes(PitchType.Up)}
-						class:border-b={pitch.pitch.includes(PitchType.Down)}
-						class:border-r={pitch.pitch.includes(PitchType.Right)}
-						class="border-blue">{pitch.hiragana}</span
-					>
-				{/each}
-			{/if}
-		</div>
+		{#if lemma.slug.hiragana != ''}
+			<div class="text-xl py-4">
+				{#if lemma.slug.pitch.length == 0}
+					{#each lemma.slug.furigana as furigana}
+						{furigana.hiragana}
+					{/each}
+				{:else}
+					{#each lemma.slug.pitch as pitch}
+						<span
+							class:border-t={pitch.pitch.includes(PitchType.Up)}
+							class:border-b={pitch.pitch.includes(PitchType.Down)}
+							class:border-r={pitch.pitch.includes(PitchType.Right)}
+							class="border-blue">{pitch.hiragana}</span
+						>
+					{/each}
+				{/if}
+			</div>
+		{/if}
 		{#if lemma.senses.length != 0}
 			<div class="text-xl py-4">
 				{#each lemma.senses as sense, i}
