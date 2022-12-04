@@ -96,7 +96,9 @@
 		{/if}
 	</div>
 	<div class="shrink sm:basis-8 md:basis-14" />
-	<div class="flex-none flex flex-col-reverse sm:flex-col justify-items-stretch basis-40">
+	<div
+		class="flex-none flex flex-col-reverse sm:flex-col justify-items-stretch basis-20 sm:basis-40"
+	>
 		<button
 			class="px-2 py-4 text-xl rounded-md bg-blue hover:bg-green active:bg-dark-green transition-colors duration-300 text-white"
 			>Add to Anki</button

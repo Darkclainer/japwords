@@ -30,14 +30,12 @@
 
 				{#if lemmasQuery}
 					{#if $lemmasQuery.loading}
-						<h1>Loading</h1>
+						<h1 class="text-5xl text-center py-14">Loading...</h1>
 					{:else if $lemmasQuery.error}
 						<h1>Error</h1>
 					{:else}
 						<LemmaBrowser lemmas={$lemmasQuery.data.Lemmas.lemmas} />
 					{/if}
-				{:else}
-					<h1>type kanji</h1>
 				{/if}
 			</Route>
 		</Router>
