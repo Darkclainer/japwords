@@ -6,6 +6,7 @@ require (
 	github.com/99designs/gqlgen v0.17.20
 	github.com/PuerkitoBio/goquery v1.8.0
 	github.com/andybalholm/cascadia v1.3.1
+	github.com/hashicorp/golang-lru/v2 v2.0.1
 	github.com/knadh/koanf v1.4.3
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/rs/cors v1.8.2
