@@ -22,10 +22,9 @@ type Server struct {
 type In struct {
 	fx.In
 
-	LC         fx.Lifecycle
-	Shutdowner fx.Shutdowner
-	Logger     *zap.Logger
-	Config     *Config
+	LC     fx.Lifecycle
+	Logger *zap.Logger
+	Config *Config
 }
 
 //nolint:gocritic // fx
@@ -61,7 +60,6 @@ func New(in In) (*Server, error) {
 			wg.Add(1)
 			go func() {
 				defer wg.Done()
-				defer in.Shutdowner.Shutdown() //nolint:errcheck // shutdown
 				logger.Info(fmt.Sprintf("Starting http server at: http://%s", addr))
 				if err := srv.ListenAndServe(); err != nil {
 					if !errors.Is(err, http.ErrServerClosed) {

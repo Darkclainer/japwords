@@ -10,20 +10,27 @@ import (
 	"go.uber.org/fx"
 
 	"japwords/graphql/gqlgenerated"
+	"japwords/pkg/multidict"
 )
 
 // This file will not be regenerated automatically.
 //
 // It serves as dependency injection for your app, add any dependencies you require here.
 
-type Resolver struct{}
+type Resolver struct {
+	multiDict *multidict.MultiDict
+}
 
 type In struct {
 	fx.In
+
+	MultiDict *multidict.MultiDict
 }
 
 func New(in In) (*Resolver, error) {
-	return &Resolver{}, nil
+	return &Resolver{
+		multiDict: in.MultiDict,
+	}, nil
 }
 
 func (r *Resolver) Handler() http.Handler {

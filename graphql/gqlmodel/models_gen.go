@@ -2,37 +2,93 @@
 
 package gqlmodel
 
+import (
+	"fmt"
+	"io"
+	"strconv"
+)
+
 type Audio struct {
 	Type   string `json:"type"`
 	Source string `json:"source"`
 }
 
 type Furigana struct {
-	Kanji    []string `json:"kanji"`
-	Hiragana []string `json:"hiragana"`
+	Kanji    string `json:"kanji"`
+	Hiragana string `json:"hiragana"`
 }
 
 type Lemma struct {
-	Slug     *Word      `json:"slug"`
-	Tags     []string   `json:"tags"`
-	Accents  string     `json:"accents"`
-	Forms    []*Word    `json:"forms"`
-	Meanings []*Meaning `json:"meanings"`
-	Audio    []*Audio   `json:"audio"`
+	Slug   *Word    `json:"slug"`
+	Tags   []string `json:"tags"`
+	Forms  []*Word  `json:"forms"`
+	Senses []*Sense `json:"senses"`
+	Audio  []*Audio `json:"audio"`
 }
 
 type Lemmas struct {
 	Lemmas []*Lemma `json:"lemmas"`
 }
 
-type Meaning struct {
+type Pitch struct {
+	Hiragana string      `json:"hiragana"`
+	Pitch    []PitchType `json:"pitch"`
+}
+
+type Sense struct {
 	Definition   []string `json:"definition"`
 	PartOfSpeech []string `json:"partOfSpeech"`
 	Tags         []string `json:"tags"`
 }
 
 type Word struct {
-	Word     string    `json:"word"`
-	Reading  *string   `json:"reading"`
-	Furigana *Furigana `json:"furigana"`
+	Word     string      `json:"word"`
+	Hiragana string      `json:"hiragana"`
+	Furigana []*Furigana `json:"furigana"`
+	Pitch    []*Pitch    `json:"pitch"`
+}
+
+type PitchType string
+
+const (
+	PitchTypeUp    PitchType = "UP"
+	PitchTypeDown  PitchType = "DOWN"
+	PitchTypeLeft  PitchType = "LEFT"
+	PitchTypeRight PitchType = "RIGHT"
+)
+
+var AllPitchType = []PitchType{
+	PitchTypeUp,
+	PitchTypeDown,
+	PitchTypeLeft,
+	PitchTypeRight,
+}
+
+func (e PitchType) IsValid() bool {
+	switch e {
+	case PitchTypeUp, PitchTypeDown, PitchTypeLeft, PitchTypeRight:
+		return true
+	}
+	return false
+}
+
+func (e PitchType) String() string {
+	return string(e)
+}
+
+func (e *PitchType) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = PitchType(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid PitchType", str)
+	}
+	return nil
+}
+
+func (e PitchType) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
 }

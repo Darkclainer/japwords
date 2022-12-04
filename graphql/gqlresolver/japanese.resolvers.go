@@ -5,14 +5,23 @@ package gqlresolver
 
 import (
 	"context"
-	"fmt"
 	"japwords/graphql/gqlgenerated"
 	"japwords/graphql/gqlmodel"
 )
 
 // Lemmas is the resolver for the Lemmas field.
 func (r *queryResolver) Lemmas(ctx context.Context, query string) (*gqlmodel.Lemmas, error) {
-	panic(fmt.Errorf("not implemented: Lemmas - Lemmas"))
+	lemmas, err := r.multiDict.Query(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+	var gqlLemmas []*gqlmodel.Lemma
+	for _, lemma := range lemmas {
+		gqlLemmas = append(gqlLemmas, convertLemma(lemma))
+	}
+	return &gqlmodel.Lemmas{
+		Lemmas: gqlLemmas,
+	}, nil
 }
 
 // Query returns gqlgenerated.QueryResolver implementation.

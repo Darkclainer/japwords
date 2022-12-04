@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 
+	"japwords/cmd/japwords-server/fxapp"
 	"japwords/pkg/config"
 )
 
@@ -18,7 +19,7 @@ func main() {
 		fmt.Fprintf(os.Stderr, "Error! Failed to read config: %s\n", err)
 		os.Exit(2)
 	}
-	app, err := NewApp(ConvertConfig(userConfig))
+	app, err := fxapp.NewApp(userConfig)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error! Failed to create application: %s\n", err)
 		os.Exit(3)
