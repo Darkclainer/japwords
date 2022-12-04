@@ -356,6 +356,59 @@ func Test_parseConceptLight(t *testing.T) {
 			ErrorAssert: assert.NoError,
 		},
 		{
+			Name: "long representation",
+			HTML: `
+		<div id="root">
+			<div class="concept_light-wrapper concept_light-long_representation  columns zero-padding">
+				<div class="concept_light-readings japanese japanese_gothic" lang="ja">
+					<div class="concept_light-representation">
+						<span class="furigana">
+							<span class="kanji-2-up kanji">いぬ</span>
+						</span>
+						<span class="text">犬</span>
+					</div>
+				</div>
+			</div>
+			<div class="concept_light-status">
+				<span class="concept_light-tag concept_light-common success label">Common word</span>
+				<span class="concept_light-tag label">
+					<a href="http://wanikani.com/">Wanikani level 2</a>
+				</span>
+				<audio id="audio_犬:いぬ" preload="none">
+					<source src="audio1" type="audio/mpeg">
+				</audio>
+			</div>
+			<div class="concept_light-meanings medium-9 columns">
+    				<div class="meanings-wrapper">
+					<div class="meaning-tags">Noun</div>
+					<div class="meaning-wrapper">
+						<div class="meaning-definition zero-padding">
+							<span class="meaning-definition-section_divider">1. </span>
+							<span class="meaning-meaning">dog</span>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>`,
+			Expected: &lemma.Lemma{
+				Slug: lemma.Word{Word: "犬", Furigana: newTestFurigana("犬", "いぬ"), Hiragana: "いぬ"},
+				Tags: []string{
+					"Common word",
+					"Wanikani level 2",
+				},
+				Senses: []lemma.WordSense{
+					{
+						Definition:   []string{"dog"},
+						PartOfSpeech: []string{"Noun"},
+					},
+				},
+				Audio: map[string]string{
+					"audio/mpeg": "audio1",
+				},
+			},
+			ErrorAssert: assert.NoError,
+		},
+		{
 			Name: "no slug",
 			HTML: `
 		<div id="root"> 
@@ -428,6 +481,24 @@ func Test_parseRepresentation(t *testing.T) {
 			</div> `,
 			Expected: lemma.Word{
 				Word: "元気",
+			},
+			ErrorAssert: assert.NoError,
+		},
+		{
+			Name: "with furigana and hiragana",
+			HTML: `
+			<div id="root">
+				<span class="furigana">
+					<span>いぬ</span>
+					<span></span>
+					<span>ちる</span>
+				</span>
+				<span class="text">犬<span>と</span>猿</span> 
+			</div> `,
+			Expected: lemma.Word{
+				Word:     "犬と猿",
+				Furigana: newTestFurigana("犬", "いぬ", "", "と", "猿", "ちる"),
+				Hiragana: "いぬとちる",
 			},
 			ErrorAssert: assert.NoError,
 		},

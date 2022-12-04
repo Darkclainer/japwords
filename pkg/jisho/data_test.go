@@ -91,6 +91,60 @@ func TestParseFiles(t *testing.T) {
 						"audio/ogg":  "https://d1vjc5dkcd3yh2.cloudfront.net/audio_ogg/10ce3f5eb7b4a9a03c4dafce2af60e28.ogg",
 					},
 				},
+				3: {
+					Slug: lemma.Word{
+						Word:     "犬も食わない",
+						Hiragana: "いぬもくわない",
+						Furigana: []lemma.FuriganaChar{
+							{
+								Kanji:    "犬",
+								Hiragana: "いぬ",
+							},
+							{
+								Hiragana: "も",
+							},
+							{
+								Kanji:    "食",
+								Hiragana: "く",
+							},
+							{
+								Hiragana: "わ",
+							},
+							{
+								Hiragana: "な",
+							},
+							{
+								Hiragana: "い",
+							},
+						},
+					},
+					Forms: []lemma.Word{
+						{
+							Word:     "犬も喰わない",
+							Hiragana: "いぬもくわない",
+						},
+						{
+							Word:     "犬もくわない",
+							Hiragana: "いぬもくわない",
+						},
+					},
+					Senses: []lemma.WordSense{
+						{
+							Definition: []string{
+								"avoided by everybody",
+								"disliked by everybody",
+								"not even a dog will eat (it)",
+							},
+							PartOfSpeech: []string{
+								"Expressions (phrases, clauses, etc.)",
+								"I-adjective (keiyoushi)",
+							},
+							Tags: []string{
+								"Idiomatic expression",
+							},
+						},
+					},
+				},
 			},
 		},
 	}

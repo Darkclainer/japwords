@@ -84,10 +84,21 @@ func parseConceptLight(sel *goquery.Selection) (*lemma.Lemma, error) {
 	if err != nil {
 		return nil, err
 	}
-	status := lightWrapper.ChildrenMatcher(conceptLightStatusMatcher)
+	longRepresentation := lightWrapper.HasClass("concept_light-long_representation")
+	var status *goquery.Selection
+	if longRepresentation {
+		status = lightWrapper.NextMatcher(conceptLightStatusMatcher)
+	} else {
+		status = lightWrapper.ChildrenMatcher(conceptLightStatusMatcher)
+	}
 	audio, tags := parseStatus(status)
 
-	meanings := lightWrapper.NextMatcher(conceptLightMeaningsMatcher).Children()
+	var meanings *goquery.Selection
+	if longRepresentation {
+		meanings = sel.ChildrenMatcher(conceptLightMeaningsMatcher).Children()
+	} else {
+		meanings = lightWrapper.NextMatcher(conceptLightMeaningsMatcher).Children()
+	}
 	wordSenses, otherForms := parseMeanings(meanings)
 
 	return &lemma.Lemma{
@@ -116,12 +127,16 @@ func parseRepresentation(sel *goquery.Selection) (lemma.Word, error) {
 	for _, r := range text {
 		f := strings.TrimSpace(furiganaSpans.Eq(i).Text())
 		rChar := string(r)
-		furigana = append(furigana, lemma.FuriganaChar{
-			Kanji:    rChar,
-			Hiragana: f,
-		})
 		if f != "" {
+			furigana = append(furigana, lemma.FuriganaChar{
+				Kanji:    rChar,
+				Hiragana: f,
+			})
 			rChar = f
+		} else {
+			furigana = append(furigana, lemma.FuriganaChar{
+				Hiragana: rChar,
+			})
 		}
 		reading.WriteString(rChar)
 		i++
