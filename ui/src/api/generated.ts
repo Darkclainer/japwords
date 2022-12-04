@@ -19,77 +19,142 @@ export type Scalars = {
   Float: number;
 };
 
-export type JapaneseWord = {
-  __typename?: 'JapaneseWord';
-  acents: Scalars['String'];
-  audio?: Maybe<Array<Scalars['String']>>;
-  examples?: Maybe<Array<Scalars['String']>>;
-  furigana?: Maybe<Scalars['String']>;
-  hiragana: Scalars['String'];
-  kanji: Scalars['String'];
-  meaning: Scalars['String'];
+export type Audio = {
+  __typename?: 'Audio';
+  source: Scalars['String'];
+  type: Scalars['String'];
 };
 
-export type JapaneseWords = {
-  __typename?: 'JapaneseWords';
-  words?: Maybe<Array<JapaneseWord>>;
+export type Furigana = {
+  __typename?: 'Furigana';
+  hiragana: Scalars['String'];
+  kanji: Scalars['String'];
 };
+
+export type Lemma = {
+  __typename?: 'Lemma';
+  audio: Array<Audio>;
+  forms: Array<Word>;
+  senses: Array<Sense>;
+  slug: Word;
+  tags: Array<Scalars['String']>;
+};
+
+export type Lemmas = {
+  __typename?: 'Lemmas';
+  lemmas: Array<Lemma>;
+};
+
+export type Pitch = {
+  __typename?: 'Pitch';
+  hiragana: Scalars['String'];
+  pitch: Array<PitchType>;
+};
+
+export enum PitchType {
+  Down = 'DOWN',
+  Left = 'LEFT',
+  Right = 'RIGHT',
+  Up = 'UP'
+}
 
 export type Query = {
   __typename?: 'Query';
-  japaneseWords?: Maybe<JapaneseWords>;
+  Lemmas?: Maybe<Lemmas>;
 };
 
 
-export type QueryJapaneseWordsArgs = {
+export type QueryLemmasArgs = {
   query: Scalars['String'];
 };
 
-export type GetJapaneseWordsQueryVariables = Exact<{
+export type Sense = {
+  __typename?: 'Sense';
+  definition: Array<Scalars['String']>;
+  partOfSpeech: Array<Scalars['String']>;
+  tags: Array<Scalars['String']>;
+};
+
+export type Word = {
+  __typename?: 'Word';
+  furigana: Array<Furigana>;
+  hiragana: Scalars['String'];
+  pitch: Array<Pitch>;
+  word: Scalars['String'];
+};
+
+export type GetLemmasQueryVariables = Exact<{
   query: Scalars['String'];
 }>;
 
 
-export type GetJapaneseWordsQuery = { __typename?: 'Query', japaneseWords?: { __typename?: 'JapaneseWords', words?: Array<{ __typename?: 'JapaneseWord', kanji: string, furigana?: string | null, hiragana: string, acents: string, meaning: string, audio?: Array<string> | null, examples?: Array<string> | null }> | null } | null };
+export type GetLemmasQuery = { __typename?: 'Query', Lemmas?: { __typename?: 'Lemmas', lemmas: Array<{ __typename?: 'Lemma', tags: Array<string>, slug: { __typename?: 'Word', word: string, hiragana: string, furigana: Array<{ __typename?: 'Furigana', kanji: string, hiragana: string }>, pitch: Array<{ __typename?: 'Pitch', hiragana: string, pitch: Array<PitchType> }> }, forms: Array<{ __typename?: 'Word', word: string, hiragana: string, furigana: Array<{ __typename?: 'Furigana', kanji: string, hiragana: string }>, pitch: Array<{ __typename?: 'Pitch', hiragana: string, pitch: Array<PitchType> }> }>, senses: Array<{ __typename?: 'Sense', definition: Array<string>, partOfSpeech: Array<string>, tags: Array<string> }>, audio: Array<{ __typename?: 'Audio', type: string, source: string }> }> } | null };
 
 
-export const GetJapaneseWordsDoc = gql`
-    query GetJapaneseWords($query: String!) {
-  japaneseWords(query: $query) {
-    words {
-      kanji
-      furigana
-      hiragana
-      acents
-      meaning
-      audio
-      examples
+export const GetLemmasDoc = gql`
+    query GetLemmas($query: String!) {
+  Lemmas(query: $query) {
+    lemmas {
+      slug {
+        word
+        hiragana
+        furigana {
+          kanji
+          hiragana
+        }
+        pitch {
+          hiragana
+          pitch
+        }
+      }
+      tags
+      forms {
+        word
+        hiragana
+        furigana {
+          kanji
+          hiragana
+        }
+        pitch {
+          hiragana
+          pitch
+        }
+      }
+      senses {
+        definition
+        partOfSpeech
+        tags
+      }
+      audio {
+        type
+        source
+      }
     }
   }
 }
     `;
-export const GetJapaneseWords = (
+export const GetLemmas = (
             options: Omit<
-              WatchQueryOptions<GetJapaneseWordsQueryVariables>, 
+              WatchQueryOptions<GetLemmasQueryVariables>, 
               "query"
             >
           ): Readable<
-            ApolloQueryResult<GetJapaneseWordsQuery> & {
+            ApolloQueryResult<GetLemmasQuery> & {
               query: ObservableQuery<
-                GetJapaneseWordsQuery,
-                GetJapaneseWordsQueryVariables
+                GetLemmasQuery,
+                GetLemmasQueryVariables
               >;
             }
           > => {
             const q = client.watchQuery({
-              query: GetJapaneseWordsDoc,
+              query: GetLemmasDoc,
               ...options,
             });
             var result = readable<
-              ApolloQueryResult<GetJapaneseWordsQuery> & {
+              ApolloQueryResult<GetLemmasQuery> & {
                 query: ObservableQuery<
-                  GetJapaneseWordsQuery,
-                  GetJapaneseWordsQueryVariables
+                  GetLemmasQuery,
+                  GetLemmasQueryVariables
                 >;
               }
             >(

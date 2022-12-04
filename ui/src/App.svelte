@@ -2,19 +2,19 @@
 	import SearchBar from './components/SearchBar.svelte';
 	import Tailwindcss from './Tailwind.svelte';
 	import { Router, Route } from 'svelte-navigator';
-	import { GetJapaneseWords } from './api/generated';
-	import WordBrowser from './components/WordBrowser.svelte';
+	import { GetLemmas } from './api/generated';
+	import LemmaBrowser from './components/LemmaBrowser.svelte';
 
 	let query: string = '';
-	let wordsQuery: ReturnType<typeof GetJapaneseWords>;
+	let lemmasQuery: ReturnType<typeof GetLemmas>;
 	$: if (query) {
-		wordsQuery = GetJapaneseWords({
+		lemmasQuery = GetLemmas({
 			variables: {
 				query: query
 			}
 		});
 	} else {
-		wordsQuery = null;
+		lemmasQuery = null;
 	}
 </script>
 
@@ -25,13 +25,13 @@
 		<Route path="/*">
 			<SearchBar bind:query />
 
-			{#if wordsQuery}
-				{#if $wordsQuery.loading}
+			{#if lemmasQuery}
+				{#if $lemmasQuery.loading}
 					<h1>Loading</h1>
-				{:else if $wordsQuery.error}
+				{:else if $lemmasQuery.error}
 					<h1>Error</h1>
 				{:else}
-					<WordBrowser words={$wordsQuery.data.japaneseWords?.words} />
+					<LemmaBrowser lemmas={$lemmasQuery.data.Lemmas.lemmas} />
 				{/if}
 			{:else}
 				<h1>type kanji</h1>

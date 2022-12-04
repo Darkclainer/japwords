@@ -1,13 +1,40 @@
-query GetJapaneseWords($query: String!) {
-  japaneseWords(query: $query) {
-    words {
-      kanji
-      furigana
-      hiragana
-      acents
-      meaning
-      audio
-      examples
-    }
+query GetLemmas($query: String!) {
+  Lemmas(query: $query) {
+    lemmas {
+      slug {
+        word
+        hiragana
+        furigana {
+          kanji
+          hiragana
+        }
+        pitch {
+          hiragana
+          pitch
+        } 
+      }
+      tags
+      forms {
+        word
+        hiragana
+        furigana {
+          kanji
+          hiragana
+        }
+        pitch {
+          hiragana
+          pitch
+        } 
+      }
+      senses {
+        definition
+        partOfSpeech
+        tags
+      }
+      audio {
+        type
+        source
+      }
+    } 
   }
 }
