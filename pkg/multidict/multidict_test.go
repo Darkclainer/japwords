@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"japwords/pkg/lemma"
+	"github.com/Darkclainer/japwords/pkg/lemma"
 )
 
 type LemmaDictTest func(ctx context.Context, query string) ([]*lemma.Lemma, error)

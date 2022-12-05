@@ -1,10 +1,10 @@
 package fxapp
 
 import (
-	"japwords/pkg/cachedict"
-	"japwords/pkg/config"
-	"japwords/pkg/jisho"
-	"japwords/pkg/lemma"
+	"github.com/Darkclainer/japwords/pkg/cachedict"
+	"github.com/Darkclainer/japwords/pkg/config"
+	"github.com/Darkclainer/japwords/pkg/jisho"
+	"github.com/Darkclainer/japwords/pkg/lemma"
 )
 
 func NewJisho(jishoClient jisho.BasicDict, uc *config.UserConfig) (*cachedict.CacheDict[[]*lemma.Lemma], error) {

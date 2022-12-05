@@ -9,8 +9,8 @@ import (
 	"github.com/99designs/gqlgen/graphql/handler/transport"
 	"go.uber.org/fx"
 
-	"japwords/graphql/gqlgenerated"
-	"japwords/pkg/multidict"
+	"github.com/Darkclainer/japwords/graphql/gqlgenerated"
+	"github.com/Darkclainer/japwords/pkg/multidict"
 )
 
 // This file will not be regenerated automatically.

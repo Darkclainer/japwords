@@ -6,8 +6,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"japwords/pkg/htmltest"
-	"japwords/pkg/lemma"
+	"github.com/Darkclainer/japwords/pkg/htmltest"
+	"github.com/Darkclainer/japwords/pkg/lemma"
 )
 
 func Test_parseHTML(t *testing.T) {

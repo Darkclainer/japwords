@@ -4,7 +4,7 @@ import (
 	"context"
 	"net/url"
 
-	"japwords/pkg/lemma"
+	"github.com/Darkclainer/japwords/pkg/lemma"
 )
 
 const defaultBaseURL = "https://www.wadoku.de/search/"

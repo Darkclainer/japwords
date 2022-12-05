@@ -5,8 +5,8 @@ import (
 
 	"go.uber.org/fx"
 
-	"japwords/pkg/config"
-	"japwords/pkg/multidict"
+	"github.com/Darkclainer/japwords/pkg/config"
+	"github.com/Darkclainer/japwords/pkg/multidict"
 )
 
 type MultiDictIn struct {

@@ -1,4 +1,4 @@
-module japwords
+module github.com/Darkclainer/japwords
 
 go 1.19
 

@@ -7,8 +7,8 @@ import (
 
 	"go.uber.org/multierr"
 
-	"japwords/pkg/lemma"
-	"japwords/pkg/workerpool"
+	"github.com/Darkclainer/japwords/pkg/lemma"
+	"github.com/Darkclainer/japwords/pkg/workerpool"
 )
 
 // MultiDict

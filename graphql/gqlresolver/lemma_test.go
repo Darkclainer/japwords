@@ -6,8 +6,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"japwords/graphql/gqlmodel"
-	"japwords/pkg/lemma"
+	"github.com/Darkclainer/japwords/graphql/gqlmodel"
+	"github.com/Darkclainer/japwords/pkg/lemma"
 )
 
 func Test_convertLemma(t *testing.T) {

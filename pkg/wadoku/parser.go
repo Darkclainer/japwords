@@ -11,7 +11,7 @@ import (
 	"github.com/andybalholm/cascadia"
 	"golang.org/x/net/html"
 
-	"japwords/pkg/lemma"
+	"github.com/Darkclainer/japwords/pkg/lemma"
 )
 
 type reading struct {

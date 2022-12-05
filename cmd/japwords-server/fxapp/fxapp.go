@@ -3,13 +3,13 @@ package fxapp
 import (
 	"go.uber.org/fx"
 
-	"japwords/graphql/gqlresolver"
-	"japwords/pkg/basicdict"
-	"japwords/pkg/config"
-	"japwords/pkg/httpserver"
-	"japwords/pkg/logger"
-	"japwords/pkg/multidict"
-	"japwords/ui"
+	"github.com/Darkclainer/japwords/graphql/gqlresolver"
+	"github.com/Darkclainer/japwords/pkg/basicdict"
+	"github.com/Darkclainer/japwords/pkg/config"
+	"github.com/Darkclainer/japwords/pkg/httpserver"
+	"github.com/Darkclainer/japwords/pkg/logger"
+	"github.com/Darkclainer/japwords/pkg/multidict"
+	"github.com/Darkclainer/japwords/ui"
 )
 
 func NewApp(userConfig *config.UserConfig) (*fx.App, error) {

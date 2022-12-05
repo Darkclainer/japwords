@@ -5,8 +5,9 @@ package gqlresolver
 
 import (
 	"context"
-	"japwords/graphql/gqlgenerated"
-	"japwords/graphql/gqlmodel"
+
+	"github.com/Darkclainer/japwords/graphql/gqlgenerated"
+	"github.com/Darkclainer/japwords/graphql/gqlmodel"
 )
 
 // Lemmas is the resolver for the Lemmas field.

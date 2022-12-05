@@ -10,8 +10,8 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"japwords/pkg/basicdict"
-	"japwords/pkg/fetcher"
+	"github.com/Darkclainer/japwords/pkg/basicdict"
+	"github.com/Darkclainer/japwords/pkg/fetcher"
 )
 
 // restoreCache used to download response on query if requested files are not presented

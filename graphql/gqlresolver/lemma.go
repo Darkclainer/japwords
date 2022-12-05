@@ -1,8 +1,8 @@
 package gqlresolver
 
 import (
-	"japwords/graphql/gqlmodel"
-	"japwords/pkg/lemma"
+	"github.com/Darkclainer/japwords/graphql/gqlmodel"
+	"github.com/Darkclainer/japwords/pkg/lemma"
 )
 
 func convertLemma(src *lemma.Lemma) *gqlmodel.Lemma {

@@ -1,8 +1,8 @@
 package fxapp
 
 import (
-	"japwords/pkg/config"
-	"japwords/pkg/fetcher"
+	"github.com/Darkclainer/japwords/pkg/config"
+	"github.com/Darkclainer/japwords/pkg/fetcher"
 )
 
 func NewFetcher(uc *config.UserConfig) (*fetcher.Fetcher, error) {

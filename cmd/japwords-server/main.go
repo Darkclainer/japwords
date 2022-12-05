@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"os"
 
-	"japwords/cmd/japwords-server/fxapp"
-	"japwords/pkg/config"
+	"github.com/Darkclainer/japwords/cmd/japwords-server/fxapp"
+	"github.com/Darkclainer/japwords/pkg/config"
 )
 
 func main() {

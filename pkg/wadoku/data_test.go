@@ -8,8 +8,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"japwords/pkg/basicdict/basicdicttest"
-	"japwords/pkg/lemma"
+	"github.com/Darkclainer/japwords/pkg/basicdict/basicdicttest"
+	"github.com/Darkclainer/japwords/pkg/lemma"
 )
 
 // TestParseFiles checks how web page is parsed.

@@ -11,7 +11,7 @@ import (
 	"github.com/PuerkitoBio/goquery"
 	"github.com/andybalholm/cascadia"
 
-	"japwords/pkg/lemma"
+	"github.com/Darkclainer/japwords/pkg/lemma"
 )
 
 func parseHTMLBytes(html []byte) ([]*lemma.Lemma, error) {
