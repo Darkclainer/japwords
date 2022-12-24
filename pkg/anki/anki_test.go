@@ -273,3 +273,15 @@ func handlerRespondStatusBody(t *testing.T, status int, body string) http.Handle
 		require.NoError(t, err)
 	})
 }
+
+func prepareMockServer(t *testing.T, handlers ...http.Handler) (context.Context, *Anki) {
+	server := httptest.NewServer(sequentialHandler(handlers...))
+	t.Cleanup(server.Close)
+	a, err := New(&Options{
+		URL: server.URL,
+	})
+	require.NoError(t, err)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+	t.Cleanup(cancel)
+	return ctx, a
+}
