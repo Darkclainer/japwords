@@ -109,7 +109,7 @@ func Test_Anki_request_Errors(t *testing.T) {
 			Name:           "bad status/bad body",
 			ResponseStatus: http.StatusBadRequest,
 			ResponseBody:   `{"`,
-			ErrorAssert: func(t assert.TestingT, err error, _ ...interface{}) bool {
+			ErrorAssert: func(t assert.TestingT, err error, _ ...any) bool {
 				var expectedError *UnexpectedResponseError
 				if !assert.ErrorAs(t, err, &expectedError) {
 					return false
@@ -124,7 +124,7 @@ func Test_Anki_request_Errors(t *testing.T) {
 			Name:           "bad status/empty error",
 			ResponseStatus: http.StatusBadRequest,
 			ResponseBody:   `{}`,
-			ErrorAssert: func(t assert.TestingT, err error, _ ...interface{}) bool {
+			ErrorAssert: func(t assert.TestingT, err error, _ ...any) bool {
 				var expectedError *UnexpectedResponseError
 				if !assert.ErrorAs(t, err, &expectedError) {
 					return false
@@ -139,7 +139,7 @@ func Test_Anki_request_Errors(t *testing.T) {
 			Name:           "bad status/server error",
 			ResponseStatus: http.StatusBadRequest,
 			ResponseBody:   `{"error": "myerror"}`,
-			ErrorAssert: func(t assert.TestingT, err error, _ ...interface{}) bool {
+			ErrorAssert: func(t assert.TestingT, err error, _ ...any) bool {
 				var expectedError *ServerError
 				if !assert.ErrorAs(t, err, &expectedError) {
 					return false
@@ -154,7 +154,7 @@ func Test_Anki_request_Errors(t *testing.T) {
 			Name:           "bad status/permission denied",
 			ResponseStatus: http.StatusBadRequest,
 			ResponseBody:   `{"error": "` + AnkiMessagePermissionDenied + `"}`,
-			ErrorAssert: func(t assert.TestingT, err error, _ ...interface{}) bool {
+			ErrorAssert: func(t assert.TestingT, err error, _ ...any) bool {
 				var expectedError *ServerError
 				if !assert.ErrorAs(t, err, &expectedError) {
 					return false
@@ -169,7 +169,7 @@ func Test_Anki_request_Errors(t *testing.T) {
 			Name:           "ok status/bad body",
 			ResponseStatus: http.StatusOK,
 			ResponseBody:   `{"`,
-			ErrorAssert: func(t assert.TestingT, err error, _ ...interface{}) bool {
+			ErrorAssert: func(t assert.TestingT, err error, _ ...any) bool {
 				var expectedError *UnexpectedResponseError
 				if !assert.ErrorAs(t, err, &expectedError) {
 					return false
@@ -184,7 +184,7 @@ func Test_Anki_request_Errors(t *testing.T) {
 			Name:           "ok status/server error",
 			ResponseStatus: http.StatusOK,
 			ResponseBody:   `{"error": "myerror"}`,
-			ErrorAssert: func(t assert.TestingT, err error, _ ...interface{}) bool {
+			ErrorAssert: func(t assert.TestingT, err error, _ ...any) bool {
 				var expectedError *ServerError
 				if !assert.ErrorAs(t, err, &expectedError) {
 					return false
@@ -199,7 +199,7 @@ func Test_Anki_request_Errors(t *testing.T) {
 			Name:           "ok status/permission denied",
 			ResponseStatus: http.StatusOK,
 			ResponseBody:   `{"error": "` + AnkiMessagePermissionDenied + `"}`,
-			ErrorAssert: func(t assert.TestingT, err error, _ ...interface{}) bool {
+			ErrorAssert: func(t assert.TestingT, err error, _ ...any) bool {
 				var expectedError *ServerError
 				if !assert.ErrorAs(t, err, &expectedError) {
 					return false

@@ -10,13 +10,13 @@ func (a *Anki) DeckNames(ctx context.Context) ([]string, error) {
 	return result, err
 }
 
-func (a *Anki) CreateDeck(ctx context.Context, deckName string) (int, error) {
+func (a *Anki) CreateDeck(ctx context.Context, deckName string) (int64, error) {
 	request := struct {
 		Deck string `json:"deck"`
 	}{
 		Deck: deckName,
 	}
-	var result int
+	var result int64
 	err := a.request(ctx, "createDeck", &request, &result)
 	return result, err
 }

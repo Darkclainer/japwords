@@ -31,7 +31,7 @@ func New(o *Options) (*Anki, error) {
 	}, nil
 }
 
-func (a *Anki) request(ctx context.Context, action string, params interface{}, result interface{}) error {
+func (a *Anki) request(ctx context.Context, action string, params any, result any) error {
 	requestBody := fullRequest{
 		Action:  action,
 		Version: apiVersion,
@@ -89,7 +89,7 @@ type fullRequest struct {
 	Action  string      `json:"action"`
 	Version int         `json:"version"`
 	Key     string      `json:"key,omitempty"`
-	Params  interface{} `json:"params,omitempty"`
+	Params  any `json:"params,omitempty"`
 }
 
 type errResponse struct {
@@ -97,6 +97,6 @@ type errResponse struct {
 }
 
 type fullResponse struct {
-	Result interface{} `json:"result"`
+	Result any `json:"result"`
 	Error  string      `json:"error"`
 }

@@ -1,6 +1,7 @@
 package anki
 
 // ATTENTION!
+//
 // To run integration tests you need:
 //
 // * Launch Anki with anki-connect plugin
@@ -9,6 +10,9 @@ package anki
 //	ANKI_CONNECT_URL=http://127.0.0.1:8765 go test
 //
 // * Create profile "anki-connect-test" (all operation operation that alter data should be contained somehow)
+//
+// Also note that model can not be deleted with anki-connect API for current moment, so
+// profiles will be anyway polluted with test models (note types).
 
 import (
 	"context"
@@ -72,6 +76,39 @@ func Test_Anki_Deck_Functions_Integration(t *testing.T) {
 	assert.Equal(t, initialDecks, currentDecks)
 	err = a.DeleteDecks(ctx, []string{newDeckName})
 	assert.NoError(t, err)
+}
+
+// Test_Anki_Model_Functions_Integration tests aquiring decks names, creation and deletion of decks in composition
+func Test_Anki_Model_Functions_Integration(t *testing.T) {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*60)
+	defer cancel()
+	a := aquireAnkiConnectWithProfile(t, ctx)
+	initialModels, err := a.ModelNames(ctx)
+	require.NoError(t, err)
+	newModelName := randString("modelfuncs")
+	id, err := a.CreateModel(ctx, &CreateModelRequest{
+		ModelName: newModelName,
+		Fields:    []string{"foo", "bar"},
+		CSS:       "",
+		CardTemplates: []CreateModelCardTemplate{
+			{
+				Name:  "mynote",
+				Front: "{{foo}}",
+				Back:  "{{bar}}",
+			},
+		},
+	})
+	require.NoError(t, err)
+	assert.NotEqual(t, 0, id)
+	currentModels, err := a.ModelNames(ctx)
+	require.NoError(t, err)
+	initialModels = append(initialModels, newModelName)
+	sort.Strings(initialModels)
+	sort.Strings(currentModels)
+	assert.Equal(t, initialModels, currentModels)
+	modelFields, err := a.ModelFieldNames(ctx, newModelName)
+	require.NoError(t, err)
+	assert.Equal(t, []string{"foo", "bar"}, modelFields)
 }
 
 func randString(prefix string) string {

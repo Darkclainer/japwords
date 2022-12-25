@@ -36,7 +36,7 @@ func Test_Anki_Version(t *testing.T) {
 				}),
 			},
 			Expected: 0,
-			ErrorAssert: func(t assert.TestingT, err error, _ ...interface{}) bool {
+			ErrorAssert: func(t assert.TestingT, err error, _ ...any) bool {
 				return assert.ErrorContains(t, err, "myspecialerror")
 			},
 		},
@@ -67,7 +67,7 @@ func Test_Anki_RequestPermission(t *testing.T) {
 					Params: nil,
 				}),
 				handlerRespondJSON(t, &fullResponse{
-					Result: map[string]interface{}{
+					Result: map[string]any{
 						"permission":    "granted",
 						"requireApiKey": true,
 						"version":       99,
@@ -85,7 +85,7 @@ func Test_Anki_RequestPermission(t *testing.T) {
 			Name: "denied",
 			Handlers: []http.Handler{
 				handlerRespondJSON(t, &fullResponse{
-					Result: map[string]interface{}{
+					Result: map[string]any{
 						"permission": "denied",
 						"version":    apiVersion,
 					},
@@ -95,7 +95,7 @@ func Test_Anki_RequestPermission(t *testing.T) {
 				Permission: "denied",
 				Version:    apiVersion,
 			},
-			ErrorAssert: func(t assert.TestingT, err error, _ ...interface{}) bool {
+			ErrorAssert: func(t assert.TestingT, err error, _ ...any) bool {
 				return assert.ErrorIs(t, err, ErrRequestPermissionDenied)
 			},
 		},
@@ -106,7 +106,7 @@ func Test_Anki_RequestPermission(t *testing.T) {
 					Error: "myspecificerror",
 				}),
 			},
-			ErrorAssert: func(t assert.TestingT, err error, _ ...interface{}) bool {
+			ErrorAssert: func(t assert.TestingT, err error, _ ...any) bool {
 				return assert.ErrorContains(t, err, "myspecificerror")
 			},
 		},
@@ -135,7 +135,7 @@ func Test_Anki_LoadProfile(t *testing.T) {
 			Handlers: []http.Handler{
 				handlerAssertRequest(t, &fullRequest{
 					Action: "loadProfile",
-					Params: map[string]interface{}{
+					Params: map[string]any{
 						"name": "myprofile",
 					},
 				}),
@@ -153,7 +153,7 @@ func Test_Anki_LoadProfile(t *testing.T) {
 					Result: false,
 				}),
 			},
-			ErrorAssert: func(t assert.TestingT, err error, _ ...interface{}) bool {
+			ErrorAssert: func(t assert.TestingT, err error, _ ...any) bool {
 				return assert.ErrorContains(t, err, "profile load failed")
 			},
 		},
