@@ -78,7 +78,7 @@ func Test_Anki_Deck_Functions_Integration(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-// Test_Anki_Model_Functions_Integration tests aquiring decks names, creation and deletion of decks in composition
+// Test_Anki_Model_Functions_Integration tests creation, and search of models
 func Test_Anki_Model_Functions_Integration(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*60)
 	defer cancel()
@@ -109,6 +109,54 @@ func Test_Anki_Model_Functions_Integration(t *testing.T) {
 	modelFields, err := a.ModelFieldNames(ctx, newModelName)
 	require.NoError(t, err)
 	assert.Equal(t, []string{"foo", "bar"}, modelFields)
+}
+
+// Test_Anki_Note_Functions_Integrations tests creation, deletion and search of notes
+func Test_Anki_Note_Functions_Integrations(t *testing.T) {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*60)
+	defer cancel()
+	a := aquireAnkiConnectWithProfile(t, ctx)
+	// create model for tests
+	modelName := randString("notesfuncs")
+	_, err := a.CreateModel(ctx, &CreateModelRequest{
+		ModelName: modelName,
+		Fields:    []string{"foo", "bar"},
+		CSS:       "",
+		CardTemplates: []CreateModelCardTemplate{
+			{
+				Name:  "mynote",
+				Front: "{{foo}}",
+				Back:  "{{bar}}",
+			},
+		},
+	})
+	require.NoError(t, err)
+	deckName := randString("deckfuncs")
+	_, err = a.CreateDeck(ctx, deckName)
+	require.NoError(t, err)
+	defer a.DeleteDecks(ctx, []string{deckName})
+	noteID, err := a.AddNote(
+		ctx,
+		&AddNoteParams{
+			Fields: map[string]string{
+				"foo": "hello",
+				"bar": "world",
+			},
+		},
+		&AddNoteOptions{
+			Deck:  deckName,
+			Model: modelName,
+		},
+	)
+	require.NoError(t, err)
+	searchedIds, err := a.FindNotes(ctx, fmt.Sprintf("nid:%d", noteID))
+	require.NoError(t, err)
+	assert.Equal(t, []int64{noteID}, searchedIds)
+	err = a.DeleteNotes(ctx, []int64{noteID})
+	require.NoError(t, err)
+	searchedIds, err = a.FindNotes(ctx, fmt.Sprintf("nid:%d", noteID))
+	require.NoError(t, err)
+	assert.Len(t, searchedIds, 0)
 }
 
 func randString(prefix string) string {
