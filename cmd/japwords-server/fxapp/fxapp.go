@@ -12,10 +12,10 @@ import (
 	"github.com/Darkclainer/japwords/ui"
 )
 
-func NewApp(userConfig *config.UserConfig) (*fx.App, error) {
+func NewApp(configMgr *config.Manager) (*fx.App, error) {
 	opts := []fx.Option{
 		// util staff
-		fx.Supply(userConfig),
+		fx.Supply(configMgr),
 		fx.Provide(
 			logger.New,
 		),

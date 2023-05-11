@@ -5,8 +5,15 @@ import (
 	"github.com/Darkclainer/japwords/pkg/httpserver"
 )
 
-func NewHttpServerConfig(uc *config.UserConfig) *httpserver.Config {
-	return &httpserver.Config{
-		Addr: uc.Addr,
+func NewHttpServerConfig(configMgr *config.Manager) *httpserver.Config {
+	part, err := configMgr.Register(config.ConsumerFunc(func(uc *config.UserConfig) (config.Part, error) {
+		return &httpserver.Config{
+			Addr: uc.Addr,
+		}, nil
+	}))
+	if err != nil {
+		return nil
 	}
+	conf := part.(*httpserver.Config)
+	return conf
 }

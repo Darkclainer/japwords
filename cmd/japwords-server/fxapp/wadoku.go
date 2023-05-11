@@ -7,7 +7,28 @@ import (
 	"github.com/Darkclainer/japwords/pkg/wadoku"
 )
 
-func NewWadoku(wadokuClient wadoku.BasicDict, uc *config.UserConfig) (*cachedict.CacheDict[[]*lemma.PitchedLemma], error) {
-	dict := wadoku.New(wadokuClient, uc.Dictionary.Wadoku.URL)
+type WadokuConfig struct {
+	URL string
+}
+
+func (c *WadokuConfig) Equal(o any) bool {
+	oc, ok := o.(*WadokuConfig)
+	if !ok {
+		return false
+	}
+	return c.URL == oc.URL
+}
+
+func NewWadoku(wadokuClient wadoku.BasicDict, configMgr *config.Manager) (*cachedict.CacheDict[[]*lemma.PitchedLemma], error) {
+	part, err := configMgr.Register(config.ConsumerFunc(func(uc *config.UserConfig) (config.Part, error) {
+		return &WadokuConfig{
+			URL: uc.Dictionary.Wadoku.URL,
+		}, nil
+	}))
+	if err != nil {
+		return nil, err
+	}
+	wadokuConfig := part.(*WadokuConfig)
+	dict := wadoku.New(wadokuClient, wadokuConfig.URL)
 	return cachedict.New[[]*lemma.PitchedLemma](dict)
 }

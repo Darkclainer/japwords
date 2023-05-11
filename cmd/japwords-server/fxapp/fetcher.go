@@ -5,17 +5,20 @@ import (
 	"github.com/Darkclainer/japwords/pkg/fetcher"
 )
 
-func NewFetcher(uc *config.UserConfig) (*fetcher.Fetcher, error) {
-	headers := uc.Dictionary.Headers
-	if headers == nil {
-		headers = make(map[string]string)
-	}
-	headers["User-Agent"] = uc.Dictionary.UserAgent
-	fetcherClient, err := fetcher.New(&fetcher.Config{
-		Headers: headers,
-	})
+func NewFetcher(configMgr *config.Manager) (*fetcher.Fetcher, error) {
+	part, err := configMgr.Register(config.ConsumerFunc(func(uc *config.UserConfig) (config.Part, error) {
+		var conf fetcher.Config
+		conf.Headers = uc.Dictionary.Headers
+		if conf.Headers == nil {
+			conf.Headers = make(map[string]string)
+		}
+		conf.Headers["User-Agent"] = uc.Dictionary.UserAgent
+		return &conf, nil
+	}))
 	if err != nil {
 		return nil, err
 	}
-	return fetcherClient, nil
+	fetcherConf := part.(*fetcher.Config)
+	fetcherClient, err := fetcher.New(fetcherConf)
+	return fetcherClient, err
 }

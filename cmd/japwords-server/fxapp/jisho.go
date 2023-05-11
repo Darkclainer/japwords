@@ -7,7 +7,28 @@ import (
 	"github.com/Darkclainer/japwords/pkg/lemma"
 )
 
-func NewJisho(jishoClient jisho.BasicDict, uc *config.UserConfig) (*cachedict.CacheDict[[]*lemma.Lemma], error) {
-	dict := jisho.New(jishoClient, uc.Dictionary.Jisho.URL)
+type JishoConfig struct {
+	URL string
+}
+
+func (c *JishoConfig) Equal(o any) bool {
+	oc, ok := o.(*JishoConfig)
+	if !ok {
+		return false
+	}
+	return c.URL == oc.URL
+}
+
+func NewJisho(jishoClient jisho.BasicDict, configMgr *config.Manager) (*cachedict.CacheDict[[]*lemma.Lemma], error) {
+	part, err := configMgr.Register(config.ConsumerFunc(func(uc *config.UserConfig) (config.Part, error) {
+		return &JishoConfig{
+			URL: uc.Dictionary.Jisho.URL,
+		}, nil
+	}))
+	if err != nil {
+		return nil, err
+	}
+	jishoConfig := part.(*JishoConfig)
+	dict := jisho.New(jishoClient, jishoConfig.URL)
 	return cachedict.New[[]*lemma.Lemma](dict)
 }

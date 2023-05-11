@@ -10,19 +10,26 @@ import (
 
 func main() {
 	flagOpts := ParseFlags()
-	// TODO: how to not to force config file? If it specified in
-	// command line, we will complain, if not, we should search it
-	// but not panic if there is no one
-	// some specified parametr for config?
-	userConfig, err := config.LoadConfig(flagOpts.ConfigPath, flagOpts.ConfigPathSet)
+	configMgr, err := prepareConfig(flagOpts.ConfigPath, flagOpts.ConfigPathSet)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error! Failed to read config: %s\n", err)
 		os.Exit(2)
 	}
-	app, err := fxapp.NewApp(userConfig)
+	app, err := fxapp.NewApp(configMgr)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error! Failed to create application: %s\n", err)
 		os.Exit(3)
 	}
 	app.Run()
+}
+
+func prepareConfig(path string, provided bool) (*config.Manager, error) {
+	if !provided {
+		path = config.DefaultConfigPath()
+	}
+	err := config.EnsureConfigFile(path)
+	if err != nil {
+		return nil, err
+	}
+	return config.New(path)
 }
