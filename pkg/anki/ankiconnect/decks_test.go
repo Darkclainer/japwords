@@ -1,4 +1,4 @@
-package anki
+package ankiconnect
 
 import (
 	"net/http"
@@ -7,37 +7,47 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func Test_Anki_Version(t *testing.T) {
+func Test_Anki_DeckNames(t *testing.T) {
 	testCases := []struct {
 		Name        string
 		Handlers    []http.Handler
-		Expected    int
+		Expected    []string
 		ErrorAssert assert.ErrorAssertionFunc
 	}{
 		{
-			Name: "OK",
+			Name: "some decks",
 			Handlers: []http.Handler{
 				handlerAssertRequest(t, &fullRequest{
-					Action: "version",
+					Action: "deckNames",
 					Params: nil,
 				}),
 				handlerRespondJSON(t, &fullResponse{
-					Result: 7,
+					Result: []string{"foo", "bar"},
 				}),
 			},
-			Expected:    7,
+			Expected:    []string{"foo", "bar"},
+			ErrorAssert: assert.NoError,
+		},
+		{
+			Name: "no decks",
+			Handlers: []http.Handler{
+				handlerRespondJSON(t, &fullResponse{
+					Result: nil,
+				}),
+			},
+			Expected:    nil,
 			ErrorAssert: assert.NoError,
 		},
 		{
 			Name: "error",
 			Handlers: []http.Handler{
 				handlerRespondJSON(t, &fullResponse{
-					Error: "myspecialerror",
+					Error: "myspecificerr",
 				}),
 			},
-			Expected: 0,
+			Expected: nil,
 			ErrorAssert: func(t assert.TestingT, err error, _ ...any) bool {
-				return assert.ErrorContains(t, err, "myspecialerror")
+				return assert.ErrorContains(t, err, "myspecificerr")
 			},
 		},
 	}
@@ -45,133 +55,104 @@ func Test_Anki_Version(t *testing.T) {
 		tc := testCases[i]
 		t.Run(tc.Name, func(t *testing.T) {
 			ctx, a := prepareMockServer(t, tc.Handlers...)
-			result, err := a.Version(ctx)
+			result, err := a.DeckNames(ctx)
 			tc.ErrorAssert(t, err)
 			assert.Equal(t, tc.Expected, result)
 		})
 	}
 }
 
-func Test_Anki_RequestPermission(t *testing.T) {
+func Test_Anki_CreateDeck(t *testing.T) {
 	testCases := []struct {
 		Name        string
 		Handlers    []http.Handler
-		Expected    *RequestPermissionResponse
+		DeckName    string
+		Expected    int64
 		ErrorAssert assert.ErrorAssertionFunc
 	}{
 		{
-			Name: "granted",
+			Name:     "ok",
+			DeckName: "myname",
 			Handlers: []http.Handler{
 				handlerAssertRequest(t, &fullRequest{
-					Action: "requestPermission",
-					Params: nil,
-				}),
-				handlerRespondJSON(t, &fullResponse{
-					Result: map[string]any{
-						"permission":    "granted",
-						"requireApiKey": true,
-						"version":       99,
-					},
-				}),
-			},
-			Expected: &RequestPermissionResponse{
-				Permission:    "granted",
-				RequireAPIKey: true,
-				Version:       99,
-			},
-			ErrorAssert: assert.NoError,
-		},
-		{
-			Name: "denied",
-			Handlers: []http.Handler{
-				handlerRespondJSON(t, &fullResponse{
-					Result: map[string]any{
-						"permission": "denied",
-						"version":    apiVersion,
-					},
-				}),
-			},
-			Expected: &RequestPermissionResponse{
-				Permission: "denied",
-				Version:    apiVersion,
-			},
-			ErrorAssert: func(t assert.TestingT, err error, _ ...any) bool {
-				return assert.ErrorIs(t, err, ErrRequestPermissionDenied)
-			},
-		},
-		{
-			Name: "error",
-			Handlers: []http.Handler{
-				handlerRespondJSON(t, &fullResponse{
-					Error: "myspecificerror",
-				}),
-			},
-			ErrorAssert: func(t assert.TestingT, err error, _ ...any) bool {
-				return assert.ErrorContains(t, err, "myspecificerror")
-			},
-		},
-	}
-	for i := range testCases {
-		tc := testCases[i]
-		t.Run(tc.Name, func(t *testing.T) {
-			ctx, a := prepareMockServer(t, tc.Handlers...)
-			result, err := a.RequestPermission(ctx)
-			tc.ErrorAssert(t, err)
-			assert.Equal(t, tc.Expected, result)
-		})
-	}
-}
-
-func Test_Anki_LoadProfile(t *testing.T) {
-	testCases := []struct {
-		Name        string
-		Handlers    []http.Handler
-		ProfileName string
-		ErrorAssert assert.ErrorAssertionFunc
-	}{
-		{
-			Name:        "success",
-			ProfileName: "myprofile",
-			Handlers: []http.Handler{
-				handlerAssertRequest(t, &fullRequest{
-					Action: "loadProfile",
+					Action: "createDeck",
 					Params: map[string]any{
-						"name": "myprofile",
+						"deck": "myname",
 					},
 				}),
 				handlerRespondJSON(t, &fullResponse{
-					Result: true,
+					Result: int64(123321),
 				}),
 			},
+			Expected:    123321,
 			ErrorAssert: assert.NoError,
-		},
-		{
-			Name:        "failed",
-			ProfileName: "myprofile",
-			Handlers: []http.Handler{
-				handlerRespondJSON(t, &fullResponse{
-					Result: false,
-				}),
-			},
-			ErrorAssert: func(t assert.TestingT, err error, _ ...any) bool {
-				return assert.ErrorContains(t, err, "profile load failed")
-			},
 		},
 		{
 			Name: "error",
 			Handlers: []http.Handler{
 				handlerRespondJSON(t, &fullResponse{
-					Error: "myspecificerror",
+					Error: "myspecificerr",
 				}),
 			},
-			ErrorAssert: assert.Error,
+			ErrorAssert: func(t assert.TestingT, err error, _ ...any) bool {
+				return assert.ErrorContains(t, err, "myspecificerr")
+			},
 		},
 	}
 	for i := range testCases {
 		tc := testCases[i]
 		t.Run(tc.Name, func(t *testing.T) {
 			ctx, a := prepareMockServer(t, tc.Handlers...)
-			err := a.LoadProfile(ctx, tc.ProfileName)
+			result, err := a.CreateDeck(ctx, tc.DeckName)
+			tc.ErrorAssert(t, err)
+			assert.Equal(t, tc.Expected, result)
+		})
+	}
+}
+
+func Test_Anki_DeleteDecks(t *testing.T) {
+	testCases := []struct {
+		Name        string
+		Handlers    []http.Handler
+		DeckNames   []string
+		CardsToo    bool
+		ErrorAssert assert.ErrorAssertionFunc
+	}{
+		{
+			Name:      "ok",
+			DeckNames: []string{"foo", "bar"},
+			CardsToo:  true,
+			Handlers: []http.Handler{
+				handlerAssertRequest(t, &fullRequest{
+					Action: "deleteDecks",
+					Params: map[string]any{
+						"decks":    []any{"foo", "bar"},
+						"cardsToo": true,
+					},
+				}),
+				handlerRespondJSON(t, &fullResponse{
+					Result: nil,
+				}),
+			},
+			ErrorAssert: assert.NoError,
+		},
+		{
+			Name: "error",
+			Handlers: []http.Handler{
+				handlerRespondJSON(t, &fullResponse{
+					Error: "myspecificerr",
+				}),
+			},
+			ErrorAssert: func(t assert.TestingT, err error, _ ...any) bool {
+				return assert.ErrorContains(t, err, "myspecificerr")
+			},
+		},
+	}
+	for i := range testCases {
+		tc := testCases[i]
+		t.Run(tc.Name, func(t *testing.T) {
+			ctx, a := prepareMockServer(t, tc.Handlers...)
+			err := a.DeleteDecks(ctx, tc.DeckNames)
 			tc.ErrorAssert(t, err)
 		})
 	}

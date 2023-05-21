@@ -1,4 +1,4 @@
-package anki
+package ankiconnect
 
 import (
 	"testing"

@@ -1,4 +1,4 @@
-package anki
+package ankiconnect
 
 // ATTENTION!
 //
@@ -45,7 +45,7 @@ func Test_Anki_RequestPermission_Integration(t *testing.T) {
 	defer cancel()
 	response, err := a.RequestPermission(ctx)
 	require.NoError(t, err)
-	assert.Equal(t, "granted", response.Permission)
+	assert.Equal(t, PermissionGranted, response.Permission)
 }
 
 func Test_Anki_LoadProfile_Integration(t *testing.T) {

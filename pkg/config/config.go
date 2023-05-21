@@ -10,7 +10,15 @@ type UserConfig struct {
 	Dictionary Dictionary `yaml:"dictionary" koanf:"dictionary"`
 }
 
-type Anki struct{}
+type Anki struct {
+	Addr   string `koanf:"addr"`
+	APIKey string `koanf:"api-key"`
+
+	Deck     string `koanf:"deck"`
+	NoteType string `koanf:"note-type"`
+
+	FieldMapping map[string]string `koanf:"fields"`
+}
 
 type Dictionary struct {
 	Workers   int               `yaml:"workers" koanf:"workers"`

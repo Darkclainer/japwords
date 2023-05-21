@@ -1,102 +1,108 @@
 package anki
 
 import (
-	"bytes"
 	"context"
-	"encoding/json"
-	"net/http"
+	"sync"
+
+	"golang.org/x/exp/slices"
+
+	"github.com/Darkclainer/japwords/pkg/anki/ankiconnect"
 )
 
-const apiVersion = 6
-
 type Anki struct {
-	client http.Client
-	url    string
-	apiKey string
+	mu      sync.Mutex
+	wrapper *ankiWrapper
 }
 
-type Options struct {
-	URL       string
-	APIKey    string
-	Transport http.Transport
+type ankiWrapper struct {
+	client *ankiconnect.Anki
+	config *Config
 }
 
-func New(o *Options) (*Anki, error) {
-	return &Anki{
-		client: http.Client{
-			Transport: &o.Transport,
-		},
-		apiKey: o.APIKey,
-		url:    o.URL,
-	}, nil
-}
-
-func (a *Anki) request(ctx context.Context, action string, params any, result any) error {
-	requestBody := fullRequest{
-		Action:  action,
-		Version: apiVersion,
-		Params:  params,
-		Key:     a.apiKey,
+func New(config *Config) (*Anki, error) {
+	a := &Anki{}
+	err := a.ReloadConfig(config)
+	if err != nil {
+		return nil, err
 	}
-	body, err := json.Marshal(&requestBody)
+	return a, nil
+}
+
+func (a *Anki) ReloadConfig(config *Config) error {
+	client, err := ankiconnect.New(config.options())
 	if err != nil {
 		return err
 	}
-	request, err := http.NewRequest("POST", a.url, bytes.NewReader(body))
-	if err != nil {
-		return err
+	wrapper := &ankiWrapper{
+		client: client,
+		config: config,
 	}
-	request = request.WithContext(ctx)
-	request.Header.Set("Content-Type", "application/json; charset=utf-8")
-	request.Header.Set("Accept", "application/json; charset=utf-8")
-
-	response, err := a.client.Do(request)
-	if err != nil {
-		return &ConnectionError{Err: err}
-	}
-	defer response.Body.Close()
-
-	// I saw people do something status < OK || status >= BadRequest.
-	// But Go client automatically tries to manage redirects and other
-	// reponses from anki connect don't seem to be very useful, at least
-	// author doesn't mention any at all.
-	if response.StatusCode != http.StatusOK {
-		var errResp errResponse
-		// we will try to get error (despite anki-connect seems to return OK with error)
-		decodeErr := json.NewDecoder(response.Body).Decode(&errResp)
-		if decodeErr != nil {
-			return newUnableDecodedError(response.StatusCode, decodeErr)
-		}
-		if errResp.Error == "" {
-			return newUnexpectedStatusError(response.StatusCode)
-		}
-		return newServerError(errResp.Error)
-	}
-	fullResp := fullResponse{
-		Result: result,
-	}
-	err = json.NewDecoder(response.Body).Decode(&fullResp)
-	if err != nil {
-		return newUnableDecodedError(response.StatusCode, err)
-	}
-	if fullResp.Error != "" {
-		return newServerError(fullResp.Error)
-	}
+	a.mu.Lock()
+	defer a.mu.Unlock()
+	a.wrapper = wrapper
 	return nil
 }
 
-type fullRequest struct {
-	Action  string      `json:"action"`
-	Version int         `json:"version"`
-	Key     string      `json:"key,omitempty"`
-	Params  any `json:"params,omitempty"`
+type StateResult struct {
+	Version int
+
+	PermissionGranted bool
+	APIKeyRequired    bool
+
+	DeckExists        bool
+	NoteTypeExists    bool
+	NoteMissingFields []string
 }
 
-type errResponse struct {
-	Error string `json:"error"`
+// FullStateCheck checks that anki is available, decks and note types exists, also FieldMapping is possible
+func (a *Anki) FullStateCheck(ctx context.Context) (*StateResult, error) {
+	wrapper := a.getWrapper()
+	result := &StateResult{}
+	permissions, err := wrapper.client.RequestPermission(ctx)
+	if err != nil {
+		return nil, err
+	}
+	result.PermissionGranted = permissions.Permission == ankiconnect.PermissionGranted
+	result.Version = permissions.Version
+	result.APIKeyRequired = permissions.RequireAPIKey
+	if !result.PermissionGranted {
+		return result, nil
+	}
+
+	decks, err := wrapper.client.DeckNames(ctx)
+	if err != nil {
+		return result, err
+	}
+	deckExists := slices.ContainsFunc(decks, func(e string) bool { return e == wrapper.config.Deck })
+	result.DeckExists = deckExists
+
+	noteTypes, err := wrapper.client.ModelNames(ctx)
+	if err != nil {
+		return result, err
+	}
+	noteTypeExists := slices.ContainsFunc(noteTypes, func(e string) bool { return e == wrapper.config.NoteType })
+	result.NoteTypeExists = noteTypeExists
+	if noteTypeExists {
+		noteFields, err := wrapper.client.ModelFieldNames(ctx, wrapper.config.NoteType)
+		if err != nil {
+			return result, err
+		}
+		setFields := map[string]struct{}{}
+		for _, field := range noteFields {
+			setFields[field] = struct{}{}
+		}
+		for field := range wrapper.config.Mapping {
+			_, ok := setFields[field]
+			if !ok {
+				result.NoteMissingFields = append(result.NoteMissingFields, field)
+			}
+		}
+	}
+	return result, nil
 }
 
-type fullResponse struct {
-	Result any `json:"result"`
-	Error  string      `json:"error"`
+func (a *Anki) getWrapper() *ankiWrapper {
+	a.mu.Lock()
+	defer a.mu.Unlock()
+	return a.wrapper
 }
