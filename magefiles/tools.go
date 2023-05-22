@@ -22,7 +22,6 @@ import (
 	"os"
 	"path"
 	"path/filepath"
-	"strings"
 	"text/template"
 
 	"github.com/cavaliergopher/grab/v3"
@@ -41,17 +40,25 @@ type Tools mg.Namespace
 var managedTools = indexTools([]*Tool{
 	{
 		Name:    "gqlgen",
-		Version: "0.17.20",
+		Version: "0.17.31",
 		Installer: &GoToolInstaller{
 			URL: "github.com/99designs/gqlgen",
 		},
 	},
 	{
 		Name:    "golangci-lint",
-		Version: "1.49.0",
+		Version: "1.52.2",
 		Installer: &ArchiveToolInstaller{
 			URL:  "https://github.com/golangci/golangci-lint/releases/download/v{{.Version}}/golangci-lint-{{.Version}}-linux-amd64.tar.gz",
-			Path: "golangci-lint",
+			Path: "golangci-lint-{{.Version}}-linux-amd64/golangci-lint",
+		},
+	},
+	{
+		Name:    "mockery",
+		Version: "2.27.1",
+		Installer: &ArchiveToolInstaller{
+			URL:  "https://github.com/vektra/mockery/releases/download/v{{.Version}}/mockery_{{.Version}}_Linux_x86_64.tar.gz",
+			Path: "mockery",
 		},
 	},
 })
@@ -103,6 +110,11 @@ func (t Tools) Gqlgen(ctx context.Context) {
 // Golangcilint installs golangci-lint
 func (t Tools) Golangcilint(ctx context.Context) {
 	mg.CtxDeps(ctx, mg.F(Tools.Install, "golangci-lint"))
+}
+
+// Mockery installs mockery
+func (t Tools) Mockery(ctx context.Context) {
+	mg.CtxDeps(ctx, mg.F(Tools.Install, "mockery"))
 }
 
 // Clear remove all tools
@@ -176,7 +188,11 @@ type ArchiveToolInstaller struct {
 }
 
 func (t *ArchiveToolInstaller) Install(ctx context.Context, dst, name, version string) error {
-	url, err := interpolateVersionName(t.URL, name, version)
+	url, err := interpolateWithVersionName(t.URL, name, version)
+	if err != nil {
+		return err
+	}
+	targetPath, err := interpolateWithVersionName(t.Path, name, version)
 	if err != nil {
 		return err
 	}
@@ -209,14 +225,9 @@ func (t *ArchiveToolInstaller) Install(ctx context.Context, dst, name, version s
 	for {
 		header, err := tarReader.Next()
 		if err != nil {
-			return err
+			return fmt.Errorf("file not found or error in tar: %w", err)
 		}
-		paths := strings.SplitN(header.Name, "/", 2)
-		if len(paths) != 2 {
-			continue
-		}
-		filename := paths[1]
-		if header.Typeflag != tar.TypeReg || filename != t.Path {
+		if header.Typeflag != tar.TypeReg || header.Name != targetPath {
 			continue
 		}
 		_, err = io.Copy(tmpDst, tarReader)
@@ -250,7 +261,7 @@ func indexTools(tools []*Tool) map[string]*Tool {
 	return result
 }
 
-func interpolateVersionName(src, name, version string) (string, error) {
+func interpolateWithVersionName(src, name, version string) (string, error) {
 	t := template.New("")
 	t, err := t.Parse(src)
 	if err != nil {
