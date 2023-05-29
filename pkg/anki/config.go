@@ -1,10 +1,6 @@
 package anki
 
 import (
-	"html/template"
-	"net/http"
-	"net/http/httptest"
-
 	"github.com/Darkclainer/japwords/pkg/anki/ankiconnect"
 	"github.com/Darkclainer/japwords/pkg/config"
 )
@@ -16,12 +12,7 @@ type Config struct {
 	Deck     string
 	NoteType string
 
-	Mapping map[string]*Template
-}
-
-type Template struct {
-	Src  string
-	Tmpl *template.Template
+	Mapping TemplateMapping
 }
 
 func (c *Config) Equal(o any) bool {
@@ -29,23 +20,21 @@ func (c *Config) Equal(o any) bool {
 	if !ok {
 		return false
 	}
-	simpleEqual := c.Addr == oc.Addr &&
+	// both nil or same object
+	if c == oc {
+		return true
+	}
+	if c == nil || oc == nil {
+		return false
+	}
+	scalarEq := c.Addr == oc.Addr &&
 		c.APIKey == oc.APIKey &&
 		c.Deck == oc.Deck &&
 		c.NoteType == oc.NoteType
-	if !simpleEqual {
+	if !scalarEq {
 		return false
 	}
-	if len(c.Mapping) != len(oc.Mapping) {
-		return false
-	}
-	for field, tmpl := range c.Mapping {
-		otherTmpl, ok := oc.Mapping[field]
-		if !ok || otherTmpl.Src != tmpl.Src {
-			return false
-		}
-	}
-	return true
+	return c.Mapping.Equal(oc.Mapping)
 }
 
 func (c *Config) options() *ankiconnect.Options {
@@ -57,13 +46,25 @@ func (c *Config) options() *ankiconnect.Options {
 
 // ConfigReloader allows to change anki part of user config.
 type ConfigReloader struct {
-	anki   *Anki
-	config *Config
-	ucm    *config.Manager
+	anki           *Anki
+	updateConfigFn config.UpdateConfigFunc
+}
+
+func NewConfigReloader(anki *Anki, configManager *config.Manager) (*ConfigReloader, error) {
+	reloader := &ConfigReloader{
+		anki: anki,
+	}
+	_, updateFn, err := configManager.Register(reloader)
+	if err != nil {
+		return nil, err
+	}
+	reloader.updateConfigFn = updateFn
+	return reloader, nil
 }
 
 // Config is implementation if config.Cosumer interface
-func (cr *ConfigReloader) Config(uc *config.UserConfig) (*Config, error) {
+func (cr *ConfigReloader) Config(uc *config.UserConfig) (config.Part, error) {
+	// TODO: we can do check here
 	return &Config{
 		Addr:     uc.Anki.Addr,
 		APIKey:   uc.Anki.APIKey,
@@ -73,7 +74,7 @@ func (cr *ConfigReloader) Config(uc *config.UserConfig) (*Config, error) {
 }
 
 // Reload is implementation if config.Reloader interface
-func (cr *ConfigReloader) Reload(o any) error {
+func (cr *ConfigReloader) Reload(o config.Part) error {
 	oc, ok := o.(*Config)
 	if !ok {
 		panic("unreachable")
@@ -82,7 +83,8 @@ func (cr *ConfigReloader) Reload(o any) error {
 }
 
 func (cr *ConfigReloader) UpdateConnection(addr string, apikey string) error {
-	return cr.ucm.UpdateConfig(func(uc *config.UserConfig) error {
+	// TODO: check for addr?
+	return cr.updateConfigFn(func(uc *config.UserConfig) error {
 		uc.Anki.Addr = addr
 		uc.Anki.APIKey = apikey
 		return nil
@@ -90,8 +92,22 @@ func (cr *ConfigReloader) UpdateConnection(addr string, apikey string) error {
 }
 
 func (cr *ConfigReloader) UpdateDeck(name string) error {
-	return cr.ucm.UpdateConfig(func(uc *config.UserConfig) error {
+	return cr.updateConfigFn(func(uc *config.UserConfig) error {
 		uc.Anki.Deck = name
+		return nil
+	})
+}
+
+func (cr *ConfigReloader) UpdateNoteType(name string) error {
+	return cr.updateConfigFn(func(uc *config.UserConfig) error {
+		uc.Anki.NoteType = name
+		return nil
+	})
+}
+
+func (cr *ConfigReloader) UpdateMapping(mapping map[string]string) error {
+	return cr.updateConfigFn(func(uc *config.UserConfig) error {
+		uc.Anki.FieldMapping = mapping
 		return nil
 	})
 }

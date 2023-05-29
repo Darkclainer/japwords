@@ -11,12 +11,31 @@ type UserConfig struct {
 }
 
 type Anki struct {
-	Addr   string `yaml:"addr" koanf:"addr"`
+	// Addr is host:port of AnkiConnect address.
+	// Protocol must not be specified, anyway https seems to be redudant.
+	Addr string `yaml:"addr" koanf:"addr"`
+	// APIKey is secret that can be enabled on AnkiConnect.
+	// Can be any string. Empty string means that no secret will be used.
 	APIKey string `yaml:"api-key" koanf:"api-key"`
 
-	Deck     string `yaml:"deck" koanf:"deck"`
+	// Deck is the name of deck in Anki where new cards will be added.
+	// Deck can be any non-empty string, that doesn't contain `"` (Anki removes it),
+	// that doesn't start or end with spaces.
+	// I have found that Anki can convert some names with `::`, for example name
+	// `hello::::world` will have alias `hello::blank::world`, but this should not
+	// break anything.
+	Deck string `yaml:"deck" koanf:"deck"`
+	// NoteType is the name of note type that will be used for creation new notes in Anki.
+	// NoteType can be any non-empty string, that doesn't contain `"` (Anki removes it) and
+	// doesn't start or end with spaces.
 	NoteType string `yaml:"note-type" koanf:"note-type"`
 
+	// FieldMapping specifies how note fields will be filled in new notes.
+	//
+	// Key is the name of field in Anki. Can be any non-empty string that doesn't contain
+	// symbols `:`, `"`, `{` or `}` and doesn't start or end with spaces.
+	//
+	// Value should be valid go text/template. For more details see pkg/anki/template.go.
 	FieldMapping map[string]string `yaml:"fields" koanf:"fields"`
 }
 

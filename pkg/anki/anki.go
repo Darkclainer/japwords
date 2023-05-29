@@ -10,26 +10,42 @@ import (
 )
 
 type Anki struct {
+	constructor ClientConstructorFn
+
 	mu      sync.Mutex
 	wrapper *ankiWrapper
 }
 
 type ankiWrapper struct {
-	client *ankiconnect.Anki
+	client AnkiClient
 	config *Config
 }
 
-func New(config *Config) (*Anki, error) {
-	a := &Anki{}
-	err := a.ReloadConfig(config)
-	if err != nil {
-		return nil, err
+//go:generate $MOCKERY_TOOL --name AnkiClient --testonly=true --inpackage=true
+type AnkiClient interface {
+	RequestPermission(ctx context.Context) (*ankiconnect.RequestPermissionResponse, error)
+	DeckNames(ctx context.Context) ([]string, error)
+	ModelNames(ctx context.Context) ([]string, error)
+	ModelFieldNames(ctx context.Context, modelName string) ([]string, error)
+}
+
+type ClientConstructorFn func(*ankiconnect.Options) (AnkiClient, error)
+
+func DefaultClientConstructor(o *ankiconnect.Options) (AnkiClient, error) {
+	return ankiconnect.New(o)
+}
+
+// NewAnki return uninitialized Anki instance.
+// It should be inited before use with ReloadConfig.
+// It is intended to be used with ConfigReloader.
+func NewAnki(constuctor ClientConstructorFn) *Anki {
+	return &Anki{
+		constructor: constuctor,
 	}
-	return a, nil
 }
 
 func (a *Anki) ReloadConfig(config *Config) error {
-	client, err := ankiconnect.New(config.options())
+	client, err := a.constructor(config.options())
 	if err != nil {
 		return err
 	}

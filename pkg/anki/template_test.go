@@ -1,26 +1,625 @@
 package anki
 
 import (
-	"fmt"
-	"html/template"
-	"io"
+	"bytes"
 	"testing"
+	"text/template"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/Darkclainer/japwords/pkg/lemma"
 )
 
-type TestState struct {
-	World string
+func Test_convertMapping(t *testing.T) {
+	testLemma := &Lemma{
+		Slug: lemma.Word{
+			Word:     "hello",
+			Hiragana: "world",
+		},
+	}
+	testCases := []struct {
+		Name            string
+		SrcMapping      map[string]string
+		ExpectedMapping TemplateMapping
+		RenderExpected  map[string]string
+		ErrorAssert     assert.ErrorAssertionFunc
+	}{
+		{
+			Name:            "empty",
+			ExpectedMapping: map[string]*Template{},
+			RenderExpected:  map[string]string{},
+			ErrorAssert:     assert.NoError,
+		},
+		{
+			Name: "one key",
+			SrcMapping: map[string]string{
+				"key": `{{.Slug.Word}}`,
+			},
+			ExpectedMapping: map[string]*Template{
+				"key": {
+					Src: `{{.Slug.Word}}`,
+				},
+			},
+			RenderExpected: map[string]string{
+				"key": "hello",
+			},
+			ErrorAssert: assert.NoError,
+		},
+		{
+			Name: "sprig function",
+			SrcMapping: map[string]string{
+				"key": `{{upper .Slug.Word}}`,
+			},
+			ExpectedMapping: map[string]*Template{
+				"key": {
+					Src: `{{upper .Slug.Word}}`,
+				},
+			},
+			RenderExpected: map[string]string{
+				"key": "HELLO",
+			},
+			ErrorAssert: assert.NoError,
+		},
+		{
+			Name: "two key",
+			SrcMapping: map[string]string{
+				"key1": `{{.Slug.Word}}`,
+				"key2": `{{.Slug.Hiragana}}`,
+			},
+			ExpectedMapping: map[string]*Template{
+				"key1": {
+					Src: `{{.Slug.Word}}`,
+				},
+				"key2": {
+					Src: `{{.Slug.Hiragana}}`,
+				},
+			},
+			RenderExpected: map[string]string{
+				"key1": "hello",
+				"key2": "world",
+			},
+			ErrorAssert: assert.NoError,
+		},
+		{
+			Name: "error",
+			SrcMapping: map[string]string{
+				"key": `{{.NotExist}}`,
+			},
+			ErrorAssert: assert.Error,
+		},
+	}
+	for i := range testCases {
+		tc := testCases[i]
+		t.Run(tc.Name, func(t *testing.T) {
+			actualMapping, err := convertMapping(tc.SrcMapping)
+			tc.ErrorAssert(t, err)
+			if err != nil {
+				return
+			}
+			assert.True(t, tc.ExpectedMapping.Equal(actualMapping))
+			renderActual := map[string]string{}
+			for key, tmpl := range actualMapping {
+				var buffer bytes.Buffer
+				err := tmpl.Tmpl.Execute(&buffer, testLemma)
+				if err != nil {
+					t.Errorf("executing mapping with key %s failed: %s", key, err)
+					continue
+				}
+				renderActual[key] = buffer.String()
+			}
+			assert.Equal(t, tc.RenderExpected, renderActual)
+		})
+	}
 }
 
-func Test_TemplateTODO(t *testing.T) {
-	tmpl := template.New("test")
-	tmpl, err := tmpl.Parse(`
-hello {{ .Worlr}}
-`)
-	require.NoError(t, err)
-	tmpl = tmpl.Option("missingkey=error")
-	err = tmpl.Execute(io.Discard, &TestState{})
-	fmt.Printf("%T\n", err)
-	require.NoError(t, err)
+func Test_initTemplate(t *testing.T) {
+	testCases := []struct {
+		Name        string
+		Tmpl        string
+		Lemma       Lemma
+		Expected    string
+		ErrorAssert assert.ErrorAssertionFunc
+	}{
+		{
+			Name:        "empty",
+			ErrorAssert: assert.NoError,
+		},
+		{
+			Name:        "check template return error",
+			Tmpl:        "{{.notexists}}",
+			ErrorAssert: assert.Error,
+		},
+		{
+			Name: "sprig functions imported",
+			Lemma: Lemma{
+				Slug: lemma.Word{
+					Word: "hello",
+				},
+			},
+			Tmpl:        "{{upper .Slug.Word}}",
+			Expected:    "HELLO",
+			ErrorAssert: assert.NoError,
+		},
+		{
+			Name: "renderFurigana",
+			Lemma: Lemma{
+				Slug: lemma.Word{
+					Furigana: lemma.Furigana{
+						{
+							Kanji:    "he",
+							Hiragana: "12",
+						},
+						{
+							Kanji:    "llo",
+							Hiragana: "345",
+						},
+					},
+				},
+			},
+			Tmpl:        "{{renderFurigana .Slug}}",
+			Expected:    "he[12]llo[345]",
+			ErrorAssert: assert.NoError,
+		},
+		{
+			Name: "renderPitch",
+			Lemma: Lemma{
+				Slug: lemma.Word{
+					Hiragana: "hello",
+					Pitches: []lemma.Pitch{
+						{
+							Position: 1,
+							IsHigh:   false,
+						},
+						{
+							Position: 5,
+							IsHigh:   true,
+						},
+					},
+				},
+			},
+			Tmpl:        `{{renderPitch .Slug "span" "u" "r" "d" "l"}}`,
+			Expected:    `<span class="d">h</span><span class="u l">ello</span>`,
+			ErrorAssert: assert.NoError,
+		},
+	}
+	for i := range testCases {
+		tc := testCases[i]
+		t.Run(tc.Name, func(t *testing.T) {
+			tmpl := template.New("testtemplate")
+			err := initTemplate(tmpl, tc.Tmpl)
+			tc.ErrorAssert(t, err)
+			if err != nil {
+				return
+			}
+			var buffer bytes.Buffer
+			err = tmpl.Execute(&buffer, &tc.Lemma)
+			require.NoError(t, err)
+			assert.Equal(t, tc.Expected, buffer.String())
+		})
+	}
+}
+
+// Test_checkTemplate tests that unexisting fields returns errors
+func Test_checkTemplate(t *testing.T) {
+	testCases := []struct {
+		Name        string
+		Tmpl        string
+		ErrorAssert assert.ErrorAssertionFunc
+	}{
+		{
+			Name:        "empty",
+			Tmpl:        "",
+			ErrorAssert: assert.NoError,
+		},
+		{
+			Name:        "Slug.Word",
+			Tmpl:        "{{.Slug.Word}}",
+			ErrorAssert: assert.NoError,
+		},
+		{
+			Name:        "Audio",
+			Tmpl:        `{{index .Audio "mp3"}}`,
+			ErrorAssert: assert.NoError,
+		},
+		{
+			Name:        "Not existing field",
+			Tmpl:        `{{.hello}}`,
+			ErrorAssert: assert.Error,
+		},
+	}
+	for i := range testCases {
+		tc := testCases[i]
+		t.Run(tc.Name, func(t *testing.T) {
+			tmpl := template.Must(template.New("testtemplate").Parse(tc.Tmpl))
+			tmpl.Option("missingkey=error")
+			err := checkTemplate(tmpl)
+			tc.ErrorAssert(t, err)
+		})
+	}
+}
+
+func Test_renderFurigana(t *testing.T) {
+	testCases := []struct {
+		Name     string
+		Furigana lemma.Furigana
+		Expected string
+	}{
+		{
+			Name: "empty",
+		},
+		{
+			Name: "kanji single",
+			Furigana: lemma.Furigana{
+				{
+					Kanji: "hel",
+				},
+			},
+			Expected: "hel",
+		},
+		{
+			Name: "kanji many",
+			Furigana: lemma.Furigana{
+				{
+					Kanji: "hel",
+				},
+				{
+					Kanji: "lo",
+				},
+			},
+			Expected: "hello",
+		},
+		{
+			Name: "hiraga single",
+			Furigana: lemma.Furigana{
+				{
+					Hiragana: "hel",
+				},
+			},
+			Expected: "hel",
+		},
+		{
+			Name: "hiraga many",
+			Furigana: lemma.Furigana{
+				{
+					Hiragana: "hel",
+				},
+				{
+					Hiragana: "lo",
+				},
+			},
+			Expected: "hello",
+		},
+		{
+			Name: "hiraga kanji",
+			Furigana: lemma.Furigana{
+				{
+					Hiragana: "he",
+				},
+				{
+					Kanji: "l",
+				},
+				{
+					Hiragana: "lo",
+				},
+			},
+			Expected: "hello",
+		},
+		{
+			Name: "furigana",
+			Furigana: lemma.Furigana{
+				{
+					Hiragana: "hel",
+					Kanji:    "12",
+				},
+				{
+					Hiragana: "lo",
+					Kanji:    "34",
+				},
+			},
+			Expected: "12[hel]34[lo]",
+		},
+		{
+			Name: "mixed",
+			Furigana: lemma.Furigana{
+				{
+					Hiragana: "hel",
+					Kanji:    "12",
+				},
+				{
+					Hiragana: "lo",
+					Kanji:    "34",
+				},
+				{
+					Hiragana: "w",
+				},
+				{
+					Kanji: "o",
+				},
+				{
+					Hiragana: "rld",
+					Kanji:    "56",
+				},
+			},
+			Expected: "12[hel]34[lo]wo56[rld]",
+		},
+	}
+	for i := range testCases {
+		tc := testCases[i]
+		t.Run(t.Name(), func(t *testing.T) {
+			word := lemma.Word{
+				Furigana: tc.Furigana,
+			}
+			actual := renderFuriganaTemplate(&word)
+			assert.Equal(t, tc.Expected, actual)
+		})
+
+	}
+}
+
+func Test_renderPitch(t *testing.T) {
+	directionClasses := []string{"u", "r", "d", "l"}
+	testCases := []struct {
+		Name             string
+		Word             lemma.Word
+		Tag              string
+		DirectionClasses []string
+		Expected         string
+	}{
+		{
+			Name:             "empty",
+			Tag:              "span",
+			DirectionClasses: directionClasses,
+		},
+		{
+			Name: "no pitch",
+			Word: lemma.Word{
+				Hiragana: "hello",
+				Pitches:  []lemma.Pitch{},
+			},
+			DirectionClasses: directionClasses,
+			Tag:              "span",
+			Expected:         `<span class="">hello</span>`,
+		},
+		{
+			Name: "simple up",
+			Word: lemma.Word{
+				Hiragana: "hello",
+				Pitches: []lemma.Pitch{
+					{
+						Position: 5,
+						IsHigh:   true,
+					},
+				},
+			},
+			Tag:              "span",
+			Expected:         `<span class="u">hello</span>`,
+			DirectionClasses: directionClasses,
+		},
+		{
+			Name: "tail up down",
+			Word: lemma.Word{
+				Hiragana: "hello",
+				Pitches: []lemma.Pitch{
+					{
+						Position: 5,
+						IsHigh:   true,
+					},
+					{
+						Position: 5,
+						IsHigh:   false,
+					},
+				},
+			},
+			Tag:              "span",
+			Expected:         `<span class="u r">hello</span>`,
+			DirectionClasses: directionClasses,
+		},
+		{
+			Name: "head down up",
+			Word: lemma.Word{
+				Hiragana: "hello",
+				Pitches: []lemma.Pitch{
+					{
+						Position: 0,
+						IsHigh:   false,
+					},
+					{
+						Position: 5,
+						IsHigh:   true,
+					},
+				},
+			},
+			Tag:              "span",
+			Expected:         `<span class="u l">hello</span>`,
+			DirectionClasses: directionClasses,
+		},
+		{
+			Name: "middle down up",
+			Word: lemma.Word{
+				Hiragana: "hello",
+				Pitches: []lemma.Pitch{
+					{
+						Position: 2,
+						IsHigh:   false,
+					},
+					{
+						Position: 5,
+						IsHigh:   true,
+					},
+				},
+			},
+			Tag:              "span",
+			Expected:         `<span class="d">he</span><span class="u l">llo</span>`,
+			DirectionClasses: directionClasses,
+		},
+		{
+			Name: "middle up down",
+			Word: lemma.Word{
+				Hiragana: "hello",
+				Pitches: []lemma.Pitch{
+					{
+						Position: 2,
+						IsHigh:   true,
+					},
+					{
+						Position: 5,
+						IsHigh:   false,
+					},
+				},
+			},
+			Tag:              "span",
+			Expected:         `<span class="u">he</span><span class="d l">llo</span>`,
+			DirectionClasses: directionClasses,
+		},
+		{
+			Name: "incomplet",
+			Word: lemma.Word{
+				Hiragana: "hello",
+				Pitches: []lemma.Pitch{
+					{
+						Position: 2,
+						IsHigh:   true,
+					},
+				},
+			},
+			Tag:              "span",
+			Expected:         `<span class="u">he</span><span class="">llo</span>`,
+			DirectionClasses: directionClasses,
+		},
+		{
+			Name: "all directions",
+			Word: lemma.Word{
+				Hiragana: "hello",
+				Pitches: []lemma.Pitch{
+					{
+						Position: 2,
+						IsHigh:   false,
+					},
+					{
+						Position: 5,
+						IsHigh:   true,
+					},
+					{
+						Position: 5,
+						IsHigh:   false,
+					},
+				},
+			},
+			Tag:              "span",
+			Expected:         `<span class="d">he</span><span class="u l r">llo</span>`,
+			DirectionClasses: directionClasses,
+		},
+		{
+			Name: "different tag",
+			Word: lemma.Word{
+				Hiragana: "hello",
+				Pitches: []lemma.Pitch{
+					{
+						Position: 2,
+						IsHigh:   false,
+					},
+					{
+						Position: 5,
+						IsHigh:   true,
+					},
+					{
+						Position: 5,
+						IsHigh:   false,
+					},
+				},
+			},
+			Tag:              "div",
+			Expected:         `<div class="d">he</div><div class="u l r">llo</div>`,
+			DirectionClasses: directionClasses,
+		},
+		{
+			Name: "different classes",
+			Word: lemma.Word{
+				Hiragana: "hello",
+				Pitches: []lemma.Pitch{
+					{
+						Position: 2,
+						IsHigh:   false,
+					},
+					{
+						Position: 5,
+						IsHigh:   true,
+					},
+					{
+						Position: 5,
+						IsHigh:   false,
+					},
+				},
+			},
+			Tag:              "div",
+			Expected:         `<div class="down">he</div><div class="up left right">llo</div>`,
+			DirectionClasses: []string{"up", "right", "down", "left"},
+		},
+		{
+			Name: "more classes than needed",
+			Word: lemma.Word{
+				Hiragana: "hello",
+				Pitches: []lemma.Pitch{
+					{
+						Position: 2,
+						IsHigh:   false,
+					},
+					{
+						Position: 5,
+						IsHigh:   true,
+					},
+					{
+						Position: 5,
+						IsHigh:   false,
+					},
+				},
+			},
+			Tag:              "div",
+			Expected:         `<div class="down">he</div><div class="up left right">llo</div>`,
+			DirectionClasses: []string{"up", "right", "down", "left", "extra"},
+		},
+	}
+	for i := range testCases {
+		tc := testCases[i]
+		t.Run(tc.Name, func(t *testing.T) {
+			actual, err := renderPitch(&tc.Word, tc.Tag, tc.DirectionClasses)
+			require.NoError(t, err)
+			assert.Equal(t, tc.Expected, actual)
+		})
+	}
+}
+
+func Test_renderPitch_error(t *testing.T) {
+	directionClasses := []string{"u", "r", "d", "l"}
+	testCases := []struct {
+		Name             string
+		Tag              string
+		DirectionClasses []string
+		ErrorAssert      assert.ErrorAssertionFunc
+	}{
+		{
+			Name:             "no tag",
+			DirectionClasses: directionClasses,
+			Tag:              "",
+			ErrorAssert: func(tt assert.TestingT, err error, _ ...interface{}) bool {
+				return assert.ErrorContains(tt, err, "tag")
+			},
+		},
+		{
+			Name:             "not enough classes",
+			Tag:              "span",
+			DirectionClasses: directionClasses[:3],
+			ErrorAssert: func(tt assert.TestingT, err error, _ ...interface{}) bool {
+				return assert.ErrorContains(tt, err, "direction classes")
+			},
+		},
+	}
+	for i := range testCases {
+		tc := testCases[i]
+		t.Run(tc.Name, func(t *testing.T) {
+			_, err := renderPitch(&lemma.Word{}, tc.Tag, tc.DirectionClasses)
+			tc.ErrorAssert(t, err)
+		})
+	}
 }
