@@ -64,6 +64,7 @@
 							class:border-t={pitch.pitch.includes(PitchType.Up)}
 							class:border-b={pitch.pitch.includes(PitchType.Down)}
 							class:border-r={pitch.pitch.includes(PitchType.Right)}
+							class:border-l={pitch.pitch.includes(PitchType.Left)}
 							class="border-blue">{pitch.hiragana}</span
 						>
 					{/each}

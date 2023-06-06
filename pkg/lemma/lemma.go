@@ -41,6 +41,41 @@ type Word struct {
 	Pitches []Pitch
 }
 
+func (w *Word) PitchShapes() []PitchShape {
+	var pitchShapes []PitchShape
+	// we copy first pitch, so we always think, that there was some pitch before current,
+	// for invariant
+	previousPitch := Pitch{
+		Position: 0,
+	}
+	if len(w.Pitches) > 0 {
+		previousPitch.IsHigh = w.Pitches[0].IsHigh
+	}
+	for i, currentPitch := range w.Pitches {
+		directions := []AccentDirection{convertBasePitch(currentPitch.IsHigh)}
+		if previousPitch.Position == currentPitch.Position {
+			if i == len(w.Pitches)-1 && previousPitch.IsHigh != currentPitch.IsHigh {
+				pitchShapes[i-1].Directions = append(pitchShapes[i-1].Directions, AccentDirectionRight)
+			}
+			continue
+		}
+		if previousPitch.IsHigh != currentPitch.IsHigh {
+			directions = append(directions, AccentDirectionLeft)
+		}
+		pitchShapes = append(pitchShapes, PitchShape{
+			Hiragana:   w.Hiragana[previousPitch.Position:currentPitch.Position],
+			Directions: directions,
+		})
+		previousPitch = currentPitch
+	}
+	if previousPitch.Position < len(w.Hiragana)-1 {
+		pitchShapes = append(pitchShapes, PitchShape{
+			Hiragana: w.Hiragana[previousPitch.Position:],
+		})
+	}
+	return pitchShapes
+}
+
 type Pitch struct {
 	Position int
 	IsHigh   bool
@@ -58,4 +93,44 @@ type WordSense struct {
 	Definition   []string
 	PartOfSpeech []string
 	Tags         []string
+}
+
+//go:generate $ENUMER_TOOL -type=AccentDirection -trimprefix=AccentDirection -transform=snake -text
+type AccentDirection int
+
+const (
+	AccentDirectionUp AccentDirection = iota
+	AccentDirectionRight
+	AccentDirectionDown
+	AccentDirectionLeft
+)
+
+type PitchShape struct {
+	Hiragana   string
+	Directions []AccentDirection
+}
+
+func convertAdjancentPitch(hiragana string, last int, left, right Pitch) PitchShape {
+	directions := []AccentDirection{convertBasePitch(left.IsHigh)}
+	if left.IsHigh != right.IsHigh {
+		directions = append(directions, AccentDirectionRight)
+	}
+	return PitchShape{
+		Hiragana:   hiragana[last:left.Position],
+		Directions: directions,
+	}
+}
+
+func convertLastPitch(hiragana string, last int, pitch Pitch) PitchShape {
+	return PitchShape{
+		Hiragana:   hiragana[last:pitch.Position],
+		Directions: []AccentDirection{convertBasePitch(pitch.IsHigh)},
+	}
+}
+
+func convertBasePitch(isHigh bool) AccentDirection {
+	if isHigh {
+		return AccentDirectionUp
+	}
+	return AccentDirectionDown
 }

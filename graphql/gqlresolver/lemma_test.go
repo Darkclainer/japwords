@@ -114,13 +114,13 @@ func Test_convertLemma(t *testing.T) {
 							Hiragana: "w",
 							Pitch: []gqlmodel.PitchType{
 								gqlmodel.PitchTypeDown,
-								gqlmodel.PitchTypeRight,
 							},
 						},
 						{
 							Hiragana: "orld",
 							Pitch: []gqlmodel.PitchType{
 								gqlmodel.PitchTypeUp,
+								gqlmodel.PitchTypeLeft,
 							},
 						},
 					},
@@ -143,13 +143,13 @@ func Test_convertLemma(t *testing.T) {
 								Hiragana: "wo",
 								Pitch: []gqlmodel.PitchType{
 									gqlmodel.PitchTypeUp,
-									gqlmodel.PitchTypeRight,
 								},
 							},
 							{
 								Hiragana: "rld",
 								Pitch: []gqlmodel.PitchType{
 									gqlmodel.PitchTypeDown,
+									gqlmodel.PitchTypeLeft,
 								},
 							},
 						},
@@ -157,6 +157,12 @@ func Test_convertLemma(t *testing.T) {
 					{
 						Word:     "simple",
 						Hiragana: "word",
+						Pitch: []*gqlmodel.Pitch{
+							{
+								Hiragana: "word",
+								Pitch:    []gqlmodel.PitchType{},
+							},
+						},
 					},
 				},
 				Senses: []*gqlmodel.Sense{
@@ -197,150 +203,6 @@ func Test_convertLemma(t *testing.T) {
 					return result.Audio[i].Type < result.Audio[j].Type
 				})
 			}
-			assert.Equal(t, tc.Expected, result)
-		})
-	}
-}
-
-func Test_convertPitch(t *testing.T) {
-	testCases := []struct {
-		Name     string
-		Hiragana string
-		Pitches  []lemma.Pitch
-		Expected []*gqlmodel.Pitch
-	}{
-		{
-			Name:     "no pitches",
-			Hiragana: "hello",
-		},
-		{
-			Name:     "up only",
-			Hiragana: "hello",
-			Pitches: []lemma.Pitch{
-				{
-					Position: 5,
-					IsHigh:   true,
-				},
-			},
-			Expected: []*gqlmodel.Pitch{
-				{
-					Hiragana: "hello",
-					Pitch: []gqlmodel.PitchType{
-						gqlmodel.PitchTypeUp,
-					},
-				},
-			},
-		},
-		{
-			Name:     "down only",
-			Hiragana: "hello",
-			Pitches: []lemma.Pitch{
-				{
-					Position: 5,
-					IsHigh:   false,
-				},
-			},
-			Expected: []*gqlmodel.Pitch{
-				{
-					Hiragana: "hello",
-					Pitch: []gqlmodel.PitchType{
-						gqlmodel.PitchTypeDown,
-					},
-				},
-			},
-		},
-		{
-			Name:     "up down",
-			Hiragana: "hello",
-			Pitches: []lemma.Pitch{
-				{
-					Position: 1,
-					IsHigh:   true,
-				},
-				{
-					Position: 5,
-					IsHigh:   false,
-				},
-			},
-			Expected: []*gqlmodel.Pitch{
-				{
-					Hiragana: "h",
-					Pitch: []gqlmodel.PitchType{
-						gqlmodel.PitchTypeUp,
-						gqlmodel.PitchTypeRight,
-					},
-				},
-				{
-					Hiragana: "ello",
-					Pitch: []gqlmodel.PitchType{
-						gqlmodel.PitchTypeDown,
-					},
-				},
-			},
-		},
-		{
-			Name:     "down up",
-			Hiragana: "hello",
-			Pitches: []lemma.Pitch{
-				{
-					Position: 1,
-					IsHigh:   false,
-				},
-				{
-					Position: 5,
-					IsHigh:   true,
-				},
-			},
-			Expected: []*gqlmodel.Pitch{
-				{
-					Hiragana: "h",
-					Pitch: []gqlmodel.PitchType{
-						gqlmodel.PitchTypeDown,
-						gqlmodel.PitchTypeRight,
-					},
-				},
-				{
-					Hiragana: "ello",
-					Pitch: []gqlmodel.PitchType{
-						gqlmodel.PitchTypeUp,
-					},
-				},
-			},
-		},
-		{
-			Name:     "up down tail",
-			Hiragana: "hello",
-			Pitches: []lemma.Pitch{
-				{
-					Position: 5,
-					IsHigh:   true,
-				},
-				{
-					Position: 5,
-					IsHigh:   false,
-				},
-			},
-			Expected: []*gqlmodel.Pitch{
-				{
-					Hiragana: "hello",
-					Pitch: []gqlmodel.PitchType{
-						gqlmodel.PitchTypeUp,
-						gqlmodel.PitchTypeRight,
-					},
-				},
-				{
-					Hiragana: "",
-					Pitch: []gqlmodel.PitchType{
-						gqlmodel.PitchTypeDown,
-					},
-				},
-			},
-		},
-	}
-	for i := range testCases {
-		tc := testCases[i]
-		t.Run(tc.Name, func(t *testing.T) {
-			result := convertPitch(tc.Hiragana, tc.Pitches)
 			assert.Equal(t, tc.Expected, result)
 		})
 	}

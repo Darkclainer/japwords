@@ -49,46 +49,36 @@ func convertWord(src *lemma.Word) *gqlmodel.Word {
 		Word:     src.Word,
 		Hiragana: src.Hiragana,
 		Furigana: furigana,
-		Pitch:    convertPitch(src.Hiragana, src.Pitches),
+		Pitch:    convertPitch(src.PitchShapes()),
 	}
 	return dst
 }
 
-func convertPitch(hiragana string, pitches []lemma.Pitch) []*gqlmodel.Pitch {
-	var gqlPitches []*gqlmodel.Pitch
-	lastPosition := 0
-	for i := 0; i < len(pitches)-1; i++ {
-		gqlPitches = append(gqlPitches, convertAdjancentPitch(hiragana, lastPosition, pitches[i], pitches[i+1]))
-		lastPosition = pitches[i].Position
-	}
-	if len(pitches) == 0 {
+func convertPitch(shaped []lemma.PitchShape) []*gqlmodel.Pitch {
+	if len(shaped) == 0 {
 		return nil
 	}
-	gqlPitches = append(gqlPitches, convertLastPitch(hiragana, lastPosition, pitches[len(pitches)-1]))
-	return gqlPitches
-}
-
-func convertAdjancentPitch(hiragana string, last int, left, right lemma.Pitch) *gqlmodel.Pitch {
-	pitch := []gqlmodel.PitchType{convertBasePitch(left.IsHigh)}
-	if left.IsHigh != right.IsHigh {
-		pitch = append(pitch, gqlmodel.PitchTypeRight)
+	result := make([]*gqlmodel.Pitch, len(shaped))
+	for i, shape := range shaped {
+		newDirections := make([]gqlmodel.PitchType, len(shape.Directions))
+		for j, direction := range shape.Directions {
+			var newDirection gqlmodel.PitchType
+			switch direction {
+			case lemma.AccentDirectionUp:
+				newDirection = gqlmodel.PitchTypeUp
+			case lemma.AccentDirectionRight:
+				newDirection = gqlmodel.PitchTypeRight
+			case lemma.AccentDirectionDown:
+				newDirection = gqlmodel.PitchTypeDown
+			case lemma.AccentDirectionLeft:
+				newDirection = gqlmodel.PitchTypeLeft
+			}
+			newDirections[j] = newDirection
+		}
+		result[i] = &gqlmodel.Pitch{
+			Hiragana: shape.Hiragana,
+			Pitch:    newDirections,
+		}
 	}
-	return &gqlmodel.Pitch{
-		Hiragana: hiragana[last:left.Position],
-		Pitch:    pitch,
-	}
-}
-
-func convertLastPitch(hiragana string, last int, pitch lemma.Pitch) *gqlmodel.Pitch {
-	return &gqlmodel.Pitch{
-		Hiragana: hiragana[last:pitch.Position],
-		Pitch:    []gqlmodel.PitchType{convertBasePitch(pitch.IsHigh)},
-	}
-}
-
-func convertBasePitch(isHigh bool) gqlmodel.PitchType {
-	if isHigh {
-		return gqlmodel.PitchTypeUp
-	}
-	return gqlmodel.PitchTypeDown
+	return result
 }
