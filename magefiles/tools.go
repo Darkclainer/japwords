@@ -22,6 +22,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"strings"
 	"text/template"
 
 	"github.com/cavaliergopher/grab/v3"
@@ -59,6 +60,13 @@ var managedTools = indexTools([]*Tool{
 		Installer: &ArchiveToolInstaller{
 			URL:  "https://github.com/vektra/mockery/releases/download/v{{.Version}}/mockery_{{.Version}}_Linux_x86_64.tar.gz",
 			Path: "mockery",
+		},
+	},
+	{
+		Name:    "enumer",
+		Version: "1.5.8",
+		Installer: &GoToolInstaller{
+			URL: "github.com/dmarkham/enumer",
 		},
 	},
 })
@@ -115,6 +123,11 @@ func (t Tools) Golangcilint(ctx context.Context) {
 // Mockery installs mockery
 func (t Tools) Mockery(ctx context.Context) {
 	mg.CtxDeps(ctx, mg.F(Tools.Install, "mockery"))
+}
+
+// Enumer installs enumer
+func (t Tools) Enumer(ctx context.Context) {
+	mg.CtxDeps(ctx, mg.F(Tools.Install, "enumer"))
 }
 
 // Clear remove all tools
@@ -222,13 +235,18 @@ func (t *ArchiveToolInstaller) Install(ctx context.Context, dst, name, version s
 		return err
 	}
 	defer tmpDst.Close()
+	var debugPaths []string
 	for {
 		header, err := tarReader.Next()
 		if err != nil {
 			return fmt.Errorf("file not found or error in tar: %w", err)
 		}
-		if header.Typeflag != tar.TypeReg || header.Name != targetPath {
-			continue
+		if header.Typeflag != tar.TypeReg {
+			debugPaths = append(debugPaths, header.Name)
+			if header.Name != targetPath {
+				fmt.Printf("Content:\n%s\n", strings.Join(debugPaths, "\n"))
+				continue
+			}
 		}
 		_, err = io.Copy(tmpDst, tarReader)
 		if err != nil {

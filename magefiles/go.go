@@ -22,9 +22,14 @@ func (Go) Generate(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
+	enumer, err := filepath.Abs(getToolPath("enumer"))
+	if err != nil {
+		return err
+	}
 	return sh.RunWithV(
 		map[string]string{
 			"MOCKERY_TOOL": mockery,
+			"ENUMER_TOOL":  enumer,
 		},
 		"go", "generate", "./...",
 	)
