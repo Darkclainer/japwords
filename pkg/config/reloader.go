@@ -5,8 +5,6 @@ import (
 	"sync"
 )
 
-// TODO: need some initialization with fx? This will look great on start, but probably type
-// dependency will do?
 type Manager struct {
 	config     *UserConfig
 	configPath string
@@ -50,22 +48,25 @@ type Reloader interface {
 	Reload(Part) error
 }
 
+type UpdateConfigFunc func(updateFn func(*UserConfig) error) error
+
 // Register registers config consumer. It's not concurrent safe.
 // If consumer implement Reloader interface then it will be
 // registered as consumer that can reload it's self on config change.
-func (m *Manager) Register(consumer Consumer) (Part, error) {
+// Also Reloader gets it's initial reload with acquired part.
+func (m *Manager) Register(consumer Consumer) (Part, UpdateConfigFunc, error) {
 	part, err := consumer.Config(m.config.Clone())
 	if err != nil {
-		return part, err
+		return part, nil, err
 	}
 	reloader, ok := consumer.(Reloader)
 	if !ok {
-		return part, nil
+		return part, nil, nil
 	}
 	if err := m.addReloader(reloader, part); err != nil {
-		return part, err
+		return part, nil, err
 	}
-	return part, nil
+	return part, m.UpdateConfig, nil
 }
 
 func (m *Manager) addReloader(reloader Reloader, part Part) error {
@@ -73,8 +74,11 @@ func (m *Manager) addReloader(reloader Reloader, part Part) error {
 	if ok {
 		return fmt.Errorf("reloader %T already registered", reloader)
 	}
-	m.lastParts[reloader] = part
 	m.reloaders = append(m.reloaders, reloader)
+	if err := reloader.Reload(part); err != nil {
+		return fmt.Errorf("initload reload with reloader %T failed: %w", reloader, err)
+	}
+	m.lastParts[reloader] = part
 	return nil
 }
 
@@ -104,7 +108,8 @@ func (m *Manager) UpdateConfig(updateFn func(*UserConfig) error) error {
 			return err
 		}
 		oldPart := m.lastParts[reloader]
-		if !oldPart.Equal(newPart) {
+		// we compare newPart with oldPart in case oldPart not exists (if on register we get error)
+		if !newPart.Equal(oldPart) {
 			toReload = append(toReload, ReloaderPart{
 				Reloader: reloader,
 				OldPart:  oldPart,

@@ -6,7 +6,7 @@ import (
 )
 
 func NewHttpServerConfig(configMgr *config.Manager) *httpserver.Config {
-	part, err := configMgr.Register(config.ConsumerFunc(func(uc *config.UserConfig) (config.Part, error) {
+	part, _, err := configMgr.Register(config.ConsumerFunc(func(uc *config.UserConfig) (config.Part, error) {
 		return &httpserver.Config{
 			Addr: uc.Addr,
 		}, nil

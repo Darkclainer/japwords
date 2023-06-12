@@ -20,7 +20,7 @@ func (c *JishoConfig) Equal(o any) bool {
 }
 
 func NewJisho(jishoClient jisho.BasicDict, configMgr *config.Manager) (*cachedict.CacheDict[[]*lemma.Lemma], error) {
-	part, err := configMgr.Register(config.ConsumerFunc(func(uc *config.UserConfig) (config.Part, error) {
+	part, _, err := configMgr.Register(config.ConsumerFunc(func(uc *config.UserConfig) (config.Part, error) {
 		return &JishoConfig{
 			URL: uc.Dictionary.Jisho.URL,
 		}, nil

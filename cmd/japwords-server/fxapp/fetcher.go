@@ -6,7 +6,7 @@ import (
 )
 
 func NewFetcher(configMgr *config.Manager) (*fetcher.Fetcher, error) {
-	part, err := configMgr.Register(config.ConsumerFunc(func(uc *config.UserConfig) (config.Part, error) {
+	part, _, err := configMgr.Register(config.ConsumerFunc(func(uc *config.UserConfig) (config.Part, error) {
 		var conf fetcher.Config
 		conf.Headers = uc.Dictionary.Headers
 		if conf.Headers == nil {

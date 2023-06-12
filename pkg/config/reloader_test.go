@@ -76,8 +76,9 @@ func Test_Manager_Register(t *testing.T) {
 				return TestGenericPart(data), nil
 			},
 		}
-		part, err := mgr.Register(consumer)
+		part, updateFn, err := mgr.Register(consumer)
 		require.NoError(t, err)
+		assert.Nil(t, updateFn)
 		genericPart, ok := part.(TestGenericPart)
 		require.True(t, ok)
 		assert.Equal(t, "myaddr", genericPart["addr"])
@@ -93,14 +94,16 @@ func Test_Manager_Register(t *testing.T) {
 				return TestGenericPart(data), errors.New("myerr")
 			},
 		}
-		part, err := mgr.Register(consumer)
+		part, updateFn, err := mgr.Register(consumer)
 		require.Error(t, err)
+		assert.Nil(t, updateFn)
 		genericPart, ok := part.(TestGenericPart)
 		require.True(t, ok)
 		assert.Equal(t, "myaddr", genericPart["addr"])
 	})
 	t.Run("ReloaderOK", func(t *testing.T) {
 		mgr := newManager(t, &UserConfig{Addr: "myaddr"})
+		var initialReloadPart Part
 		reloader := &TestGenericReloader{
 			TestGenericConsumer: TestGenericConsumer{
 				consume: func(uc *UserConfig) (Part, error) {
@@ -110,10 +113,15 @@ func Test_Manager_Register(t *testing.T) {
 					return TestGenericPart(data), nil
 				},
 			},
-			reload: nil,
+			reload: func(p TestGenericPart) error {
+				initialReloadPart = p
+				return nil
+			},
 		}
-		part, err := mgr.Register(reloader)
+		part, updateFn, err := mgr.Register(reloader)
 		require.NoError(t, err)
+		assert.NotNil(t, updateFn)
+		assert.Equal(t, part, initialReloadPart)
 		genericPart, ok := part.(TestGenericPart)
 		require.True(t, ok)
 		assert.Equal(t, "myaddr", genericPart["addr"])
@@ -130,16 +138,20 @@ func Test_Manager_Register(t *testing.T) {
 					return TestGenericPart(data), nil
 				},
 			},
-			reload: nil,
+			reload: func(TestGenericPart) error {
+				return nil
+			},
 		}
-		part, err := mgr.Register(reloader)
+		part, updateFn, err := mgr.Register(reloader)
 		require.NoError(t, err)
+		assert.NotNil(t, updateFn)
 		genericPart, ok := part.(TestGenericPart)
 		require.True(t, ok)
 		assert.Equal(t, "myaddr", genericPart["addr"])
 		assert.Len(t, mgr.reloaders, 1)
-		part, err = mgr.Register(reloader)
+		part, updateFn, err = mgr.Register(reloader)
 		assert.Error(t, err)
+		assert.Nil(t, updateFn)
 		genericPart, ok = part.(TestGenericPart)
 		require.True(t, ok)
 		assert.Equal(t, "myaddr", genericPart["addr"])
@@ -204,14 +216,15 @@ func Test_Manager_UpdateConfig(t *testing.T) {
 			}
 			return TestGenericPart(data), nil
 		}, nil)
-		_, err := mgr.Register(reloader)
+		_, _, err := mgr.Register(reloader)
 		require.NoError(t, err)
 		err = mgr.UpdateConfig(func(uc *UserConfig) error {
 			uc.Addr = "myaddr"
 			return nil
 		})
 		require.NoError(t, err)
-		assert.Equal(t, []int{1}, factory.called)
+		// two 1 because we should account inital reload on register
+		assert.Equal(t, []int{1, 1}, factory.called)
 	})
 	t.Run("TwoReloaders", func(t *testing.T) {
 		mgr := newManager(t, DefaultUserConfig())
@@ -228,16 +241,16 @@ func Test_Manager_UpdateConfig(t *testing.T) {
 			}
 			return TestGenericPart(data), nil
 		}, nil)
-		_, err := mgr.Register(firstReloader)
+		_, _, err := mgr.Register(firstReloader)
 		require.NoError(t, err)
-		_, err = mgr.Register(secondReloader)
+		_, _, err = mgr.Register(secondReloader)
 		require.NoError(t, err)
 		err = mgr.UpdateConfig(func(uc *UserConfig) error {
 			uc.Addr = "myaddr"
 			return nil
 		})
 		require.NoError(t, err)
-		assert.Equal(t, []int{1, 2}, factory.called)
+		assert.Equal(t, []int{1, 2, 1, 2}, factory.called)
 	})
 	t.Run("TwoReloadersFirstOff", func(t *testing.T) {
 		mgr := newManager(t, DefaultUserConfig())
@@ -254,16 +267,16 @@ func Test_Manager_UpdateConfig(t *testing.T) {
 			}
 			return TestGenericPart(data), nil
 		}, nil)
-		_, err := mgr.Register(firstReloader)
+		_, _, err := mgr.Register(firstReloader)
 		require.NoError(t, err)
-		_, err = mgr.Register(secondReloader)
+		_, _, err = mgr.Register(secondReloader)
 		require.NoError(t, err)
 		err = mgr.UpdateConfig(func(uc *UserConfig) error {
 			uc.Addr = "myaddr"
 			return nil
 		})
 		require.NoError(t, err)
-		assert.Equal(t, []int{2}, factory.called)
+		assert.Equal(t, []int{1, 2, 2}, factory.called)
 	})
 	t.Run("TwoReloadersSecondErr", func(t *testing.T) {
 		mgr := newManager(t, DefaultUserConfig())
@@ -280,16 +293,18 @@ func Test_Manager_UpdateConfig(t *testing.T) {
 			}
 			return TestGenericPart(data), nil
 		}, errors.New("mytesterror"))
-		_, err := mgr.Register(firstReloader)
+		_, _, err := mgr.Register(firstReloader)
 		require.NoError(t, err)
-		_, err = mgr.Register(secondReloader)
-		require.NoError(t, err)
+		_, _, err = mgr.Register(secondReloader)
+		require.ErrorContains(t, err, "mytesterror")
 		err = mgr.UpdateConfig(func(uc *UserConfig) error {
 			uc.Addr = "myaddr"
 			return nil
 		})
 		require.ErrorContains(t, err, "mytesterror")
-		assert.Equal(t, []int{1, 2, 2, 1}, factory.called)
+		// First two appears because of register. Third and fourth called on update config, and last
+		// because we reload back after error in second reloader
+		assert.Equal(t, []int{1, 2, 1, 2, 1}, factory.called)
 	})
 	t.Run("TwoReloadersAsync", func(t *testing.T) {
 		mgr := newManager(t, DefaultUserConfig())
@@ -306,9 +321,9 @@ func Test_Manager_UpdateConfig(t *testing.T) {
 			}
 			return TestGenericPart(data), nil
 		}, nil)
-		_, err := mgr.Register(firstReloader)
+		_, _, err := mgr.Register(firstReloader)
 		require.NoError(t, err)
-		_, err = mgr.Register(secondReloader)
+		_, _, err = mgr.Register(secondReloader)
 		require.NoError(t, err)
 		var wg sync.WaitGroup
 		wg.Add(2)
@@ -329,7 +344,7 @@ func Test_Manager_UpdateConfig(t *testing.T) {
 			require.NoError(t, updateErr)
 		}()
 		wg.Wait()
-		assert.Equal(t, []int{1, 2, 1, 2}, factory.called)
+		assert.Equal(t, []int{1, 2, 1, 2, 1, 2}, factory.called)
 	})
 }
 

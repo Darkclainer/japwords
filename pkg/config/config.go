@@ -11,13 +11,13 @@ type UserConfig struct {
 }
 
 type Anki struct {
-	Addr   string `koanf:"addr"`
-	APIKey string `koanf:"api-key"`
+	Addr   string `yaml:"addr" koanf:"addr"`
+	APIKey string `yaml:"api-key" koanf:"api-key"`
 
-	Deck     string `koanf:"deck"`
-	NoteType string `koanf:"note-type"`
+	Deck     string `yaml:"deck" koanf:"deck"`
+	NoteType string `yaml:"note-type" koanf:"note-type"`
 
-	FieldMapping map[string]string `koanf:"fields"`
+	FieldMapping map[string]string `yaml:"fields" koanf:"fields"`
 }
 
 type Dictionary struct {
@@ -39,7 +39,13 @@ type Wadoku struct {
 func DefaultUserConfig() *UserConfig {
 	return &UserConfig{
 		Addr: "",
-		Anki: Anki{},
+		Anki: Anki{
+			Addr:         "",
+			APIKey:       "",
+			Deck:         "",
+			NoteType:     "",
+			FieldMapping: map[string]string{},
+		},
 		Dictionary: Dictionary{
 			Workers:   0,
 			UserAgent: "",

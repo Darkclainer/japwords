@@ -20,7 +20,7 @@ func (c *WadokuConfig) Equal(o any) bool {
 }
 
 func NewWadoku(wadokuClient wadoku.BasicDict, configMgr *config.Manager) (*cachedict.CacheDict[[]*lemma.PitchedLemma], error) {
-	part, err := configMgr.Register(config.ConsumerFunc(func(uc *config.UserConfig) (config.Part, error) {
+	part, _, err := configMgr.Register(config.ConsumerFunc(func(uc *config.UserConfig) (config.Part, error) {
 		return &WadokuConfig{
 			URL: uc.Dictionary.Wadoku.URL,
 		}, nil

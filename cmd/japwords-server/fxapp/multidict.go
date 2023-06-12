@@ -31,7 +31,7 @@ type MultiDictIn struct {
 }
 
 func NewMultidict(in MultiDictIn) (*multidict.MultiDict, error) {
-	part, err := in.ConfigMgr.Register(config.ConsumerFunc(func(uc *config.UserConfig) (config.Part, error) {
+	part, _, err := in.ConfigMgr.Register(config.ConsumerFunc(func(uc *config.UserConfig) (config.Part, error) {
 		return &MultiDictConfig{
 			Workers: uc.Dictionary.Workers,
 		}, nil

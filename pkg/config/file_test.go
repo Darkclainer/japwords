@@ -94,7 +94,9 @@ func Test_LoadConfig(t *testing.T) {
 		path := filepath.Join(dir, "myconfig")
 		config := &UserConfig{
 			Addr: "someaddr",
-			Anki: Anki{},
+			Anki: Anki{
+				FieldMapping: map[string]string{},
+			},
 			Dictionary: Dictionary{
 				Workers:   4,
 				UserAgent: "hello",
