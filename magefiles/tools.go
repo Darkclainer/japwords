@@ -41,7 +41,7 @@ type Tools mg.Namespace
 var managedTools = indexTools([]*Tool{
 	{
 		Name:    "gqlgen",
-		Version: "0.17.31",
+		Version: "0.17.34",
 		Installer: &GoToolInstaller{
 			URL: "github.com/99designs/gqlgen",
 		},
