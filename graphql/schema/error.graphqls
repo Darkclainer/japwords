@@ -1,0 +1,9 @@
+interface Error {
+  message: String!
+}
+
+type ValidationError implements Error{
+  paths: [String!]!
+  message: String!
+}
+

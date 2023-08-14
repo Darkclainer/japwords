@@ -1,0 +1,76 @@
+extend type Query {
+  AnkiState: AnkiState!
+  AnkiConfig: AnkiConfig!
+}
+
+type AnkiState {
+  version: String!
+  connected: Boolean!
+  permissionGranted: Boolean!
+  apiKeyRequired: Boolean!
+  deckExists: Boolean!
+  noteTypeExists: Boolean!
+  noteMissingFields: [String!]!
+}
+
+type AnkiConfig {
+  addr: String!
+  apiKey: String!
+  deck: String!
+  noteType: String!
+  mapping: [AnkiMappingElement!]!
+}
+
+type AnkiMappingElement {
+  key: String!
+  value: String!
+}
+
+extend type Mutation {
+  setAnkiConnection(input: AnkiConnectionInput!): AnkiConnectionPayload
+  setAnkiDeck(input: AnkiDeckInput!): AnkiDeckPayload
+  setAnkiNoteType(input: AnkiNoteTypeInput!): AnkiNoteTypePayload
+  setAnkiMapping(input: AnkiMappingInput!): AnkiMappingPayload
+}
+
+
+input AnkiConnectionInput {
+  addr: String!
+  apiKey: String!
+}
+
+union AnkiConnectionPayload = ValidationError
+
+input AnkiDeckInput {
+  name: String!
+}
+
+union AnkiDeckPayload = ValidationError
+
+input AnkiNoteTypeInput {
+  name: String!
+}
+
+union AnkiNoteTypePayload = ValidationError
+
+input AnkiMappingInput {
+  mapping: [AnkiMappingElementInput!]!
+}
+
+input AnkiMappingElementInput {
+  key: String!
+  value: String!
+}
+
+type AnkiMappingError implements Error {
+  fieldErrors: [AnkiMappingElementError!]
+  valueErrors: [AnkiMappingElementError!]
+  message: String!
+}
+
+type AnkiMappingElementError {
+  key: String!
+  message: String!
+}
+
+union AnkiMappingPayload = AnkiMappingError

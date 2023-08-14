@@ -22,7 +22,6 @@ import (
 	"os"
 	"path"
 	"path/filepath"
-	"strings"
 	"text/template"
 
 	"github.com/cavaliergopher/grab/v3"
@@ -41,14 +40,14 @@ type Tools mg.Namespace
 var managedTools = indexTools([]*Tool{
 	{
 		Name:    "gqlgen",
-		Version: "0.17.34",
+		Version: "0.17.36",
 		Installer: &GoToolInstaller{
 			URL: "github.com/99designs/gqlgen",
 		},
 	},
 	{
 		Name:    "golangci-lint",
-		Version: "1.52.2",
+		Version: "1.53.2",
 		Installer: &ArchiveToolInstaller{
 			URL:  "https://github.com/golangci/golangci-lint/releases/download/v{{.Version}}/golangci-lint-{{.Version}}-linux-amd64.tar.gz",
 			Path: "golangci-lint-{{.Version}}-linux-amd64/golangci-lint",
@@ -235,18 +234,13 @@ func (t *ArchiveToolInstaller) Install(ctx context.Context, dst, name, version s
 		return err
 	}
 	defer tmpDst.Close()
-	var debugPaths []string
 	for {
 		header, err := tarReader.Next()
 		if err != nil {
 			return fmt.Errorf("file not found or error in tar: %w", err)
 		}
-		if header.Typeflag != tar.TypeReg {
-			debugPaths = append(debugPaths, header.Name)
-			if header.Name != targetPath {
-				fmt.Printf("Content:\n%s\n", strings.Join(debugPaths, "\n"))
-				continue
-			}
+		if header.Typeflag != tar.TypeReg || header.Name != targetPath {
+			continue
 		}
 		_, err = io.Copy(tmpDst, tarReader)
 		if err != nil {

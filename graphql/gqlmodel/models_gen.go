@@ -8,6 +8,88 @@ import (
 	"strconv"
 )
 
+type AnkiConnectionPayload interface {
+	IsAnkiConnectionPayload()
+}
+
+type AnkiDeckPayload interface {
+	IsAnkiDeckPayload()
+}
+
+type AnkiMappingPayload interface {
+	IsAnkiMappingPayload()
+}
+
+type AnkiNoteTypePayload interface {
+	IsAnkiNoteTypePayload()
+}
+
+type Error interface {
+	IsError()
+	GetMessage() string
+}
+
+type AnkiConfig struct {
+	Addr     string                `json:"addr"`
+	APIKey   string                `json:"apiKey"`
+	Deck     string                `json:"deck"`
+	NoteType string                `json:"noteType"`
+	Mapping  []*AnkiMappingElement `json:"mapping"`
+}
+
+type AnkiConnectionInput struct {
+	Addr   string `json:"addr"`
+	APIKey string `json:"apiKey"`
+}
+
+type AnkiDeckInput struct {
+	Name string `json:"name"`
+}
+
+type AnkiMappingElement struct {
+	Key   string `json:"key"`
+	Value string `json:"value"`
+}
+
+type AnkiMappingElementError struct {
+	Key     string `json:"key"`
+	Message string `json:"message"`
+}
+
+type AnkiMappingElementInput struct {
+	Key   string `json:"key"`
+	Value string `json:"value"`
+}
+
+type AnkiMappingError struct {
+	FieldErrors []*AnkiMappingElementError `json:"fieldErrors,omitempty"`
+	ValueErrors []*AnkiMappingElementError `json:"valueErrors,omitempty"`
+	Message     string                     `json:"message"`
+}
+
+func (AnkiMappingError) IsError()                {}
+func (this AnkiMappingError) GetMessage() string { return this.Message }
+
+func (AnkiMappingError) IsAnkiMappingPayload() {}
+
+type AnkiMappingInput struct {
+	Mapping []*AnkiMappingElementInput `json:"mapping"`
+}
+
+type AnkiNoteTypeInput struct {
+	Name string `json:"name"`
+}
+
+type AnkiState struct {
+	Version           string   `json:"version"`
+	Connected         bool     `json:"connected"`
+	PermissionGranted bool     `json:"permissionGranted"`
+	APIKeyRequired    bool     `json:"apiKeyRequired"`
+	DeckExists        bool     `json:"deckExists"`
+	NoteTypeExists    bool     `json:"noteTypeExists"`
+	NoteMissingFields []string `json:"noteMissingFields"`
+}
+
 type Audio struct {
 	Type   string `json:"type"`
 	Source string `json:"source"`
@@ -40,6 +122,20 @@ type Sense struct {
 	PartOfSpeech []string `json:"partOfSpeech"`
 	Tags         []string `json:"tags"`
 }
+
+type ValidationError struct {
+	Paths   []string `json:"paths"`
+	Message string   `json:"message"`
+}
+
+func (ValidationError) IsAnkiConnectionPayload() {}
+
+func (ValidationError) IsAnkiDeckPayload() {}
+
+func (ValidationError) IsAnkiNoteTypePayload() {}
+
+func (ValidationError) IsError()                {}
+func (this ValidationError) GetMessage() string { return this.Message }
 
 type Word struct {
 	Word     string      `json:"word"`
