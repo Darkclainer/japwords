@@ -59,10 +59,10 @@ func DefaultUserConfig() *UserConfig {
 	return &UserConfig{
 		Addr: "",
 		Anki: Anki{
-			Addr:         "",
+			Addr:         "127.0.0.1:8765",
 			APIKey:       "",
-			Deck:         "",
-			NoteType:     "",
+			Deck:         "Japwords",
+			NoteType:     "JapwordsDefaultNote",
 			FieldMapping: map[string]string{},
 		},
 		Dictionary: Dictionary{

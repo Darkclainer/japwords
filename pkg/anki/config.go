@@ -1,6 +1,9 @@
 package anki
 
 import (
+	"errors"
+	"fmt"
+
 	"github.com/Darkclainer/japwords/pkg/anki/ankiconnect"
 	"github.com/Darkclainer/japwords/pkg/config"
 )
@@ -62,15 +65,39 @@ func NewConfigReloader(anki *Anki, configManager *config.Manager) (*ConfigReload
 	return reloader, nil
 }
 
-// Config is implementation if config.Cosumer interface
+// Config is implementation of config.Consumer interface.
+// It returns errors, but they are not supposed to be examined.
 func (cr *ConfigReloader) Config(uc *config.UserConfig) (config.Part, error) {
-	// TODO: we can do check here
+	conf := uc.Anki
+	var errs []error
+	err := validateAddr(conf.Addr)
+	if err != nil {
+		errs = append(errs, fmt.Errorf("anki config Addr validation failed: %w", err))
+	}
+	err = validateDeckName(conf.Deck)
+	if err != nil {
+		errs = append(errs, fmt.Errorf("anki config Deck validation failed: %w", err))
+	}
+	err = validateNoteType(conf.NoteType)
+	if err != nil {
+		errs = append(errs, fmt.Errorf("anki config NoteType validation failed: %w", err))
+	}
+	mappingErrs := validateMappingKeys(conf.FieldMapping)
+	for _, mappingErr := range mappingErrs {
+		errs = append(errs, fmt.Errorf("anki config Mapping validation failed: %w", mappingErr))
+	}
+	mapping, mappingErrs := convertMapping(uc.Anki.FieldMapping)
+	for _, mappingErr := range mappingErrs {
+		errs = append(errs, mappingErr)
+	}
+
 	return &Config{
 		Addr:     uc.Anki.Addr,
 		APIKey:   uc.Anki.APIKey,
 		Deck:     uc.Anki.Deck,
 		NoteType: uc.Anki.NoteType,
-	}, nil
+		Mapping:  mapping,
+	}, errors.Join(errs...)
 }
 
 // Reload is implementation if config.Reloader interface
@@ -83,7 +110,9 @@ func (cr *ConfigReloader) Reload(o config.Part) error {
 }
 
 func (cr *ConfigReloader) UpdateConnection(addr string, apikey string) error {
-	// TODO: check for addr?
+	if err := validateAddr(addr); err != nil {
+		return &ValidationError{Msg: err.Error()}
+	}
 	return cr.updateConfigFn(func(uc *config.UserConfig) error {
 		uc.Anki.Addr = addr
 		uc.Anki.APIKey = apikey
@@ -92,6 +121,9 @@ func (cr *ConfigReloader) UpdateConnection(addr string, apikey string) error {
 }
 
 func (cr *ConfigReloader) UpdateDeck(name string) error {
+	if err := validateDeckName(name); err != nil {
+		return &ValidationError{Msg: err.Error()}
+	}
 	return cr.updateConfigFn(func(uc *config.UserConfig) error {
 		uc.Anki.Deck = name
 		return nil
@@ -99,6 +131,9 @@ func (cr *ConfigReloader) UpdateDeck(name string) error {
 }
 
 func (cr *ConfigReloader) UpdateNoteType(name string) error {
+	if err := validateNoteType(name); err != nil {
+		return &ValidationError{Msg: err.Error()}
+	}
 	return cr.updateConfigFn(func(uc *config.UserConfig) error {
 		uc.Anki.NoteType = name
 		return nil
@@ -106,6 +141,14 @@ func (cr *ConfigReloader) UpdateNoteType(name string) error {
 }
 
 func (cr *ConfigReloader) UpdateMapping(mapping map[string]string) error {
+	keyErrs := validateMappingKeys(mapping)
+	_, valueErrs := convertMapping(mapping)
+	if len(keyErrs) != 0 || len(valueErrs) != 0 {
+		return &MappingValidationErrors{
+			KeyErrors:   keyErrs,
+			ValueErrors: valueErrs,
+		}
+	}
 	return cr.updateConfigFn(func(uc *config.UserConfig) error {
 		uc.Anki.FieldMapping = mapping
 		return nil

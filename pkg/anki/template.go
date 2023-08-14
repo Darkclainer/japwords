@@ -32,21 +32,25 @@ func (tm TemplateMapping) Equal(otm TemplateMapping) bool {
 	return true
 }
 
-func convertMapping(mapping map[string]string) (TemplateMapping, error) {
+func convertMapping(mapping map[string]string) (TemplateMapping, []*MappingValidationError) {
 	root := template.New("")
 	result := map[string]*Template{}
+	var errs []*MappingValidationError
 	for field, src := range mapping {
 		fieldTemplate := root.New(field)
 		err := initTemplate(fieldTemplate, src)
 		if err != nil {
-			return nil, err
+			errs = append(errs, &MappingValidationError{
+				Key: field,
+				Msg: err.Error(),
+			})
 		}
 		result[field] = &Template{
 			Src:  src,
 			Tmpl: fieldTemplate,
 		}
 	}
-	return result, nil
+	return result, errs
 }
 
 var (

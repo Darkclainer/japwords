@@ -23,13 +23,13 @@ func Test_convertMapping(t *testing.T) {
 		SrcMapping      map[string]string
 		ExpectedMapping TemplateMapping
 		RenderExpected  map[string]string
-		ErrorAssert     assert.ErrorAssertionFunc
+		ErrorAssert     assert.ValueAssertionFunc
 	}{
 		{
 			Name:            "empty",
 			ExpectedMapping: map[string]*Template{},
 			RenderExpected:  map[string]string{},
-			ErrorAssert:     assert.NoError,
+			ErrorAssert:     assert.Empty,
 		},
 		{
 			Name: "one key",
@@ -44,7 +44,7 @@ func Test_convertMapping(t *testing.T) {
 			RenderExpected: map[string]string{
 				"key": "hello",
 			},
-			ErrorAssert: assert.NoError,
+			ErrorAssert: assert.Empty,
 		},
 		{
 			Name: "sprig function",
@@ -59,7 +59,7 @@ func Test_convertMapping(t *testing.T) {
 			RenderExpected: map[string]string{
 				"key": "HELLO",
 			},
-			ErrorAssert: assert.NoError,
+			ErrorAssert: assert.Empty,
 		},
 		{
 			Name: "two key",
@@ -79,14 +79,14 @@ func Test_convertMapping(t *testing.T) {
 				"key1": "hello",
 				"key2": "world",
 			},
-			ErrorAssert: assert.NoError,
+			ErrorAssert: assert.Empty,
 		},
 		{
 			Name: "error",
 			SrcMapping: map[string]string{
 				"key": `{{.NotExist}}`,
 			},
-			ErrorAssert: assert.Error,
+			ErrorAssert: assert.NotEmpty,
 		},
 	}
 	for i := range testCases {
