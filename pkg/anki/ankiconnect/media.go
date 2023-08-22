@@ -3,8 +3,7 @@ package ankiconnect
 import (
 	"encoding/base64"
 	"fmt"
-
-	"golang.org/x/exp/slices"
+	"slices"
 )
 
 type MediaType int

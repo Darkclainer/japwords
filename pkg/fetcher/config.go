@@ -1,6 +1,6 @@
 package fetcher
 
-import "golang.org/x/exp/maps"
+import "maps"
 
 type Config struct {
 	Headers map[string]string

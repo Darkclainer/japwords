@@ -2,9 +2,8 @@ package anki
 
 import (
 	"context"
+	"slices"
 	"sync"
-
-	"golang.org/x/exp/slices"
 
 	"github.com/Darkclainer/japwords/pkg/anki/ankiconnect"
 )
