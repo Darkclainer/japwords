@@ -12,11 +12,7 @@ import (
 type Anki struct {
 	constructor ClientConstructorFn
 
-	mu      sync.Mutex
-	wrapper *ankiWrapper
-}
-
-type ankiWrapper struct {
+	mu     sync.Mutex
 	client AnkiClient
 	config *Config
 }
@@ -44,23 +40,22 @@ func NewAnki(constuctor ClientConstructorFn) *Anki {
 	}
 }
 
+// ReloadConfig intialize internal client with config.
 func (a *Anki) ReloadConfig(config *Config) error {
 	client, err := a.constructor(config.options())
 	if err != nil {
 		return err
 	}
-	wrapper := &ankiWrapper{
-		client: client,
-		config: config,
-	}
 	a.mu.Lock()
 	defer a.mu.Unlock()
-	a.wrapper = wrapper
+	a.client = client
+	a.config = config
 	return nil
 }
 
 type StateResult struct {
-	Version int
+	Connected bool
+	Version   int
 
 	PermissionGranted bool
 	APIKeyRequired    bool
@@ -72,12 +67,14 @@ type StateResult struct {
 
 // FullStateCheck checks that anki is available, decks and note types exists, also FieldMapping is possible
 func (a *Anki) FullStateCheck(ctx context.Context) (*StateResult, error) {
-	wrapper := a.getWrapper()
+	client, config := a.getClient()
 	result := &StateResult{}
-	permissions, err := wrapper.client.RequestPermission(ctx)
+	permissions, err := client.RequestPermission(ctx)
+	// TODO: deal with connection errors?
 	if err != nil {
-		return nil, err
+		return result, err
 	}
+	result.Connected = true
 	result.PermissionGranted = permissions.Permission == ankiconnect.PermissionGranted
 	result.Version = permissions.Version
 	result.APIKeyRequired = permissions.RequireAPIKey
@@ -85,21 +82,21 @@ func (a *Anki) FullStateCheck(ctx context.Context) (*StateResult, error) {
 		return result, nil
 	}
 
-	decks, err := wrapper.client.DeckNames(ctx)
+	decks, err := client.DeckNames(ctx)
 	if err != nil {
 		return result, err
 	}
-	deckExists := slices.ContainsFunc(decks, func(e string) bool { return e == wrapper.config.Deck })
+	deckExists := slices.ContainsFunc(decks, func(e string) bool { return e == config.Deck })
 	result.DeckExists = deckExists
 
-	noteTypes, err := wrapper.client.ModelNames(ctx)
+	noteTypes, err := client.ModelNames(ctx)
 	if err != nil {
 		return result, err
 	}
-	noteTypeExists := slices.ContainsFunc(noteTypes, func(e string) bool { return e == wrapper.config.NoteType })
+	noteTypeExists := slices.ContainsFunc(noteTypes, func(e string) bool { return e == config.NoteType })
 	result.NoteTypeExists = noteTypeExists
 	if noteTypeExists {
-		noteFields, err := wrapper.client.ModelFieldNames(ctx, wrapper.config.NoteType)
+		noteFields, err := client.ModelFieldNames(ctx, config.NoteType)
 		if err != nil {
 			return result, err
 		}
@@ -107,7 +104,7 @@ func (a *Anki) FullStateCheck(ctx context.Context) (*StateResult, error) {
 		for _, field := range noteFields {
 			setFields[field] = struct{}{}
 		}
-		for field := range wrapper.config.Mapping {
+		for field := range config.Mapping {
 			_, ok := setFields[field]
 			if !ok {
 				result.NoteMissingFields = append(result.NoteMissingFields, field)
@@ -117,8 +114,8 @@ func (a *Anki) FullStateCheck(ctx context.Context) (*StateResult, error) {
 	return result, nil
 }
 
-func (a *Anki) getWrapper() *ankiWrapper {
+func (a *Anki) getClient() (AnkiClient, *Config) {
 	a.mu.Lock()
 	defer a.mu.Unlock()
-	return a.wrapper
+	return a.client, a.config
 }

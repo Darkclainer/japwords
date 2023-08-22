@@ -362,17 +362,206 @@ func Test_ConfigReloader_Reload(t *testing.T) {
 	err = configReloader.Reload(conf)
 	require.NoError(t, err)
 	assert.Equal(t, 2, factoryCalled)
-	assert.Equal(t, conf, anki.wrapper.config)
+	assert.Equal(t, conf, anki.config)
+}
+
+func NewTestReloader(tb testing.TB) (*ConfigReloader, *Anki, *Config) {
+	userConfig := &config.UserConfig{
+		Anki: config.Anki{
+			Addr:     "testaddr:3030",
+			APIKey:   "testapikey",
+			Deck:     "testdeck",
+			NoteType: "testnote",
+		},
+	}
+	configManager := configtest.New(tb, userConfig)
+	anki := NewAnki(func(_ *ankiconnect.Options) (AnkiClient, error) {
+		return nil, nil
+	})
+	configReloader, err := NewConfigReloader(anki, configManager)
+	require.NoError(tb, err)
+
+	// we will create it another time to ease comparing in tests
+	conf, err := configReloader.Config(userConfig)
+	require.NoError(tb, err)
+
+	return configReloader, anki, conf.(*Config)
 }
 
 func Test_ConfigReloader_UpdateConnection(t *testing.T) {
+	testCases := []struct {
+		Name        string
+		Addr        string
+		APIKey      string
+		ErrorAssert assert.ErrorAssertionFunc
+	}{
+		{
+			Name:        "ok",
+			Addr:        "newtestadddr:3030",
+			APIKey:      "newtestapikey",
+			ErrorAssert: assert.NoError,
+		},
+		{
+			Name: "missing port",
+			Addr: "newtestadddr",
+			ErrorAssert: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				var validationError *ValidationError
+				if !assert.ErrorAs(tt, err, &validationError, i...) {
+					return false
+				}
+				return assert.ErrorContains(tt, err, "missing port", i...)
+			},
+		},
+	}
+	for i := range testCases {
+		tc := testCases[i]
+		t.Run(tc.Name, func(t *testing.T) {
+			configReloader, anki, initialConfig := NewTestReloader(t)
+			err := configReloader.UpdateConnection(tc.Addr, tc.APIKey)
+			tc.ErrorAssert(t, err)
+			if err != nil {
+				return
+			}
+			initialConfig.Addr = tc.Addr
+			initialConfig.APIKey = tc.APIKey
+			assert.Equal(t, initialConfig, anki.config)
+		})
+	}
 }
 
 func Test_ConfigReloader_UpdateDeck(t *testing.T) {
+	testCases := []struct {
+		Name        string
+		Deck        string
+		ErrorAssert assert.ErrorAssertionFunc
+	}{
+		{
+			Name:        "ok",
+			Deck:        "newdeck",
+			ErrorAssert: assert.NoError,
+		},
+		{
+			Name: "invalid deck name",
+			Deck: "invalid\"deck",
+			ErrorAssert: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				var validationError *ValidationError
+				if !assert.ErrorAs(tt, err, &validationError, i...) {
+					return false
+				}
+				return assert.ErrorContains(tt, err, "or contain '\"'", i...)
+			},
+		},
+	}
+	for i := range testCases {
+		tc := testCases[i]
+		t.Run(tc.Name, func(t *testing.T) {
+			configReloader, anki, initialConfig := NewTestReloader(t)
+			err := configReloader.UpdateDeck(tc.Deck)
+			tc.ErrorAssert(t, err)
+			if err != nil {
+				return
+			}
+			initialConfig.Deck = tc.Deck
+			assert.Equal(t, initialConfig, anki.config)
+		})
+	}
 }
 
 func Test_ConfigReloader_UpdateNoteType(t *testing.T) {
+	testCases := []struct {
+		Name        string
+		NoteType    string
+		ErrorAssert assert.ErrorAssertionFunc
+	}{
+		{
+			Name:        "ok",
+			NoteType:    "newnotetype",
+			ErrorAssert: assert.NoError,
+		},
+		{
+			Name:     "invalid deck name",
+			NoteType: "invalid\"notetype",
+			ErrorAssert: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				var validationError *ValidationError
+				if !assert.ErrorAs(tt, err, &validationError, i...) {
+					return false
+				}
+				return assert.ErrorContains(tt, err, "or contain '\"'", i...)
+			},
+		},
+	}
+	for i := range testCases {
+		tc := testCases[i]
+		t.Run(tc.Name, func(t *testing.T) {
+			configReloader, anki, initialConfig := NewTestReloader(t)
+			err := configReloader.UpdateNoteType(tc.NoteType)
+			tc.ErrorAssert(t, err)
+			if err != nil {
+				return
+			}
+			initialConfig.NoteType = tc.NoteType
+			assert.Equal(t, initialConfig, anki.config)
+		})
+	}
 }
 
 func Test_ConfigReloader_UpdateMapping(t *testing.T) {
+	testCases := []struct {
+		Name        string
+		Mapping     map[string]string
+		ErrorAssert assert.ErrorAssertionFunc
+	}{
+		{
+			Name: "ok",
+			Mapping: map[string]string{
+				"hello": "{{ .Slug.Word }}",
+			},
+			ErrorAssert: assert.NoError,
+		},
+		{
+			Name: "invalid mapping key",
+			Mapping: map[string]string{
+				"he\"llo": "{{ .Slug.Word }}",
+			},
+			ErrorAssert: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				var mappingValidationErrors *MappingValidationErrors
+				if !assert.ErrorAs(tt, err, &mappingValidationErrors, i...) {
+					return false
+				}
+				return !assert.Len(tt, mappingValidationErrors.KeyErrors, 1) ||
+					!assert.Len(tt, mappingValidationErrors.ValueErrors, 0)
+			},
+		},
+		{
+			Name: "invalid mapping value",
+			Mapping: map[string]string{
+				"hello": "{{ .NotExists }}",
+			},
+			ErrorAssert: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				var mappingValidationErrors *MappingValidationErrors
+				if !assert.ErrorAs(tt, err, &mappingValidationErrors, i...) {
+					return false
+				}
+				return !assert.Len(tt, mappingValidationErrors.KeyErrors, 0) ||
+					!assert.Len(tt, mappingValidationErrors.ValueErrors, 1)
+			},
+		},
+	}
+	for i := range testCases {
+		tc := testCases[i]
+		t.Run(tc.Name, func(t *testing.T) {
+			configReloader, anki, initialConfig := NewTestReloader(t)
+			err := configReloader.UpdateMapping(tc.Mapping)
+			tc.ErrorAssert(t, err)
+			if err != nil {
+				return
+			}
+			expectedMapping, mappingErrs := convertMapping(tc.Mapping)
+			require.Len(t, mappingErrs, 0, "expected zero errors in mapping but got %v", mappingErrs)
+			// we will check it seperately
+			initialConfig.Mapping = anki.config.Mapping
+			assert.Equal(t, initialConfig, anki.config)
+			assert.True(t, expectedMapping.Equal(anki.config.Mapping))
+		})
+	}
 }
