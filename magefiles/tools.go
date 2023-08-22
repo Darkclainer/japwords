@@ -47,7 +47,7 @@ var managedTools = indexTools([]*Tool{
 	},
 	{
 		Name:    "golangci-lint",
-		Version: "1.53.2",
+		Version: "1.54.2",
 		Installer: &ArchiveToolInstaller{
 			URL:  "https://github.com/golangci/golangci-lint/releases/download/v{{.Version}}/golangci-lint-{{.Version}}-linux-amd64.tar.gz",
 			Path: "golangci-lint-{{.Version}}-linux-amd64/golangci-lint",

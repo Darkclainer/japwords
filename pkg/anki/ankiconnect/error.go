@@ -67,12 +67,6 @@ func newServerError(message string) error {
 	}
 }
 
-func newSpecificServerError(err error) error {
-	return &ServerError{
-		Err: err,
-	}
-}
-
 func newPermissionDeniedError() error {
 	return &ServerError{
 		Err: ErrPermissionDenied,

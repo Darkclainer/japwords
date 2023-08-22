@@ -18,7 +18,11 @@ func ParseFlags() *FlagOpts {
 	// sloppy, but ok
 	var flagOpts FlagOpts
 	fset.StringVar(&flagOpts.ConfigPath, "c", "config.yaml", "path to config")
-	fset.Parse(os.Args[1:])
+	err := fset.Parse(os.Args[1:])
+	if err != nil {
+		// because we use flag.ExitOnError
+		panic("unreachable")
+	}
 
 	fset.Visit(func(f *flag.Flag) {
 		if f.Name == "c" {

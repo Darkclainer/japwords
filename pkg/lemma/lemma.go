@@ -110,24 +110,6 @@ type PitchShape struct {
 	Directions []AccentDirection
 }
 
-func convertAdjancentPitch(hiragana string, last int, left, right Pitch) PitchShape {
-	directions := []AccentDirection{convertBasePitch(left.IsHigh)}
-	if left.IsHigh != right.IsHigh {
-		directions = append(directions, AccentDirectionRight)
-	}
-	return PitchShape{
-		Hiragana:   hiragana[last:left.Position],
-		Directions: directions,
-	}
-}
-
-func convertLastPitch(hiragana string, last int, pitch Pitch) PitchShape {
-	return PitchShape{
-		Hiragana:   hiragana[last:pitch.Position],
-		Directions: []AccentDirection{convertBasePitch(pitch.IsHigh)},
-	}
-}
-
 func convertBasePitch(isHigh bool) AccentDirection {
 	if isHigh {
 		return AccentDirectionUp

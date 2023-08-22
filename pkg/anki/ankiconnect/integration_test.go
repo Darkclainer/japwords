@@ -67,7 +67,7 @@ func Test_Anki_Deck_Functions_Integration(t *testing.T) {
 	id, err := a.CreateDeck(ctx, newDeckName)
 	require.NoError(t, err)
 	assert.NotEqual(t, 0, id)
-	defer a.DeleteDecks(ctx, []string{newDeckName})
+	defer func() { assert.NoError(t, a.DeleteDecks(ctx, []string{newDeckName})) }()
 	currentDecks, err := a.DeckNames(ctx)
 	require.NoError(t, err)
 	initialDecks = append(initialDecks, newDeckName)
@@ -134,7 +134,7 @@ func Test_Anki_Note_Functions_Integrations(t *testing.T) {
 	deckName := randString("deckfuncs")
 	_, err = a.CreateDeck(ctx, deckName)
 	require.NoError(t, err)
-	defer a.DeleteDecks(ctx, []string{deckName})
+	defer func() { assert.NoError(t, a.DeleteDecks(ctx, []string{deckName})) }()
 	noteID, err := a.AddNote(
 		ctx,
 		&AddNoteParams{
@@ -160,9 +160,9 @@ func Test_Anki_Note_Functions_Integrations(t *testing.T) {
 }
 
 func randString(prefix string) string {
-	rand.Seed(time.Now().UnixNano())
+	source := rand.New(rand.NewSource(time.Now().Unix()))
 	buffer := make([]byte, 8)
-	_, err := rand.Read(buffer)
+	_, err := source.Read(buffer)
 	if err != nil {
 		panic("should not happen")
 	}

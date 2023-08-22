@@ -3,6 +3,7 @@ package anki
 import (
 	"context"
 	"errors"
+	"slices"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -220,6 +221,7 @@ func Test_Anki_FullStateCheck_OK(t *testing.T) {
 			require.NoError(t, err)
 			actual, err := anki.FullStateCheck(context.Background())
 			assert.NoError(t, err)
+			slices.Sort(actual.NoteMissingFields)
 			assert.Equal(t, tc.Expected, actual)
 			client.AssertExpectations(t)
 		})

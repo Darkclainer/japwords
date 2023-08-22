@@ -78,7 +78,10 @@ func LoadConfig(path string) (*UserConfig, error) {
 	if err := k.Load(file.Provider(path), koanfyaml.Parser()); err != nil {
 		return nil, fmt.Errorf("could not load file config: %s", err)
 	}
-	k.Load(env.Provider("JAPWORDS", ".", mangleEnvNames), nil)
+	err := k.Load(env.Provider("JAPWORDS", ".", mangleEnvNames), nil)
+	if err != nil {
+		return nil, fmt.Errorf("could not load config from env vairables: %s", err)
+	}
 	var userConfig UserConfig
 	unmarshalConf := koanf.UnmarshalConf{
 		DecoderConfig: &mapstructure.DecoderConfig{
