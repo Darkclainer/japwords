@@ -31,5 +31,6 @@ func prepareConfig(path string, provided bool) (*config.Manager, error) {
 	if err != nil {
 		return nil, err
 	}
+	fmt.Printf("Using config file from: %s\n", path)
 	return config.New(path)
 }

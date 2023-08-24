@@ -10,6 +10,8 @@ import (
 	"go.uber.org/fx"
 
 	"github.com/Darkclainer/japwords/graphql/gqlgenerated"
+	"github.com/Darkclainer/japwords/pkg/anki"
+	"github.com/Darkclainer/japwords/pkg/config"
 	"github.com/Darkclainer/japwords/pkg/multidict"
 )
 
@@ -18,18 +20,27 @@ import (
 // It serves as dependency injection for your app, add any dependencies you require here.
 
 type Resolver struct {
-	multiDict *multidict.MultiDict
+	configManager *config.Manager
+	multiDict     *multidict.MultiDict
+	ankiClient    *anki.Anki
+	ankiConfig    *anki.ConfigReloader
 }
 
 type In struct {
 	fx.In
 
-	MultiDict *multidict.MultiDict
+	ConfigManager *config.Manager
+	MultiDict     *multidict.MultiDict
+	AnkiClient    *anki.Anki
+	AnkiConfig    *anki.ConfigReloader
 }
 
 func New(in In) (*Resolver, error) {
 	return &Resolver{
-		multiDict: in.MultiDict,
+		configManager: in.ConfigManager,
+		multiDict:     in.MultiDict,
+		ankiClient:    in.AnkiClient,
+		ankiConfig:    in.AnkiConfig,
 	}, nil
 }
 

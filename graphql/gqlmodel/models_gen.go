@@ -24,6 +24,10 @@ type AnkiNoteTypePayload interface {
 	IsAnkiNoteTypePayload()
 }
 
+type AnkiStatePayload interface {
+	IsAnkiStatePayload()
+}
+
 type Error interface {
 	IsError()
 	GetMessage() string
@@ -36,6 +40,15 @@ type AnkiConfig struct {
 	NoteType string                `json:"noteType"`
 	Mapping  []*AnkiMappingElement `json:"mapping"`
 }
+
+type AnkiConnectionError struct {
+	Message string `json:"message"`
+}
+
+func (AnkiConnectionError) IsError()                {}
+func (this AnkiConnectionError) GetMessage() string { return this.Message }
+
+func (AnkiConnectionError) IsAnkiStatePayload() {}
 
 type AnkiConnectionInput struct {
 	Addr   string `json:"addr"`
@@ -81,7 +94,7 @@ type AnkiNoteTypeInput struct {
 }
 
 type AnkiState struct {
-	Version           string   `json:"version"`
+	Version           int      `json:"version"`
 	Connected         bool     `json:"connected"`
 	PermissionGranted bool     `json:"permissionGranted"`
 	APIKeyRequired    bool     `json:"apiKeyRequired"`
@@ -89,6 +102,8 @@ type AnkiState struct {
 	NoteTypeExists    bool     `json:"noteTypeExists"`
 	NoteMissingFields []string `json:"noteMissingFields"`
 }
+
+func (AnkiState) IsAnkiStatePayload() {}
 
 type Audio struct {
 	Type   string `json:"type"`

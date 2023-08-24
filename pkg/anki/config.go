@@ -42,9 +42,15 @@ func (c *Config) Equal(o any) bool {
 
 func (c *Config) options() *ankiconnect.Options {
 	return &ankiconnect.Options{
-		URL:    c.Addr,
+		URL:    ankiAddrToURL(c.Addr),
 		APIKey: c.APIKey,
 	}
+}
+
+// ankiAddrToURL convert addr to url. I prefer to use addr, because
+// ankiconnect anyway used with http.
+func ankiAddrToURL(addr string) string {
+	return "http://" + addr
 }
 
 // ConfigReloader allows to change anki part of user config.

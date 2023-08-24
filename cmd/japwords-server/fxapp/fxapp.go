@@ -40,6 +40,7 @@ func NewApp(configMgr *config.Manager) (*fx.App, error) {
 			),
 		),
 		fx.Provide(NewMultidict),
+		fx.Provide(NewAnki),
 		// http/graphql staff
 		fx.Provide(
 			NewHttpServerConfig,

@@ -26,6 +26,10 @@ func New(configPath string) (*Manager, error) {
 	}, nil
 }
 
+func (m *Manager) Current() *UserConfig {
+	return m.config.Clone()
+}
+
 type Part interface {
 	Equal(any) bool
 }
@@ -55,7 +59,7 @@ type UpdateConfigFunc func(updateFn func(*UserConfig) error) error
 // registered as consumer that can reload it's self on config change.
 // Also Reloader gets it's initial reload with acquired part.
 func (m *Manager) Register(consumer Consumer) (Part, UpdateConfigFunc, error) {
-	part, err := consumer.Config(m.config.Clone())
+	part, err := consumer.Config(m.Current())
 	if err != nil {
 		return part, nil, err
 	}
@@ -89,7 +93,7 @@ func (m *Manager) addReloader(reloader Reloader, part Part) error {
 func (m *Manager) UpdateConfig(updateFn func(*UserConfig) error) error {
 	m.mu.Lock()
 	defer m.mu.Unlock()
-	newConfig := m.config.Clone()
+	newConfig := m.Current()
 	err := updateFn(newConfig)
 	if err != nil {
 		return err

@@ -52,6 +52,10 @@ type ComplexityRoot struct {
 		NoteType func(childComplexity int) int
 	}
 
+	AnkiConnectionError struct {
+		Message func(childComplexity int) int
+	}
+
 	AnkiMappingElement struct {
 		Key   func(childComplexity int) int
 		Value func(childComplexity int) int
@@ -144,7 +148,7 @@ type MutationResolver interface {
 	SetAnkiMapping(ctx context.Context, input gqlmodel.AnkiMappingInput) (gqlmodel.AnkiMappingPayload, error)
 }
 type QueryResolver interface {
-	AnkiState(ctx context.Context) (*gqlmodel.AnkiState, error)
+	AnkiState(ctx context.Context) (gqlmodel.AnkiStatePayload, error)
 	AnkiConfig(ctx context.Context) (*gqlmodel.AnkiConfig, error)
 	Lemmas(ctx context.Context, query string) (*gqlmodel.Lemmas, error)
 }
@@ -198,6 +202,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.AnkiConfig.NoteType(childComplexity), true
+
+	case "AnkiConnectionError.message":
+		if e.complexity.AnkiConnectionError.Message == nil {
+			break
+		}
+
+		return e.complexity.AnkiConnectionError.Message(childComplexity), true
 
 	case "AnkiMappingElement.key":
 		if e.complexity.AnkiMappingElement.Key == nil {
@@ -629,12 +640,12 @@ func (ec *executionContext) introspectType(name string) (*introspection.Type, er
 
 var sources = []*ast.Source{
 	{Name: "../schema/anki.graphqls", Input: `extend type Query {
-  AnkiState: AnkiState!
+  AnkiState: AnkiStatePayload!
   AnkiConfig: AnkiConfig!
 }
 
 type AnkiState {
-  version: String!
+  version: Int!
   connected: Boolean!
   permissionGranted: Boolean!
   apiKeyRequired: Boolean!
@@ -642,6 +653,12 @@ type AnkiState {
   noteTypeExists: Boolean!
   noteMissingFields: [String!]!
 }
+
+type AnkiConnectionError implements Error {
+  message: String!
+}
+
+union AnkiStatePayload = AnkiState | AnkiConnectionError
 
 type AnkiConfig {
   addr: String!
@@ -1128,6 +1145,50 @@ func (ec *executionContext) fieldContext_AnkiConfig_mapping(ctx context.Context,
 	return fc, nil
 }
 
+func (ec *executionContext) _AnkiConnectionError_message(ctx context.Context, field graphql.CollectedField, obj *gqlmodel.AnkiConnectionError) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_AnkiConnectionError_message(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Message, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_AnkiConnectionError_message(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "AnkiConnectionError",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _AnkiMappingElement_key(ctx context.Context, field graphql.CollectedField, obj *gqlmodel.AnkiMappingElement) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_AnkiMappingElement_key(ctx, field)
 	if err != nil {
@@ -1468,9 +1529,9 @@ func (ec *executionContext) _AnkiState_version(ctx context.Context, field graphq
 		}
 		return graphql.Null
 	}
-	res := resTmp.(string)
+	res := resTmp.(int)
 	fc.Result = res
-	return ec.marshalNString2string(ctx, field.Selections, res)
+	return ec.marshalNInt2int(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_AnkiState_version(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -1480,7 +1541,7 @@ func (ec *executionContext) fieldContext_AnkiState_version(ctx context.Context, 
 		IsMethod:   false,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
+			return nil, errors.New("field of type Int does not have child fields")
 		},
 	}
 	return fc, nil
@@ -2558,9 +2619,9 @@ func (ec *executionContext) _Query_AnkiState(ctx context.Context, field graphql.
 		}
 		return graphql.Null
 	}
-	res := resTmp.(*gqlmodel.AnkiState)
+	res := resTmp.(gqlmodel.AnkiStatePayload)
 	fc.Result = res
-	return ec.marshalNAnkiState2ᚖgithubᚗcomᚋDarkclainerᚋjapwordsᚋgraphqlᚋgqlmodelᚐAnkiState(ctx, field.Selections, res)
+	return ec.marshalNAnkiStatePayload2githubᚗcomᚋDarkclainerᚋjapwordsᚋgraphqlᚋgqlmodelᚐAnkiStatePayload(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Query_AnkiState(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -2570,23 +2631,7 @@ func (ec *executionContext) fieldContext_Query_AnkiState(ctx context.Context, fi
 		IsMethod:   true,
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "version":
-				return ec.fieldContext_AnkiState_version(ctx, field)
-			case "connected":
-				return ec.fieldContext_AnkiState_connected(ctx, field)
-			case "permissionGranted":
-				return ec.fieldContext_AnkiState_permissionGranted(ctx, field)
-			case "apiKeyRequired":
-				return ec.fieldContext_AnkiState_apiKeyRequired(ctx, field)
-			case "deckExists":
-				return ec.fieldContext_AnkiState_deckExists(ctx, field)
-			case "noteTypeExists":
-				return ec.fieldContext_AnkiState_noteTypeExists(ctx, field)
-			case "noteMissingFields":
-				return ec.fieldContext_AnkiState_noteMissingFields(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type AnkiState", field.Name)
+			return nil, errors.New("field of type AnkiStatePayload does not have child fields")
 		},
 	}
 	return fc, nil
@@ -5245,10 +5290,40 @@ func (ec *executionContext) _AnkiNoteTypePayload(ctx context.Context, sel ast.Se
 	}
 }
 
+func (ec *executionContext) _AnkiStatePayload(ctx context.Context, sel ast.SelectionSet, obj gqlmodel.AnkiStatePayload) graphql.Marshaler {
+	switch obj := (obj).(type) {
+	case nil:
+		return graphql.Null
+	case gqlmodel.AnkiState:
+		return ec._AnkiState(ctx, sel, &obj)
+	case *gqlmodel.AnkiState:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._AnkiState(ctx, sel, obj)
+	case gqlmodel.AnkiConnectionError:
+		return ec._AnkiConnectionError(ctx, sel, &obj)
+	case *gqlmodel.AnkiConnectionError:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._AnkiConnectionError(ctx, sel, obj)
+	default:
+		panic(fmt.Errorf("unexpected type %T", obj))
+	}
+}
+
 func (ec *executionContext) _Error(ctx context.Context, sel ast.SelectionSet, obj gqlmodel.Error) graphql.Marshaler {
 	switch obj := (obj).(type) {
 	case nil:
 		return graphql.Null
+	case gqlmodel.AnkiConnectionError:
+		return ec._AnkiConnectionError(ctx, sel, &obj)
+	case *gqlmodel.AnkiConnectionError:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._AnkiConnectionError(ctx, sel, obj)
 	case gqlmodel.AnkiMappingError:
 		return ec._AnkiMappingError(ctx, sel, &obj)
 	case *gqlmodel.AnkiMappingError:
@@ -5305,6 +5380,45 @@ func (ec *executionContext) _AnkiConfig(ctx context.Context, sel ast.SelectionSe
 			}
 		case "mapping":
 			out.Values[i] = ec._AnkiConfig_mapping(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var ankiConnectionErrorImplementors = []string{"AnkiConnectionError", "Error", "AnkiStatePayload"}
+
+func (ec *executionContext) _AnkiConnectionError(ctx context.Context, sel ast.SelectionSet, obj *gqlmodel.AnkiConnectionError) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, ankiConnectionErrorImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("AnkiConnectionError")
+		case "message":
+			out.Values[i] = ec._AnkiConnectionError_message(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
@@ -5462,7 +5576,7 @@ func (ec *executionContext) _AnkiMappingError(ctx context.Context, sel ast.Selec
 	return out
 }
 
-var ankiStateImplementors = []string{"AnkiState"}
+var ankiStateImplementors = []string{"AnkiState", "AnkiStatePayload"}
 
 func (ec *executionContext) _AnkiState(ctx context.Context, sel ast.SelectionSet, obj *gqlmodel.AnkiState) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.OperationContext, sel, ankiStateImplementors)
@@ -6525,18 +6639,14 @@ func (ec *executionContext) unmarshalNAnkiNoteTypeInput2githubᚗcomᚋDarkclain
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNAnkiState2githubᚗcomᚋDarkclainerᚋjapwordsᚋgraphqlᚋgqlmodelᚐAnkiState(ctx context.Context, sel ast.SelectionSet, v gqlmodel.AnkiState) graphql.Marshaler {
-	return ec._AnkiState(ctx, sel, &v)
-}
-
-func (ec *executionContext) marshalNAnkiState2ᚖgithubᚗcomᚋDarkclainerᚋjapwordsᚋgraphqlᚋgqlmodelᚐAnkiState(ctx context.Context, sel ast.SelectionSet, v *gqlmodel.AnkiState) graphql.Marshaler {
+func (ec *executionContext) marshalNAnkiStatePayload2githubᚗcomᚋDarkclainerᚋjapwordsᚋgraphqlᚋgqlmodelᚐAnkiStatePayload(ctx context.Context, sel ast.SelectionSet, v gqlmodel.AnkiStatePayload) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
 		}
 		return graphql.Null
 	}
-	return ec._AnkiState(ctx, sel, v)
+	return ec._AnkiStatePayload(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalNAudio2ᚕᚖgithubᚗcomᚋDarkclainerᚋjapwordsᚋgraphqlᚋgqlmodelᚐAudioᚄ(ctx context.Context, sel ast.SelectionSet, v []*gqlmodel.Audio) graphql.Marshaler {
@@ -6660,6 +6770,21 @@ func (ec *executionContext) marshalNFurigana2ᚖgithubᚗcomᚋDarkclainerᚋjap
 		return graphql.Null
 	}
 	return ec._Furigana(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNInt2int(ctx context.Context, v interface{}) (int, error) {
+	res, err := graphql.UnmarshalInt(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNInt2int(ctx context.Context, sel ast.SelectionSet, v int) graphql.Marshaler {
+	res := graphql.MarshalInt(v)
+	if res == graphql.Null {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+	}
+	return res
 }
 
 func (ec *executionContext) marshalNLemma2ᚕᚖgithubᚗcomᚋDarkclainerᚋjapwordsᚋgraphqlᚋgqlmodelᚐLemmaᚄ(ctx context.Context, sel ast.SelectionSet, v []*gqlmodel.Lemma) graphql.Marshaler {

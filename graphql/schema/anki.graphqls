@@ -1,10 +1,10 @@
 extend type Query {
-  AnkiState: AnkiState!
+  AnkiState: AnkiStatePayload!
   AnkiConfig: AnkiConfig!
 }
 
 type AnkiState {
-  version: String!
+  version: Int!
   connected: Boolean!
   permissionGranted: Boolean!
   apiKeyRequired: Boolean!
@@ -12,6 +12,12 @@ type AnkiState {
   noteTypeExists: Boolean!
   noteMissingFields: [String!]!
 }
+
+type AnkiConnectionError implements Error {
+  message: String!
+}
+
+union AnkiStatePayload = AnkiState | AnkiConnectionError
 
 type AnkiConfig {
   addr: String!

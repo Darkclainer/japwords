@@ -27,7 +27,7 @@ func TestAnki_ReloadConfig(t *testing.T) {
 			APIKey: "mykey",
 		}
 		constructor := func(opts *ankiconnect.Options) (AnkiClient, error) {
-			assert.Equal(t, "myaddr", opts.URL)
+			assert.Equal(t, "http://myaddr", opts.URL)
 			assert.Equal(t, "mykey", opts.APIKey)
 			return nil, nil
 		}
@@ -44,7 +44,7 @@ func TestAnki_ReloadConfig(t *testing.T) {
 		counter := 0
 		constructor := func(opts *ankiconnect.Options) (AnkiClient, error) {
 			counter++
-			assert.Equal(t, "myaddr", opts.URL)
+			assert.Equal(t, "http://myaddr", opts.URL)
 			if counter == 1 {
 				assert.Equal(t, "myfirst", opts.APIKey)
 			} else {

@@ -188,7 +188,7 @@ func Test_ConfigReloader_New(t *testing.T) {
 		})
 		var factoryCalled bool
 		anki := NewAnki(func(o *ankiconnect.Options) (AnkiClient, error) {
-			assert.Equal(t, ankiConfig.Addr, o.URL)
+			assert.Equal(t, ankiAddrToURL(ankiConfig.Addr), o.URL)
 			assert.Equal(t, ankiConfig.APIKey, o.APIKey)
 			factoryCalled = true
 			return nil, nil
@@ -205,7 +205,7 @@ func Test_ConfigReloader_New(t *testing.T) {
 			Anki: ankiConfig,
 		})
 		anki := NewAnki(func(o *ankiconnect.Options) (AnkiClient, error) {
-			assert.Equal(t, ankiConfig.Addr, o.URL)
+			assert.Equal(t, ankiAddrToURL(ankiConfig.Addr), o.URL)
 			assert.Equal(t, ankiConfig.APIKey, o.APIKey)
 			return nil, errors.New("myerror")
 		})
