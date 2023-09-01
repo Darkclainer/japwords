@@ -7,7 +7,7 @@ import (
 	"net/http"
 )
 
-//go:embed public
+//go:embed dist
 var public embed.FS
 
 // fileSystem is little wrapper that provides fallback for index.html
@@ -24,7 +24,7 @@ func (mfs *fileSystem) Open(name string) (http.File, error) {
 }
 
 func Handler(path string) http.Handler {
-	publicfs, err := fs.Sub(public, "public")
+	publicfs, err := fs.Sub(public, "dist")
 	if err != nil {
 		panic(err)
 	}

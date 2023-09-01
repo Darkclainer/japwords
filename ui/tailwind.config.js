@@ -1,21 +1,20 @@
 /** @type {import('tailwindcss').Config} */
-module.exports = {
-	content: ['./src/**/*.{html,svelte}'],
-	theme: {
-		fontFamily: {
-			sans: ['Inter']
-		},
-		colors: {
-			gray: '#F4F4F4',
-			'dark-gray': '#5C5C5C',
-			blue: '#617DB6',
-			'dark-blue': '#3B4C6F',
-			black: '#000000',
-			white: '#FFFFFF',
-			green: '#77B661',
-			'dark-green': '#35512B'
-		},
-		extend: {}
-	},
-	plugins: []
+export default {
+  content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
+  theme: {
+    fontFamily: {
+      sans: ['Inter'],
+    },
+    colors: {
+      gray: 'var(--gray)',
+      'dark-gray': 'var(--dark-gray)',
+      blue: 'var(--blue)',
+      'dark-blue': 'var(--dark-blue)',
+      black: 'var(--black)',
+      white: 'var(--white)',
+      green: 'var(--green)',
+      'dark-green': 'var(--dark-green)',
+    },
+  },
+  plugins: [],
 };

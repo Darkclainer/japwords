@@ -1,22 +1,23 @@
 import { ApolloClient, InMemoryCache, HttpLink } from '@apollo/client';
 
 const cache = new InMemoryCache({
-	addTypename: true
+  addTypename: true,
 });
 
 function getQueryPath(): string {
-	let queryPath = '/api/query';
-	if (!process.env.PRODUCTION) {
-		queryPath = 'http://' + process.env.HOST + queryPath;
-	}
-	return queryPath;
+  let queryPath = '/api/query';
+  if (import.meta.env.DEV) {
+    queryPath = 'http://' + import.meta.env.VITE_HOST + queryPath;
+  }
+  console.log('query path', queryPath, import.meta.env);
+  return queryPath;
 }
 
 const httpLink = new HttpLink({
-	uri: getQueryPath()
+  uri: getQueryPath(),
 });
 
 export default new ApolloClient({
-	cache,
-	link: httpLink
+  cache,
+  link: httpLink,
 });
