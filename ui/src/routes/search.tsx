@@ -11,8 +11,7 @@ import apolloClient from '../apollo-client';
 import { Lemma } from '../api/__generated__/graphql';
 import { gql } from '../api/__generated__/gql';
 import { clsx } from 'clsx';
-import { useContext, useEffect } from 'react';
-import { RouterContext } from '../context/RouterContext';
+import { useEffect } from 'react';
 
 const GET_LEMMAS = gql(`
   query GetLemmas($query: String!) {
@@ -119,17 +118,21 @@ export default function Search() {
       </Form>
       <div
         className={clsx(
-          'flex-1 flex flex-col justify-center',
+          'flex flex-1',
           navigation.state == 'loading' && 'opacity-30 transition-opacity duration-300 delay-300',
         )}
       >
         {lemmas && lemmas.length != 0 ? (
-          <LemmaList lemmas={lemmas} />
+          <div className="flex flex-1 flex-col">
+            <LemmaList lemmas={lemmas} />
+          </div>
         ) : (
-          <div className="flex justify-center">
-            <h1 className="text-5xl text-blue">
-              {lemmas === undefined ? 'Make your search request' : 'Nothing was found'}
-            </h1>
+          <div className="flex flex-1 flex-col justify-center">
+            <div className="flex justify-center">
+              <h1 className="text-5xl text-blue">
+                {lemmas === undefined ? 'Make your search request' : 'Nothing was found'}
+              </h1>
+            </div>
           </div>
         )}
       </div>

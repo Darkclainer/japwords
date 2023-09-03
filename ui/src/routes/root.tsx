@@ -23,7 +23,7 @@ export default function Root() {
           Search
         </NavLink>
         <NavLink to="anki" className={activeBold}>
-          Anki
+          Anki Settings
         </NavLink>
       </nav>
       <Outlet></Outlet>

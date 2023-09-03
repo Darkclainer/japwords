@@ -8,6 +8,7 @@ export default {
     colors: {
       gray: 'var(--gray)',
       'dark-gray': 'var(--dark-gray)',
+      'mid-gray': 'var(--mid-gray)',
       blue: 'var(--blue)',
       'dark-blue': 'var(--dark-blue)',
       black: 'var(--black)',

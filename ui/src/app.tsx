@@ -3,12 +3,12 @@ import { createBrowserRouter, RouterProvider, Navigate } from 'react-router-dom'
 import Root from './routes/root';
 import ErrorPage from './error-page';
 import Search, { loader as searchLoader } from './routes/search';
-import Anki from './routes/anki';
 import { ApolloProvider } from '@apollo/client';
 import apolloClient from './apollo-client';
 import { ToastContainer } from 'react-toastify';
-import AnkiConfig from './routes/anki-config';
-import AnkiState from './routes/anki-state';
+import AnkiRoot from './routes/anki/root';
+import AnkiConnectionSettings from './routes/anki/connection-settings';
+import AnkiUserSettings from './routes/anki/user-settings';
 
 const router = createBrowserRouter([
   {
@@ -30,15 +30,19 @@ const router = createBrowserRouter([
           },
           {
             path: 'anki',
-            element: <Anki />,
+            element: <AnkiRoot />,
             children: [
               {
-                path: 'config',
-                element: <AnkiConfig />,
+                index: true,
+                element: <Navigate to="connection-settings" replace={true} />,
               },
               {
-                path: 'state',
-                element: <AnkiState />,
+                path: 'connection-settings',
+                element: <AnkiConnectionSettings />,
+              },
+              {
+                path: 'user-settings',
+                element: <AnkiUserSettings />,
               },
             ],
           },
@@ -51,7 +55,7 @@ const router = createBrowserRouter([
 export default function App() {
   return (
     <ApolloProvider client={apolloClient}>
-      <div className="flex flex-col md:max-w-4xl mx-auto min-h-screen space-y-4 py-4 bg-white">
+      <div className="flex flex-col md:max-w-4xl mx-auto min-h-screen space-y-4 p-4 bg-white">
         <RouterProvider router={router} />
       </div>
       <ToastContainer />
