@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
-import { Outlet, NavLink, useLocation } from 'react-router-dom';
+import { NavLink, Outlet, useLocation } from 'react-router-dom';
+
+import HealthStatusIcon from '../components/HealthStatusIcon';
 
 export default function Root() {
   const activeBold = ({ isActive }: { isActive: boolean }) => (isActive ? 'font-bold' : '');
@@ -15,18 +17,27 @@ export default function Root() {
 
   return (
     <>
-      <nav className="flex flex-row gap-x-4 text-blue">
-        <NavLink
-          to={lastSearch == location.pathname ? 'search' : lastSearch}
-          className={activeBold}
-        >
-          Search
-        </NavLink>
-        <NavLink to="anki" className={activeBold}>
-          Anki Settings
-        </NavLink>
-      </nav>
-      <Outlet></Outlet>
+      <header>
+        <nav>
+          <div className="flex flex-row gap-x-4 pt-11 pb-5 pl-2 justify-between">
+            <div className="flex flex-row gap-x-4 items-center text-2xl text-blue">
+              <NavLink
+                to={lastSearch == location.pathname ? 'search' : lastSearch}
+                className={activeBold}
+              >
+                Search
+              </NavLink>
+              <NavLink to="anki" className={activeBold}>
+                Anki Settings
+              </NavLink>
+            </div>
+            <HealthStatusIcon size="2.5rem" />
+          </div>
+        </nav>
+      </header>
+      <main className="flex flex-col flex-1">
+        <Outlet></Outlet>
+      </main>
     </>
   );
 }

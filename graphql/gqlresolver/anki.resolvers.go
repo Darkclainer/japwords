@@ -10,41 +10,48 @@ import (
 	"errors"
 	"slices"
 
+	"github.com/99designs/gqlgen/graphql"
+
 	"github.com/Darkclainer/japwords/graphql/gqlgenerated"
 	"github.com/Darkclainer/japwords/graphql/gqlmodel"
 	"github.com/Darkclainer/japwords/pkg/anki"
-	"github.com/Darkclainer/japwords/pkg/anki/ankiconnect"
 )
 
-// SetAnkiConnection is the resolver for the setAnkiConnection field.
-func (r *mutationResolver) SetAnkiConnection(ctx context.Context, input gqlmodel.AnkiConnectionInput) (gqlmodel.AnkiConnectionPayload, error) {
+// SetAnkiConfigConnection is the resolver for the setAnkiConfigConnection field.
+func (r *mutationResolver) SetAnkiConfigConnection(ctx context.Context, input gqlmodel.SetAnkiConfigConnectionInput) (*gqlmodel.SetAnkiConfigConnectionResult, error) {
 	err := r.ankiConfig.UpdateConnection(input.Addr, input.APIKey)
-	if err != nil {
-		return convertAnkiValidationError(ctx, err)
+	if validationErr, _ := convertAnkiValidationError(ctx, err); validationErr != nil {
+		return &gqlmodel.SetAnkiConfigConnectionResult{
+			Error: validationErr,
+		}, nil
 	}
-	return nil, nil
+	return nil, err
 }
 
-// SetAnkiDeck is the resolver for the setAnkiDeck field.
-func (r *mutationResolver) SetAnkiDeck(ctx context.Context, input gqlmodel.AnkiDeckInput) (gqlmodel.AnkiDeckPayload, error) {
+// SetAnkiConfigDeck is the resolver for the setAnkiConfigDeck field.
+func (r *mutationResolver) SetAnkiConfigDeck(ctx context.Context, input gqlmodel.SetAnkiConfigDeckInput) (*gqlmodel.SetAnkiConfigDeckResult, error) {
 	err := r.ankiConfig.UpdateDeck(input.Name)
-	if err != nil {
-		return convertAnkiValidationError(ctx, err)
+	if validationErr, _ := convertAnkiValidationError(ctx, err); validationErr != nil {
+		return &gqlmodel.SetAnkiConfigDeckResult{
+			Error: validationErr,
+		}, nil
 	}
-	return nil, nil
+	return &gqlmodel.SetAnkiConfigDeckResult{}, err
 }
 
-// SetAnkiNoteType is the resolver for the setAnkiNoteType field.
-func (r *mutationResolver) SetAnkiNoteType(ctx context.Context, input gqlmodel.AnkiNoteTypeInput) (gqlmodel.AnkiNoteTypePayload, error) {
+// SetAnkiConfigNote is the resolver for the setAnkiConfigNote field.
+func (r *mutationResolver) SetAnkiConfigNote(ctx context.Context, input gqlmodel.SetAnkiConfigNote) (*gqlmodel.SetAnkiConfigNoteResult, error) {
 	err := r.ankiConfig.UpdateNoteType(input.Name)
-	if err != nil {
-		return convertAnkiValidationError(ctx, err)
+	if validationErr, _ := convertAnkiValidationError(ctx, err); validationErr != nil {
+		return &gqlmodel.SetAnkiConfigNoteResult{
+			Error: validationErr,
+		}, nil
 	}
-	return nil, nil
+	return nil, err
 }
 
-// SetAnkiMapping is the resolver for the setAnkiMapping field.
-func (r *mutationResolver) SetAnkiMapping(ctx context.Context, input gqlmodel.AnkiMappingInput) (gqlmodel.AnkiMappingPayload, error) {
+// SetAnkiConfigMapping is the resolver for the setAnkiConfigMapping field.
+func (r *mutationResolver) SetAnkiConfigMapping(ctx context.Context, input gqlmodel.SetAnkiConfigMappingInput) (*gqlmodel.SetAnkiConfigMappingResult, error) {
 	mapping := map[string]string{}
 	for _, element := range input.Mapping {
 		mapping[element.Key] = element.Value
@@ -55,12 +62,12 @@ func (r *mutationResolver) SetAnkiMapping(ctx context.Context, input gqlmodel.An
 		if !errors.As(err, &ankiMappingErrs) {
 			return nil, err
 		}
-		mappingErrs := &gqlmodel.AnkiMappingError{
+		mappingErrs := &gqlmodel.AnkiConfigMappingError{
 			Message: "invalid mapping",
 		}
 		for _, err := range ankiMappingErrs.KeyErrors {
 			mappingErrs.FieldErrors = append(mappingErrs.FieldErrors,
-				&gqlmodel.AnkiMappingElementError{
+				&gqlmodel.AnkiConfigMappingElementError{
 					Key:     err.Key,
 					Message: err.Msg,
 				},
@@ -68,39 +75,136 @@ func (r *mutationResolver) SetAnkiMapping(ctx context.Context, input gqlmodel.An
 		}
 		for _, err := range ankiMappingErrs.ValueErrors {
 			mappingErrs.ValueErrors = append(mappingErrs.ValueErrors,
-				&gqlmodel.AnkiMappingElementError{
+				&gqlmodel.AnkiConfigMappingElementError{
 					Key:     err.Key,
 					Message: err.Msg,
 				},
 			)
 		}
-		return mappingErrs, nil
+		return &gqlmodel.SetAnkiConfigMappingResult{Error: mappingErrs}, nil
 	}
 	return nil, nil
 }
 
-// AnkiState is the resolver for the AnkiState field.
-func (r *queryResolver) AnkiState(ctx context.Context) (gqlmodel.AnkiStatePayload, error) {
+// CreateAnkiDeck is the resolver for the createAnkiDeck field.
+func (r *mutationResolver) CreateAnkiDeck(ctx context.Context, input *gqlmodel.CreateAnkiDeckInput) (*gqlmodel.CreateAnkiDeckResult, error) {
+	err := r.ankiClient.CreateDeck(ctx, input.Name)
+	if err != nil {
+		if errors.Is(err, anki.ErrDeckAlreadyExists) {
+			return &gqlmodel.CreateAnkiDeckResult{
+				Error: &gqlmodel.CreateAnkiDeckAlreadyExists{
+					Message: err.Error(),
+				},
+			}, nil
+		}
+		if validationErr, _ := convertAnkiValidationError(ctx, err); validationErr != nil {
+			return &gqlmodel.CreateAnkiDeckResult{
+				Error: validationErr,
+			}, nil
+		}
+		if ankiErr, _ := convertAnkiError(err); ankiErr != nil {
+			return &gqlmodel.CreateAnkiDeckResult{
+				AnkiError: ankiErr,
+			}, nil
+		}
+		return nil, err
+	}
+	return &gqlmodel.CreateAnkiDeckResult{}, nil
+}
+
+// CreateAnkiNote is the resolver for the createAnkiNote field.
+func (r *mutationResolver) CreateAnkiNote(ctx context.Context, input *gqlmodel.CreateAnkiNoteInput) (*gqlmodel.CreateAnkiNoteResult, error) {
+	err := r.ankiClient.CreateDefaultNote(ctx, input.Name)
+	if err != nil {
+		if validationErr, _ := convertAnkiValidationError(ctx, err); validationErr != nil {
+			return &gqlmodel.CreateAnkiNoteResult{
+				Error: validationErr,
+			}, nil
+		}
+		if ankiErr, _ := convertAnkiError(err); ankiErr != nil {
+			return &gqlmodel.CreateAnkiNoteResult{
+				AnkiError: ankiErr,
+			}, nil
+		}
+		return nil, err
+	}
+	return &gqlmodel.CreateAnkiNoteResult{}, nil
+}
+
+// Anki is the resolver for the Anki field.
+func (r *queryResolver) Anki(ctx context.Context) (*gqlmodel.AnkiResult, error) {
+	fieldCtx := graphql.GetFieldContext(ctx)
+	opCtx := graphql.GetOperationContext(ctx)
+	fields := graphql.CollectFields(opCtx, fieldCtx.Field.SelectionSet, nil)
+	var ankiFields []graphql.CollectedField
+	for _, field := range fields {
+		if field.Name == "anki" {
+			ankiFields = graphql.CollectFields(opCtx, field.SelectionSet, nil)
+			break
+		}
+	}
+	var (
+		result = &gqlmodel.Anki{}
+		err    error
+	)
+
+loop:
+	for _, field := range ankiFields {
+		switch field.Name {
+		case "notes":
+			result.Notes, err = r.ankiClient.NoteTypes(ctx)
+			if err != nil {
+				break loop
+			}
+		case "decks":
+			result.Decks, err = r.ankiClient.Decks(ctx)
+			if err != nil {
+				break loop
+			}
+		case "noteFields":
+			args := field.ArgumentMap(nil)
+			name := args["name"].(string)
+			result.NoteFields, err = r.ankiClient.NoteTypeFields(ctx, name)
+			if err != nil {
+				break loop
+			}
+		default:
+
+		}
+	}
+	if err != nil {
+		if ankiErr, _ := convertAnkiError(err); ankiErr != nil {
+			return &gqlmodel.AnkiResult{
+				Error: ankiErr,
+			}, nil
+		}
+		return nil, err
+	}
+	return &gqlmodel.AnkiResult{
+		Anki: result,
+	}, nil
+}
+
+// AnkiConfigState is the resolver for the AnkiConfigState field.
+func (r *queryResolver) AnkiConfigState(ctx context.Context) (*gqlmodel.AnkiConfigStateResult, error) {
 	state, err := r.ankiClient.FullStateCheck(ctx)
 	if err != nil {
-		var connErr *ankiconnect.ConnectionError
-		if !errors.As(err, &connErr) {
-			return nil, err
+		if ankiErr, _ := convertAnkiError(err); ankiErr != nil {
+			return &gqlmodel.AnkiConfigStateResult{
+				Error: ankiErr,
+			}, nil
 		}
-		return &gqlmodel.AnkiConnectionError{
-			Message: err.Error(),
-		}, nil
+		return nil, err
 	}
-	result := &gqlmodel.AnkiState{
-		Version:           state.Version,
-		Connected:         state.Connected,
-		PermissionGranted: state.PermissionGranted,
-		APIKeyRequired:    state.APIKeyRequired,
-		DeckExists:        state.DeckExists,
-		NoteTypeExists:    state.NoteTypeExists,
-		NoteMissingFields: state.NoteMissingFields,
+	result := &gqlmodel.AnkiConfigState{
+		Version:          state.Version,
+		DeckExists:       state.DeckExists,
+		NoteTypeExists:   state.NoteTypeExists,
+		NoteHasAllFields: state.NoteHasAllFields,
 	}
-	return result, nil
+	return &gqlmodel.AnkiConfigStateResult{
+		AnkiConfigState: result,
+	}, nil
 }
 
 // AnkiConfig is the resolver for the AnkiConfig field.

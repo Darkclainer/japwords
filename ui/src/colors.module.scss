@@ -1,0 +1,29 @@
+$gray: #f4f4f4;
+$mid-gray: #eaeaea;
+$dark-gray: #5c5c5c;
+$blue: #617db6;
+$dark-blue: #3b4c6f;
+$black: #000000;
+$white: #ffffff;
+$green: #77b661;
+$dark-green: #35512b;
+$red: #b66661;
+$light-red: #f48a83;
+$dark-red: #57312f;
+$error-red: #d9542f;
+
+:export {
+  gray: $gray;
+  midGray: $mid-gray;
+  darkGray: $dark-gray;
+  blue: $blue;
+  darkBlue: $dark-blue;
+  black: $black;
+  white: $white;
+  green: $green;
+  darkGreen: $dark-green;
+  red: $red;
+  lightRed: $light-red;
+  darkRed: $dark-red;
+  errorRed: $error-red;
+}

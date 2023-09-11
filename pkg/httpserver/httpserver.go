@@ -41,6 +41,7 @@ func New(in In) (*Server, error) {
 		AllowedOrigins: []string{
 			"http://127.0.0.1:*",
 			"http://localhost:*",
+			"*",
 		},
 	})
 	srv := &Server{

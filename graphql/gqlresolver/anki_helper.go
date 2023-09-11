@@ -8,6 +8,7 @@ import (
 
 	"github.com/Darkclainer/japwords/graphql/gqlmodel"
 	"github.com/Darkclainer/japwords/pkg/anki"
+	"github.com/Darkclainer/japwords/pkg/anki/ankiconnect"
 )
 
 func convertAnkiValidationError(ctx context.Context, err error) (*gqlmodel.ValidationError, error) {
@@ -20,4 +21,26 @@ func convertAnkiValidationError(ctx context.Context, err error) (*gqlmodel.Valid
 		Message: validationErr.Msg,
 	}
 	return &result, nil
+}
+
+func convertAnkiError(err error) (gqlmodel.AnkiError, error) {
+	if errors.Is(err, anki.ErrPermissionDenied) {
+		return &gqlmodel.AnkiPermissionError{
+			Message: err.Error(),
+		}, nil
+	}
+	if errors.Is(err, anki.ErrUnauthorized) {
+		return &gqlmodel.AnkiUnauthorizedError{
+			Message: err.Error(),
+		}, nil
+	}
+	var connErr *ankiconnect.ConnectionError
+	if !errors.As(err, &connErr) {
+		return &gqlmodel.AnkiUnauthorizedError{
+			Message: err.Error(),
+		}, nil
+	}
+	return &gqlmodel.AnkiConnectionError{
+		Message: err.Error(),
+	}, nil
 }

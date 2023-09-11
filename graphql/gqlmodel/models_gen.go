@@ -8,29 +8,27 @@ import (
 	"strconv"
 )
 
-type AnkiConnectionPayload interface {
-	IsAnkiConnectionPayload()
+type AnkiError interface {
+	IsAnkiError()
 }
 
-type AnkiDeckPayload interface {
-	IsAnkiDeckPayload()
+type CreateAnkiDeckError interface {
+	IsCreateAnkiDeckError()
 }
 
-type AnkiMappingPayload interface {
-	IsAnkiMappingPayload()
-}
-
-type AnkiNoteTypePayload interface {
-	IsAnkiNoteTypePayload()
-}
-
-type AnkiStatePayload interface {
-	IsAnkiStatePayload()
+type CreateAnkiNoteError interface {
+	IsCreateAnkiNoteError()
 }
 
 type Error interface {
 	IsError()
 	GetMessage() string
+}
+
+type Anki struct {
+	Decks      []string `json:"decks"`
+	Notes      []string `json:"notes"`
+	NoteFields []string `json:"noteFields"`
 }
 
 type AnkiConfig struct {
@@ -41,6 +39,37 @@ type AnkiConfig struct {
 	Mapping  []*AnkiMappingElement `json:"mapping"`
 }
 
+type AnkiConfigMappingElementError struct {
+	Key     string `json:"key"`
+	Message string `json:"message"`
+}
+
+type AnkiConfigMappingElementInput struct {
+	Key   string `json:"key"`
+	Value string `json:"value"`
+}
+
+type AnkiConfigMappingError struct {
+	FieldErrors []*AnkiConfigMappingElementError `json:"fieldErrors,omitempty"`
+	ValueErrors []*AnkiConfigMappingElementError `json:"valueErrors,omitempty"`
+	Message     string                           `json:"message"`
+}
+
+func (AnkiConfigMappingError) IsError()                {}
+func (this AnkiConfigMappingError) GetMessage() string { return this.Message }
+
+type AnkiConfigState struct {
+	Version          int  `json:"version"`
+	DeckExists       bool `json:"deckExists"`
+	NoteTypeExists   bool `json:"noteTypeExists"`
+	NoteHasAllFields bool `json:"noteHasAllFields"`
+}
+
+type AnkiConfigStateResult struct {
+	AnkiConfigState *AnkiConfigState `json:"ankiConfigState,omitempty"`
+	Error           AnkiError        `json:"error,omitempty"`
+}
+
 type AnkiConnectionError struct {
 	Message string `json:"message"`
 }
@@ -48,66 +77,77 @@ type AnkiConnectionError struct {
 func (AnkiConnectionError) IsError()                {}
 func (this AnkiConnectionError) GetMessage() string { return this.Message }
 
-func (AnkiConnectionError) IsAnkiStatePayload() {}
-
-type AnkiConnectionInput struct {
-	Addr   string `json:"addr"`
-	APIKey string `json:"apiKey"`
-}
-
-type AnkiDeckInput struct {
-	Name string `json:"name"`
-}
+func (AnkiConnectionError) IsAnkiError() {}
 
 type AnkiMappingElement struct {
 	Key   string `json:"key"`
 	Value string `json:"value"`
 }
 
-type AnkiMappingElementError struct {
-	Key     string `json:"key"`
+type AnkiPermissionError struct {
 	Message string `json:"message"`
+	Version int    `json:"version"`
 }
 
-type AnkiMappingElementInput struct {
-	Key   string `json:"key"`
-	Value string `json:"value"`
+func (AnkiPermissionError) IsError()                {}
+func (this AnkiPermissionError) GetMessage() string { return this.Message }
+
+func (AnkiPermissionError) IsAnkiError() {}
+
+type AnkiResult struct {
+	Anki  *Anki     `json:"anki,omitempty"`
+	Error AnkiError `json:"error,omitempty"`
 }
 
-type AnkiMappingError struct {
-	FieldErrors []*AnkiMappingElementError `json:"fieldErrors,omitempty"`
-	ValueErrors []*AnkiMappingElementError `json:"valueErrors,omitempty"`
-	Message     string                     `json:"message"`
+type AnkiUnauthorizedError struct {
+	Message string `json:"message"`
+	Version int    `json:"version"`
 }
 
-func (AnkiMappingError) IsError()                {}
-func (this AnkiMappingError) GetMessage() string { return this.Message }
+func (AnkiUnauthorizedError) IsError()                {}
+func (this AnkiUnauthorizedError) GetMessage() string { return this.Message }
 
-func (AnkiMappingError) IsAnkiMappingPayload() {}
-
-type AnkiMappingInput struct {
-	Mapping []*AnkiMappingElementInput `json:"mapping"`
-}
-
-type AnkiNoteTypeInput struct {
-	Name string `json:"name"`
-}
-
-type AnkiState struct {
-	Version           int      `json:"version"`
-	Connected         bool     `json:"connected"`
-	PermissionGranted bool     `json:"permissionGranted"`
-	APIKeyRequired    bool     `json:"apiKeyRequired"`
-	DeckExists        bool     `json:"deckExists"`
-	NoteTypeExists    bool     `json:"noteTypeExists"`
-	NoteMissingFields []string `json:"noteMissingFields"`
-}
-
-func (AnkiState) IsAnkiStatePayload() {}
+func (AnkiUnauthorizedError) IsAnkiError() {}
 
 type Audio struct {
 	Type   string `json:"type"`
 	Source string `json:"source"`
+}
+
+type CreateAnkiDeckAlreadyExists struct {
+	Message string `json:"message"`
+}
+
+func (CreateAnkiDeckAlreadyExists) IsError()                {}
+func (this CreateAnkiDeckAlreadyExists) GetMessage() string { return this.Message }
+
+func (CreateAnkiDeckAlreadyExists) IsCreateAnkiDeckError() {}
+
+type CreateAnkiDeckInput struct {
+	Name string `json:"name"`
+}
+
+type CreateAnkiDeckResult struct {
+	AnkiError AnkiError           `json:"ankiError,omitempty"`
+	Error     CreateAnkiDeckError `json:"error,omitempty"`
+}
+
+type CreateAnkiNoteAlreadyExists struct {
+	Message string `json:"message"`
+}
+
+func (CreateAnkiNoteAlreadyExists) IsError()                {}
+func (this CreateAnkiNoteAlreadyExists) GetMessage() string { return this.Message }
+
+func (CreateAnkiNoteAlreadyExists) IsCreateAnkiNoteError() {}
+
+type CreateAnkiNoteInput struct {
+	Name string `json:"name"`
+}
+
+type CreateAnkiNoteResult struct {
+	AnkiError AnkiError           `json:"AnkiError,omitempty"`
+	Error     CreateAnkiDeckError `json:"Error,omitempty"`
 }
 
 type Furigana struct {
@@ -138,16 +178,47 @@ type Sense struct {
 	Tags         []string `json:"tags"`
 }
 
+type SetAnkiConfigConnectionInput struct {
+	Addr   string `json:"addr"`
+	APIKey string `json:"apiKey"`
+}
+
+type SetAnkiConfigConnectionResult struct {
+	Error *ValidationError `json:"error,omitempty"`
+}
+
+type SetAnkiConfigDeckInput struct {
+	Name string `json:"name"`
+}
+
+type SetAnkiConfigDeckResult struct {
+	Error *ValidationError `json:"error,omitempty"`
+}
+
+type SetAnkiConfigMappingInput struct {
+	Mapping []*AnkiConfigMappingElementInput `json:"mapping"`
+}
+
+type SetAnkiConfigMappingResult struct {
+	Error *AnkiConfigMappingError `json:"error,omitempty"`
+}
+
+type SetAnkiConfigNote struct {
+	Name string `json:"name"`
+}
+
+type SetAnkiConfigNoteResult struct {
+	Error *ValidationError `json:"error,omitempty"`
+}
+
 type ValidationError struct {
 	Paths   []string `json:"paths"`
 	Message string   `json:"message"`
 }
 
-func (ValidationError) IsAnkiConnectionPayload() {}
+func (ValidationError) IsCreateAnkiDeckError() {}
 
-func (ValidationError) IsAnkiDeckPayload() {}
-
-func (ValidationError) IsAnkiNoteTypePayload() {}
+func (ValidationError) IsCreateAnkiNoteError() {}
 
 func (ValidationError) IsError()                {}
 func (this ValidationError) GetMessage() string { return this.Message }

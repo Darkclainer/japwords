@@ -4,7 +4,9 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"net"
 	"net/http"
+	"time"
 )
 
 const apiVersion = 6
@@ -16,15 +18,38 @@ type Anki struct {
 }
 
 type Options struct {
-	URL       string
-	APIKey    string
+	URL    string
+	APIKey string
+	// Transport is used for http client.
+	// Please not that anki-connect can not properly reuse connections!
 	Transport http.RoundTripper
 }
 
+func defaultTransportDialContext(dialer *net.Dialer) func(context.Context, string, string) (net.Conn, error) {
+	return dialer.DialContext
+}
+
 func New(o *Options) (*Anki, error) {
+	transport := o.Transport
+	if transport == nil {
+		transport = &http.Transport{
+			// we need to disable keepAlive to deal with anki-connect connection reuse behavior
+			DisableKeepAlives: true,
+			Proxy:             http.ProxyFromEnvironment,
+			DialContext: defaultTransportDialContext(&net.Dialer{
+				Timeout:   30 * time.Second,
+				KeepAlive: 30 * time.Second,
+			}),
+			ForceAttemptHTTP2:     true,
+			MaxIdleConns:          100,
+			IdleConnTimeout:       90 * time.Second,
+			TLSHandshakeTimeout:   10 * time.Second,
+			ExpectContinueTimeout: 1 * time.Second,
+		}
+	}
 	return &Anki{
 		client: http.Client{
-			Transport: o.Transport,
+			Transport: transport,
 		},
 		apiKey: o.APIKey,
 		url:    o.URL,

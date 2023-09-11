@@ -346,6 +346,101 @@ func Test_Manager_UpdateConfig(t *testing.T) {
 		wg.Wait()
 		assert.Equal(t, []int{1, 2, 1, 2, 1, 2}, factory.called)
 	})
+	// this tests chechks that manager config cache is actually updated.
+	// There was a bug, when you update config, and then revert it, but reverting
+	// did nothing, because manager always kept original config.
+	t.Run("ReloaderRevertConfig", func(t *testing.T) {
+		uc := DefaultUserConfig()
+		uc.Addr = "initialaddr"
+		mgr := newManager(t, uc)
+		var calledWith []string
+		reloader := &TestGenericReloader{
+			TestGenericConsumer: TestGenericConsumer{
+				consume: func(uc *UserConfig) (Part, error) {
+					data := map[string]any{
+						"addr": uc.Addr,
+					}
+					return TestGenericPart(data), nil
+				},
+			},
+			reload: func(p TestGenericPart) error {
+				calledWith = append(calledWith, p["addr"].(string))
+				return nil
+			},
+		}
+
+		_, _, err := mgr.Register(reloader)
+		require.NoError(t, err)
+		err = mgr.UpdateConfig(func(uc *UserConfig) error {
+			uc.Addr = "newaddr"
+			return nil
+		})
+		require.NoError(t, err)
+		err = mgr.UpdateConfig(func(uc *UserConfig) error {
+			uc.Addr = "initialaddr"
+			return nil
+		})
+		require.NoError(t, err)
+		assert.Equal(t, []string{"initialaddr", "newaddr", "initialaddr"}, calledWith)
+	})
+	// Just like above, but we check that after error, we revert cache
+	t.Run("ReloaderRevertConfigError", func(t *testing.T) {
+		uc := DefaultUserConfig()
+		uc.Addr = "initialAddr"
+		uc.Anki.Addr = "initalAnkiAddr"
+		mgr := newManager(t, uc)
+		var calledWith []string
+		firstReloader := &TestGenericReloader{
+			TestGenericConsumer: TestGenericConsumer{
+				consume: func(uc *UserConfig) (Part, error) {
+					data := map[string]any{
+						"addr": uc.Addr,
+					}
+					return TestGenericPart(data), nil
+				},
+			},
+			reload: func(p TestGenericPart) error {
+				calledWith = append(calledWith, p["addr"].(string))
+				return nil
+			},
+		}
+		secondReloader := &TestGenericReloader{
+			TestGenericConsumer: TestGenericConsumer{
+				consume: func(uc *UserConfig) (Part, error) {
+					data := map[string]any{
+						"ankiaddr": uc.Anki.Addr,
+					}
+					return TestGenericPart(data), nil
+				},
+			},
+			reload: func(p TestGenericPart) error {
+				if p["ankiaddr"] == "newAnkiAddr" {
+					return errors.New("hello")
+				}
+				return nil
+			},
+		}
+
+		_, _, err := mgr.Register(firstReloader)
+		require.NoError(t, err)
+		_, _, err = mgr.Register(secondReloader)
+		require.NoError(t, err)
+		err = mgr.UpdateConfig(func(uc *UserConfig) error {
+			uc.Addr = "newAddr"
+			uc.Anki.Addr = "newAnkiAddr"
+			return nil
+		})
+		require.Error(t, err)
+		// we check first reloader, it should get `newAddr` and then revert to `initialAddr`
+		assert.Equal(t, []string{"initialAddr", "newAddr", "initialAddr"}, calledWith)
+		err = mgr.UpdateConfig(func(uc *UserConfig) error {
+			uc.Addr = "initialAddr"
+			return nil
+		})
+		require.NoError(t, err)
+		// second time we update only first reloader and it should not be called, because it was left in `initialAddr` state
+		assert.Equal(t, []string{"initialAddr", "newAddr", "initialAddr"}, calledWith)
+	})
 }
 
 func fileModTime(t testing.TB, path string) time.Time {

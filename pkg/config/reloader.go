@@ -130,10 +130,13 @@ func (m *Manager) UpdateConfig(updateFn func(*UserConfig) error) error {
 			// we start reloading back starting failed reloader
 			for i := i; i >= 0; i-- {
 				// Ignore error here. Maybe log it?
-				_ = toReload[i].Reloader.Reload(toReload[i].OldPart)
+				revertReloader := toReload[i].Reloader
+				_ = revertReloader.Reload(toReload[i].OldPart)
+				m.lastParts[revertReloader] = toReload[i].OldPart
 			}
 			return err
 		}
+		m.lastParts[reloaderPart.Reloader] = reloaderPart.NewPart
 	}
 
 	m.config = newConfig

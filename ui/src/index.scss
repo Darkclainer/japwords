@@ -1,0 +1,38 @@
+@use './colors.module.scss' as *;
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@font-face {
+  font-family: Inter;
+  src: url('/fonts/Inter-VariableFont_slnt,wght.ttf') format('truetype');
+}
+
+:root {
+  --gray: #{$gray};
+  --mid-gray: #{$mid-gray};
+  --dark-gray: #{$dark-gray};
+  --blue: #{$blue};
+  --dark-blue: #{$dark-blue};
+  --black: #{$black};
+  --white: #{$white};
+  --green: #{$green};
+  --dark-green: #{$dark-green};
+  --red: #{$red};
+  --light-red: #{$light-red};
+  --dark-red: #{$dark-red};
+  --error-red: #{$error-red};
+
+  --toastify-color-info: var(--blue);
+  --toastify-color-success: var(--green);
+  --toastify-color-error: var(--light-red);
+}
+
+body {
+  overflow-y: scroll;
+  overflow-x: hidden;
+}
+
+html {
+}

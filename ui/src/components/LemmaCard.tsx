@@ -1,68 +1,66 @@
-import { Fragment, useRef } from 'react';
-import { Furigana, Lemma, Word, PitchType, Sense, Audio } from '../api/__generated__/graphql';
-import { Id, toast } from 'react-toastify';
 import { clsx } from 'clsx';
+import { useRef } from 'react';
 
-function LemmaTitle(props: { word: Word }) {
+import { Audio, Furigana, Lemma, PitchType, Sense, Word } from '../api/__generated__/graphql';
+import { ToastFunction } from '../lib/styled-toast';
+import Button from './Button';
+
+function RenderFurigana(props: { furigana: Furigana }) {
+  const { furigana } = props;
+  if (furigana.kanji) {
+    return (
+      <>
+        {furigana.kanji}
+        <rp>[</rp>
+        <rt className="text-dark-gray text-lg">{furigana.hiragana}</rt>
+        <rp>]</rp>
+      </>
+    );
+  } else {
+    return (
+      <>
+        {furigana.hiragana}
+        <rp>[</rp>
+        <rt />
+        <rp>]</rp>
+      </>
+    );
+  }
+}
+
+function RenderWord(props: { word: Word }) {
   const { word } = props;
-  const render_furigana = (furigana: Furigana) => {
-    if (furigana.kanji) {
-      return (
-        <>
-          {furigana.kanji}
-          <rp>[</rp>
-          <rt className="text-dark-gray text-xl">{furigana.hiragana}</rt>
-          <rp>]</rp>
-        </>
-      );
-    } else {
-      return (
-        <>
-          {furigana.hiragana}
-          <rp>[</rp>
-          <rt />
-          <rp>]</rp>
-        </>
-      );
-    }
-  };
-  const render_word = () => {
-    if (word.furigana.length == 0) {
-      return <>{word.word}</>;
-    } else {
-      return (
-        <ruby>
-          {word.furigana.map((furigana, index) => (
-            // use index as key, because word.furigana will never be mutated
-            <Fragment key={index}>{render_furigana(furigana)}</Fragment>
-          ))}
-        </ruby>
-      );
-    }
-  };
-  // keep toast_id to show only one notification related to kanji copying
-  // TODO: probably should get it from LemmaList or keep in context, because
-  // different lemma cards can show notifications with different toast_id
-  // defining toast_id as static string will not work, because seems that
-  // it can not be dismissed and created at the same time
-  const toast_id = useRef<Id | null>(null);
-  const copy_kanji = () => {
+  if (word.furigana.length == 0) {
+    return <>{word.word}</>;
+  } else {
+    return (
+      <ruby>
+        {word.furigana.map((furigana, index) => (
+          // use index as key, because word.furigana will never be mutated
+          <RenderFurigana key={index} furigana={furigana} />
+        ))}
+      </ruby>
+    );
+  }
+}
+
+function LemmaTitle(props: { word: Word; toast: ToastFunction }) {
+  const { word, toast } = props;
+  const copyKanji = () => {
     navigator.clipboard.writeText(word.word);
-    if (toast_id.current) {
-      toast.dismiss(toast_id.current);
-    }
-    toast_id.current = toast('Copied ' + word.word, {
-      position: 'bottom-right',
-      autoClose: 2000,
-      type: 'info',
-    });
+    toast('Copied ' + word.word);
   };
   return (
     <button
-      onMouseUp={copy_kanji}
+      onClick={(e) => {
+        e.stopPropagation();
+        copyKanji();
+      }}
       className="hover:text-blue active:text-dark-blue transition-colors duration-300"
     >
-      <h1 className="text-5xl pb-4">{render_word()}</h1>
+      <h1 className="text-6xl pb-5">
+        <RenderWord word={word} />
+      </h1>
     </button>
   );
 }
@@ -74,7 +72,7 @@ function Hiragana(props: { word: Word }) {
   }
 
   return (
-    <div className="text-xl py-4">
+    <div className="text-2xl py-5">
       {word.pitch.length == 0
         ? word.furigana.map((e) => e.hiragana).join('')
         : word.pitch.map((pitch, index) => {
@@ -103,15 +101,15 @@ function Senses(props: { senses: Sense[] }) {
     return;
   }
   return (
-    <div className="text-xl py-4">
+    <div className="text-lg py-7">
       {senses.map((sense, index) => {
         return (
-          <div className="mb-4 last:mb-0" key={index}>
-            <p className="text-base text-blue">{sense.partOfSpeech.join(', ')}</p>
-            <p>
+          <div className="mb-7 last:mb-0" key={index}>
+            <p className="text-blue">{sense.partOfSpeech.join(', ')}</p>
+            <p className="text-2xl">
               {index + 1}. {sense.definition.join('; ')}
             </p>
-            <p className="text-base text-dark-gray">{sense.tags.join(', ')}</p>
+            <p className="text-dark-gray">{sense.tags.join(', ')}</p>
           </div>
         );
       })}
@@ -125,9 +123,9 @@ function LemmaForms(props: { forms: Word[] }) {
     return;
   }
   return (
-    <div className="text-xl pt-4">
-      <p className="text-base text-blue">Other Forms</p>
-      <div className="flex flex-col">
+    <div className="pt-7">
+      <p className="text-lg text-blue">Other Forms</p>
+      <div className="text-2xl flex flex-col">
         {forms.map((form, index) => {
           return (
             <p key={index}>
@@ -147,7 +145,7 @@ function Tags(props: { tags: string[] }) {
     return;
   }
   return (
-    <div className="flex flex-col justify-items-center gap-4 py-4 text-lg text-blue">
+    <div className="flex flex-col justify-items-center gap-7 py-5 text-2xl text-blue">
       {tags.map((tag, index) => {
         return (
           <p key={index} className="text-center">
@@ -161,19 +159,25 @@ function Tags(props: { tags: string[] }) {
 
 function AudioControls(props: { audios: Audio[] }) {
   const { audios } = props;
-  if (audios.length == 0) {
-    return;
-  }
   const audio = useRef<HTMLAudioElement>(null);
-  const play_mouse_up = () => {
+  const handleMouseUp = () => {
     if (!audio.current) {
       return;
     }
     audio.current.play();
   };
+  if (audios.length == 0) {
+    return;
+  }
   return (
-    <div className="flex flex-row pt-4">
-      <button className="m-2" onMouseUp={play_mouse_up}>
+    <div className="flex flex-row pt-5">
+      <button
+        className="m-2"
+        onClick={(e) => {
+          e.stopPropagation();
+          handleMouseUp();
+        }}
+      >
         <svg
           className="fill-blue hover:fill-green active:fill-dark-green transition-color transition-colors duration-300"
           width="40"
@@ -189,7 +193,9 @@ function AudioControls(props: { audios: Audio[] }) {
           />
         </svg>
       </button>
-      <p className="m-1 text-dark-gray my-auto text-sm leading-5">Listen to pronunciation</p>
+      <p className="m-1 text-dark-gray my-auto text-lg leading-5">Listen to pronunciation</p>
+      {/* eslint-disable-next-line jsx-a11y/media-has-caption
+       */}
       <audio ref={audio}>
         {audios.map((audio, index) => {
           return <source key={index} src={audio.source} type={audio.type} />;
@@ -199,22 +205,20 @@ function AudioControls(props: { audios: Audio[] }) {
   );
 }
 
-export default function LemmaCard(props: { lemma: Lemma }) {
-  const { lemma } = props;
+export default function LemmaCard(props: { lemma: Lemma; toast: ToastFunction }) {
+  const { lemma, toast } = props;
 
   return (
-    <div className="flex flex-col sm:flex-row justify-between shadow-md rounded-md bg-gray my-4 px-8 pt-10 pb-7">
+    <div className="flex flex-col sm:flex-row justify-between shadow-md rounded-md bg-gray my-4 px-10 pt-12 pb-7">
       <div className="grow divide-y divide-blue flex-1">
-        <LemmaTitle word={lemma.slug} />
+        <LemmaTitle word={lemma.slug} toast={toast} />
         <Hiragana word={lemma.slug} />
         <Senses senses={lemma.senses} />
         <LemmaForms forms={lemma.forms} />
       </div>
-      <div className="shrink sm:basis-8 md:basis-14" />
-      <div className="flex-none flex flex-col-reverse sm:flex-col justify-items-stretch basis-20 sm:basis-40">
-        <button className="px-2 py-4 text-xl rounded-md bg-blue hover:bg-green active:bg-dark-green transition-colors duration-200 text-white">
-          Add to Anki
-        </button>
+      <div className="shrink sm:basis-8 md:basis-24" />
+      <div className="flex-none flex flex-col-reverse sm:flex-col justify-items-stretch basis-20 sm:basis-52">
+        <Button>Add to Anki</Button>
         <div className="flex flex-col-reverse sm:flex-col sm:divide-y divide-blue">
           <Tags tags={lemma.tags} />
           <AudioControls audios={lemma.audio} />

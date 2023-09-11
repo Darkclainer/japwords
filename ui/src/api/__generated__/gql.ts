@@ -13,7 +13,22 @@ import { TypedDocumentNode as DocumentNode } from '@graphql-typed-document-node/
  * Therefore it is highly recommended to use the babel or swc plugin for production.
  */
 const documents = {
-    "\n  query GetLemmas($query: String!) {\n    Lemmas(query: $query) {\n      lemmas {\n        slug {\n          word\n          hiragana\n          furigana {\n            kanji\n            hiragana\n          }\n          pitch {\n            hiragana\n            pitch\n          } \n        }\n        tags\n        forms {\n          word\n          hiragana\n          furigana {\n            kanji\n            hiragana\n          }\n          pitch {\n            hiragana\n            pitch\n          } \n        }\n        senses {\n          definition\n          partOfSpeech\n          tags\n        }\n        audio {\n          type\n          source\n        }\n      } \n    }\n  }\n": types.GetLemmasDocument,
+  '\n  query GetHealthStatus {\n    AnkiConfigState {\n      ankiConfigState {\n        version\n        deckExists\n        noteTypeExists\n        noteHasAllFields\n      }\n      error {\n        ... on AnkiConnectionError {\n          message\n        }\n        ... on AnkiPermissionError {\n          version\n          message\n        }\n        ... on AnkiUnauthorizedError {\n          version\n          message\n        }\n        ... on Error {\n          message\n        }\n      }\n    }\n  }\n':
+    types.GetHealthStatusDocument,
+  '\n  query GetConnectionConfig {\n    AnkiConfig {\n      addr\n      apiKey\n    }\n  }\n':
+    types.GetConnectionConfigDocument,
+  '\n  mutation UpdateConnectionConfig($addr: String!, $apiKey: String!) {\n    setAnkiConfigConnection(input: { addr: $addr, apiKey: $apiKey }) {\n      error {\n          ... on ValidationError {\n            paths\n            message\n          }\n        }\n      }\n  }\n':
+    types.UpdateConnectionConfigDocument,
+  '\n  query GetAnkiConfigCurrentDeck {\n    AnkiConfig {\n      deck\n    }\n  }\n':
+    types.GetAnkiConfigCurrentDeckDocument,
+  '\n  query GetAnkiDecks {\n    Anki {\n      anki {\n        decks\n      }\n      error {\n        __typename\n      }\n    }\n  }\n':
+    types.GetAnkiDecksDocument,
+  '\n  mutation SetAnkiConfigCurrentDeck($name: String!) {\n    setAnkiConfigDeck(input: { name: $name }) {\n      error {\n          message\n      }\n    }\n  }\n':
+    types.SetAnkiConfigCurrentDeckDocument,
+  '\n  mutation CreateAnkiDeck($name: String!) {\n    createAnkiDeck(input: { name: $name }) {\n      ankiError {\n        ... on Error {\n          message\n        }\n      }\n      error {\n        ... on CreateAnkiDeckAlreadyExists {\n          message\n        }\n        ... on ValidationError {\n          message\n        }\n        ... on Error {\n          message\n        }\n      \n      }\n    }\n  }\n':
+    types.CreateAnkiDeckDocument,
+  '\n  query GetLemmas($query: String!) {\n    Lemmas(query: $query) {\n      lemmas {\n        slug {\n          word\n          hiragana\n          furigana {\n            kanji\n            hiragana\n          }\n          pitch {\n            hiragana\n            pitch\n          } \n        }\n        tags\n        forms {\n          word\n          hiragana\n          furigana {\n            kanji\n            hiragana\n          }\n          pitch {\n            hiragana\n            pitch\n          } \n        }\n        senses {\n          definition\n          partOfSpeech\n          tags\n        }\n        audio {\n          type\n          source\n        }\n      } \n    }\n  }\n':
+    types.GetLemmasDocument,
 };
 
 /**
@@ -33,10 +48,55 @@ export function gql(source: string): unknown;
 /**
  * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
-export function gql(source: "\n  query GetLemmas($query: String!) {\n    Lemmas(query: $query) {\n      lemmas {\n        slug {\n          word\n          hiragana\n          furigana {\n            kanji\n            hiragana\n          }\n          pitch {\n            hiragana\n            pitch\n          } \n        }\n        tags\n        forms {\n          word\n          hiragana\n          furigana {\n            kanji\n            hiragana\n          }\n          pitch {\n            hiragana\n            pitch\n          } \n        }\n        senses {\n          definition\n          partOfSpeech\n          tags\n        }\n        audio {\n          type\n          source\n        }\n      } \n    }\n  }\n"): (typeof documents)["\n  query GetLemmas($query: String!) {\n    Lemmas(query: $query) {\n      lemmas {\n        slug {\n          word\n          hiragana\n          furigana {\n            kanji\n            hiragana\n          }\n          pitch {\n            hiragana\n            pitch\n          } \n        }\n        tags\n        forms {\n          word\n          hiragana\n          furigana {\n            kanji\n            hiragana\n          }\n          pitch {\n            hiragana\n            pitch\n          } \n        }\n        senses {\n          definition\n          partOfSpeech\n          tags\n        }\n        audio {\n          type\n          source\n        }\n      } \n    }\n  }\n"];
+export function gql(
+  source: '\n  query GetHealthStatus {\n    AnkiConfigState {\n      ankiConfigState {\n        version\n        deckExists\n        noteTypeExists\n        noteHasAllFields\n      }\n      error {\n        ... on AnkiConnectionError {\n          message\n        }\n        ... on AnkiPermissionError {\n          version\n          message\n        }\n        ... on AnkiUnauthorizedError {\n          version\n          message\n        }\n        ... on Error {\n          message\n        }\n      }\n    }\n  }\n',
+): (typeof documents)['\n  query GetHealthStatus {\n    AnkiConfigState {\n      ankiConfigState {\n        version\n        deckExists\n        noteTypeExists\n        noteHasAllFields\n      }\n      error {\n        ... on AnkiConnectionError {\n          message\n        }\n        ... on AnkiPermissionError {\n          version\n          message\n        }\n        ... on AnkiUnauthorizedError {\n          version\n          message\n        }\n        ... on Error {\n          message\n        }\n      }\n    }\n  }\n'];
+/**
+ * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function gql(
+  source: '\n  query GetConnectionConfig {\n    AnkiConfig {\n      addr\n      apiKey\n    }\n  }\n',
+): (typeof documents)['\n  query GetConnectionConfig {\n    AnkiConfig {\n      addr\n      apiKey\n    }\n  }\n'];
+/**
+ * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function gql(
+  source: '\n  mutation UpdateConnectionConfig($addr: String!, $apiKey: String!) {\n    setAnkiConfigConnection(input: { addr: $addr, apiKey: $apiKey }) {\n      error {\n          ... on ValidationError {\n            paths\n            message\n          }\n        }\n      }\n  }\n',
+): (typeof documents)['\n  mutation UpdateConnectionConfig($addr: String!, $apiKey: String!) {\n    setAnkiConfigConnection(input: { addr: $addr, apiKey: $apiKey }) {\n      error {\n          ... on ValidationError {\n            paths\n            message\n          }\n        }\n      }\n  }\n'];
+/**
+ * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function gql(
+  source: '\n  query GetAnkiConfigCurrentDeck {\n    AnkiConfig {\n      deck\n    }\n  }\n',
+): (typeof documents)['\n  query GetAnkiConfigCurrentDeck {\n    AnkiConfig {\n      deck\n    }\n  }\n'];
+/**
+ * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function gql(
+  source: '\n  query GetAnkiDecks {\n    Anki {\n      anki {\n        decks\n      }\n      error {\n        __typename\n      }\n    }\n  }\n',
+): (typeof documents)['\n  query GetAnkiDecks {\n    Anki {\n      anki {\n        decks\n      }\n      error {\n        __typename\n      }\n    }\n  }\n'];
+/**
+ * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function gql(
+  source: '\n  mutation SetAnkiConfigCurrentDeck($name: String!) {\n    setAnkiConfigDeck(input: { name: $name }) {\n      error {\n          message\n      }\n    }\n  }\n',
+): (typeof documents)['\n  mutation SetAnkiConfigCurrentDeck($name: String!) {\n    setAnkiConfigDeck(input: { name: $name }) {\n      error {\n          message\n      }\n    }\n  }\n'];
+/**
+ * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function gql(
+  source: '\n  mutation CreateAnkiDeck($name: String!) {\n    createAnkiDeck(input: { name: $name }) {\n      ankiError {\n        ... on Error {\n          message\n        }\n      }\n      error {\n        ... on CreateAnkiDeckAlreadyExists {\n          message\n        }\n        ... on ValidationError {\n          message\n        }\n        ... on Error {\n          message\n        }\n      \n      }\n    }\n  }\n',
+): (typeof documents)['\n  mutation CreateAnkiDeck($name: String!) {\n    createAnkiDeck(input: { name: $name }) {\n      ankiError {\n        ... on Error {\n          message\n        }\n      }\n      error {\n        ... on CreateAnkiDeckAlreadyExists {\n          message\n        }\n        ... on ValidationError {\n          message\n        }\n        ... on Error {\n          message\n        }\n      \n      }\n    }\n  }\n'];
+/**
+ * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function gql(
+  source: '\n  query GetLemmas($query: String!) {\n    Lemmas(query: $query) {\n      lemmas {\n        slug {\n          word\n          hiragana\n          furigana {\n            kanji\n            hiragana\n          }\n          pitch {\n            hiragana\n            pitch\n          } \n        }\n        tags\n        forms {\n          word\n          hiragana\n          furigana {\n            kanji\n            hiragana\n          }\n          pitch {\n            hiragana\n            pitch\n          } \n        }\n        senses {\n          definition\n          partOfSpeech\n          tags\n        }\n        audio {\n          type\n          source\n        }\n      } \n    }\n  }\n',
+): (typeof documents)['\n  query GetLemmas($query: String!) {\n    Lemmas(query: $query) {\n      lemmas {\n        slug {\n          word\n          hiragana\n          furigana {\n            kanji\n            hiragana\n          }\n          pitch {\n            hiragana\n            pitch\n          } \n        }\n        tags\n        forms {\n          word\n          hiragana\n          furigana {\n            kanji\n            hiragana\n          }\n          pitch {\n            hiragana\n            pitch\n          } \n        }\n        senses {\n          definition\n          partOfSpeech\n          tags\n        }\n        audio {\n          type\n          source\n        }\n      } \n    }\n  }\n'];
 
 export function gql(source: string) {
   return (documents as any)[source] ?? {};
 }
 
-export type DocumentType<TDocumentNode extends DocumentNode<any, any>> = TDocumentNode extends DocumentNode<  infer TType,  any>  ? TType  : never;
+export type DocumentType<TDocumentNode extends DocumentNode<any, any>> =
+  TDocumentNode extends DocumentNode<infer TType, any> ? TType : never;

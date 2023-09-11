@@ -25,6 +25,7 @@ const (
 	PermissionGranted = "granted"
 )
 
+// RequestPermission need to authenticate client origin (it doesn't check api key!)
 func (a *Anki) RequestPermission(ctx context.Context) (*RequestPermissionResponse, error) {
 	var result RequestPermissionResponse
 	err := a.request(ctx, "requestPermission", nil, &result)

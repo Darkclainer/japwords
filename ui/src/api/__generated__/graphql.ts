@@ -5,15 +5,30 @@ export type InputMaybe<T> = Maybe<T>;
 export type Exact<T extends { [key: string]: unknown }> = { [K in keyof T]: T[K] };
 export type MakeOptional<T, K extends keyof T> = Omit<T, K> & { [SubKey in K]?: Maybe<T[SubKey]> };
 export type MakeMaybe<T, K extends keyof T> = Omit<T, K> & { [SubKey in K]: Maybe<T[SubKey]> };
-export type MakeEmpty<T extends { [key: string]: unknown }, K extends keyof T> = { [_ in K]?: never };
-export type Incremental<T> = T | { [P in keyof T]?: P extends ' $fragmentName' | '__typename' ? T[P] : never };
+export type MakeEmpty<T extends { [key: string]: unknown }, K extends keyof T> = {
+  [_ in K]?: never;
+};
+export type Incremental<T> =
+  | T
+  | { [P in keyof T]?: P extends ' $fragmentName' | '__typename' ? T[P] : never };
 /** All built-in and custom scalars, mapped to their actual values */
 export type Scalars = {
-  ID: { input: string; output: string; }
-  String: { input: string; output: string; }
-  Boolean: { input: boolean; output: boolean; }
-  Int: { input: number; output: number; }
-  Float: { input: number; output: number; }
+  ID: { input: string; output: string };
+  String: { input: string; output: string };
+  Boolean: { input: boolean; output: boolean };
+  Int: { input: number; output: number };
+  Float: { input: number; output: number };
+};
+
+export type Anki = {
+  __typename?: 'Anki';
+  decks: Array<Scalars['String']['output']>;
+  noteFields: Array<Scalars['String']['output']>;
+  notes: Array<Scalars['String']['output']>;
+};
+
+export type AnkiNoteFieldsArgs = {
+  name: Scalars['String']['input'];
 };
 
 export type AnkiConfig = {
@@ -25,23 +40,44 @@ export type AnkiConfig = {
   noteType: Scalars['String']['output'];
 };
 
+export type AnkiConfigMappingElementError = {
+  __typename?: 'AnkiConfigMappingElementError';
+  key: Scalars['String']['output'];
+  message: Scalars['String']['output'];
+};
+
+export type AnkiConfigMappingElementInput = {
+  key: Scalars['String']['input'];
+  value: Scalars['String']['input'];
+};
+
+export type AnkiConfigMappingError = Error & {
+  __typename?: 'AnkiConfigMappingError';
+  fieldErrors?: Maybe<Array<AnkiConfigMappingElementError>>;
+  message: Scalars['String']['output'];
+  valueErrors?: Maybe<Array<AnkiConfigMappingElementError>>;
+};
+
+export type AnkiConfigState = {
+  __typename?: 'AnkiConfigState';
+  deckExists: Scalars['Boolean']['output'];
+  noteHasAllFields: Scalars['Boolean']['output'];
+  noteTypeExists: Scalars['Boolean']['output'];
+  version: Scalars['Int']['output'];
+};
+
+export type AnkiConfigStateResult = {
+  __typename?: 'AnkiConfigStateResult';
+  ankiConfigState?: Maybe<AnkiConfigState>;
+  error?: Maybe<AnkiError>;
+};
+
 export type AnkiConnectionError = Error & {
   __typename?: 'AnkiConnectionError';
   message: Scalars['String']['output'];
 };
 
-export type AnkiConnectionInput = {
-  addr: Scalars['String']['input'];
-  apiKey: Scalars['String']['input'];
-};
-
-export type AnkiConnectionPayload = ValidationError;
-
-export type AnkiDeckInput = {
-  name: Scalars['String']['input'];
-};
-
-export type AnkiDeckPayload = ValidationError;
+export type AnkiError = AnkiConnectionError | AnkiPermissionError | AnkiUnauthorizedError;
 
 export type AnkiMappingElement = {
   __typename?: 'AnkiMappingElement';
@@ -49,53 +85,62 @@ export type AnkiMappingElement = {
   value: Scalars['String']['output'];
 };
 
-export type AnkiMappingElementError = {
-  __typename?: 'AnkiMappingElementError';
-  key: Scalars['String']['output'];
+export type AnkiPermissionError = Error & {
+  __typename?: 'AnkiPermissionError';
   message: Scalars['String']['output'];
-};
-
-export type AnkiMappingElementInput = {
-  key: Scalars['String']['input'];
-  value: Scalars['String']['input'];
-};
-
-export type AnkiMappingError = Error & {
-  __typename?: 'AnkiMappingError';
-  fieldErrors?: Maybe<Array<AnkiMappingElementError>>;
-  message: Scalars['String']['output'];
-  valueErrors?: Maybe<Array<AnkiMappingElementError>>;
-};
-
-export type AnkiMappingInput = {
-  mapping: Array<AnkiMappingElementInput>;
-};
-
-export type AnkiMappingPayload = AnkiMappingError;
-
-export type AnkiNoteTypeInput = {
-  name: Scalars['String']['input'];
-};
-
-export type AnkiNoteTypePayload = ValidationError;
-
-export type AnkiState = {
-  __typename?: 'AnkiState';
-  apiKeyRequired: Scalars['Boolean']['output'];
-  connected: Scalars['Boolean']['output'];
-  deckExists: Scalars['Boolean']['output'];
-  noteMissingFields: Array<Scalars['String']['output']>;
-  noteTypeExists: Scalars['Boolean']['output'];
-  permissionGranted: Scalars['Boolean']['output'];
   version: Scalars['Int']['output'];
 };
 
-export type AnkiStatePayload = AnkiConnectionError | AnkiState;
+export type AnkiResult = {
+  __typename?: 'AnkiResult';
+  anki?: Maybe<Anki>;
+  error?: Maybe<AnkiError>;
+};
+
+export type AnkiUnauthorizedError = Error & {
+  __typename?: 'AnkiUnauthorizedError';
+  message: Scalars['String']['output'];
+  version: Scalars['Int']['output'];
+};
 
 export type Audio = {
   __typename?: 'Audio';
   source: Scalars['String']['output'];
   type: Scalars['String']['output'];
+};
+
+export type CreateAnkiDeckAlreadyExists = Error & {
+  __typename?: 'CreateAnkiDeckAlreadyExists';
+  message: Scalars['String']['output'];
+};
+
+export type CreateAnkiDeckError = CreateAnkiDeckAlreadyExists | ValidationError;
+
+export type CreateAnkiDeckInput = {
+  name: Scalars['String']['input'];
+};
+
+export type CreateAnkiDeckResult = {
+  __typename?: 'CreateAnkiDeckResult';
+  ankiError?: Maybe<AnkiError>;
+  error?: Maybe<CreateAnkiDeckError>;
+};
+
+export type CreateAnkiNoteAlreadyExists = Error & {
+  __typename?: 'CreateAnkiNoteAlreadyExists';
+  message: Scalars['String']['output'];
+};
+
+export type CreateAnkiNoteError = CreateAnkiNoteAlreadyExists | ValidationError;
+
+export type CreateAnkiNoteInput = {
+  name: Scalars['String']['input'];
+};
+
+export type CreateAnkiNoteResult = {
+  __typename?: 'CreateAnkiNoteResult';
+  AnkiError?: Maybe<AnkiError>;
+  Error?: Maybe<CreateAnkiDeckError>;
 };
 
 export type Error = {
@@ -124,30 +169,36 @@ export type Lemmas = {
 
 export type Mutation = {
   __typename?: 'Mutation';
-  setAnkiConnection?: Maybe<AnkiConnectionPayload>;
-  setAnkiDeck?: Maybe<AnkiDeckPayload>;
-  setAnkiMapping?: Maybe<AnkiMappingPayload>;
-  setAnkiNoteType?: Maybe<AnkiNoteTypePayload>;
+  createAnkiDeck: CreateAnkiDeckResult;
+  createAnkiNote: CreateAnkiNoteResult;
+  setAnkiConfigConnection: SetAnkiConfigConnectionResult;
+  setAnkiConfigDeck: SetAnkiConfigDeckResult;
+  setAnkiConfigMapping: SetAnkiConfigMappingResult;
+  setAnkiConfigNote: SetAnkiConfigNoteResult;
 };
 
-
-export type MutationSetAnkiConnectionArgs = {
-  input: AnkiConnectionInput;
+export type MutationCreateAnkiDeckArgs = {
+  input?: InputMaybe<CreateAnkiDeckInput>;
 };
 
-
-export type MutationSetAnkiDeckArgs = {
-  input: AnkiDeckInput;
+export type MutationCreateAnkiNoteArgs = {
+  input?: InputMaybe<CreateAnkiNoteInput>;
 };
 
-
-export type MutationSetAnkiMappingArgs = {
-  input: AnkiMappingInput;
+export type MutationSetAnkiConfigConnectionArgs = {
+  input: SetAnkiConfigConnectionInput;
 };
 
+export type MutationSetAnkiConfigDeckArgs = {
+  input: SetAnkiConfigDeckInput;
+};
 
-export type MutationSetAnkiNoteTypeArgs = {
-  input: AnkiNoteTypeInput;
+export type MutationSetAnkiConfigMappingArgs = {
+  input: SetAnkiConfigMappingInput;
+};
+
+export type MutationSetAnkiConfigNoteArgs = {
+  input: SetAnkiConfigNote;
 };
 
 export type Pitch = {
@@ -160,16 +211,16 @@ export enum PitchType {
   Down = 'DOWN',
   Left = 'LEFT',
   Right = 'RIGHT',
-  Up = 'UP'
+  Up = 'UP',
 }
 
 export type Query = {
   __typename?: 'Query';
+  Anki: AnkiResult;
   AnkiConfig: AnkiConfig;
-  AnkiState: AnkiStatePayload;
+  AnkiConfigState: AnkiConfigStateResult;
   Lemmas?: Maybe<Lemmas>;
 };
-
 
 export type QueryLemmasArgs = {
   query: Scalars['String']['input'];
@@ -180,6 +231,43 @@ export type Sense = {
   definition: Array<Scalars['String']['output']>;
   partOfSpeech: Array<Scalars['String']['output']>;
   tags: Array<Scalars['String']['output']>;
+};
+
+export type SetAnkiConfigConnectionInput = {
+  addr: Scalars['String']['input'];
+  apiKey: Scalars['String']['input'];
+};
+
+export type SetAnkiConfigConnectionResult = {
+  __typename?: 'SetAnkiConfigConnectionResult';
+  error?: Maybe<ValidationError>;
+};
+
+export type SetAnkiConfigDeckInput = {
+  name: Scalars['String']['input'];
+};
+
+export type SetAnkiConfigDeckResult = {
+  __typename?: 'SetAnkiConfigDeckResult';
+  error?: Maybe<ValidationError>;
+};
+
+export type SetAnkiConfigMappingInput = {
+  mapping: Array<AnkiConfigMappingElementInput>;
+};
+
+export type SetAnkiConfigMappingResult = {
+  __typename?: 'SetAnkiConfigMappingResult';
+  error?: Maybe<AnkiConfigMappingError>;
+};
+
+export type SetAnkiConfigNote = {
+  name: Scalars['String']['input'];
+};
+
+export type SetAnkiConfigNoteResult = {
+  __typename?: 'SetAnkiConfigNoteResult';
+  error?: Maybe<ValidationError>;
 };
 
 export type ValidationError = Error & {
@@ -196,12 +284,721 @@ export type Word = {
   word: Scalars['String']['output'];
 };
 
+export type GetHealthStatusQueryVariables = Exact<{ [key: string]: never }>;
+
+export type GetHealthStatusQuery = {
+  __typename?: 'Query';
+  AnkiConfigState: {
+    __typename?: 'AnkiConfigStateResult';
+    ankiConfigState?: {
+      __typename?: 'AnkiConfigState';
+      version: number;
+      deckExists: boolean;
+      noteTypeExists: boolean;
+      noteHasAllFields: boolean;
+    } | null;
+    error?:
+      | { __typename?: 'AnkiConnectionError'; message: string }
+      | { __typename?: 'AnkiPermissionError'; version: number; message: string }
+      | { __typename?: 'AnkiUnauthorizedError'; version: number; message: string }
+      | null;
+  };
+};
+
+export type GetConnectionConfigQueryVariables = Exact<{ [key: string]: never }>;
+
+export type GetConnectionConfigQuery = {
+  __typename?: 'Query';
+  AnkiConfig: { __typename?: 'AnkiConfig'; addr: string; apiKey: string };
+};
+
+export type UpdateConnectionConfigMutationVariables = Exact<{
+  addr: Scalars['String']['input'];
+  apiKey: Scalars['String']['input'];
+}>;
+
+export type UpdateConnectionConfigMutation = {
+  __typename?: 'Mutation';
+  setAnkiConfigConnection: {
+    __typename?: 'SetAnkiConfigConnectionResult';
+    error?: { __typename?: 'ValidationError'; paths: Array<string>; message: string } | null;
+  };
+};
+
+export type GetAnkiConfigCurrentDeckQueryVariables = Exact<{ [key: string]: never }>;
+
+export type GetAnkiConfigCurrentDeckQuery = {
+  __typename?: 'Query';
+  AnkiConfig: { __typename?: 'AnkiConfig'; deck: string };
+};
+
+export type GetAnkiDecksQueryVariables = Exact<{ [key: string]: never }>;
+
+export type GetAnkiDecksQuery = {
+  __typename?: 'Query';
+  Anki: {
+    __typename?: 'AnkiResult';
+    anki?: { __typename?: 'Anki'; decks: Array<string> } | null;
+    error?:
+      | { __typename: 'AnkiConnectionError' }
+      | { __typename: 'AnkiPermissionError' }
+      | { __typename: 'AnkiUnauthorizedError' }
+      | null;
+  };
+};
+
+export type SetAnkiConfigCurrentDeckMutationVariables = Exact<{
+  name: Scalars['String']['input'];
+}>;
+
+export type SetAnkiConfigCurrentDeckMutation = {
+  __typename?: 'Mutation';
+  setAnkiConfigDeck: {
+    __typename?: 'SetAnkiConfigDeckResult';
+    error?: { __typename?: 'ValidationError'; message: string } | null;
+  };
+};
+
+export type CreateAnkiDeckMutationVariables = Exact<{
+  name: Scalars['String']['input'];
+}>;
+
+export type CreateAnkiDeckMutation = {
+  __typename?: 'Mutation';
+  createAnkiDeck: {
+    __typename?: 'CreateAnkiDeckResult';
+    ankiError?:
+      | { __typename?: 'AnkiConnectionError'; message: string }
+      | { __typename?: 'AnkiPermissionError'; message: string }
+      | { __typename?: 'AnkiUnauthorizedError'; message: string }
+      | null;
+    error?:
+      | { __typename?: 'CreateAnkiDeckAlreadyExists'; message: string }
+      | { __typename?: 'ValidationError'; message: string }
+      | null;
+  };
+};
+
 export type GetLemmasQueryVariables = Exact<{
   query: Scalars['String']['input'];
 }>;
 
+export type GetLemmasQuery = {
+  __typename?: 'Query';
+  Lemmas?: {
+    __typename?: 'Lemmas';
+    lemmas: Array<{
+      __typename?: 'Lemma';
+      tags: Array<string>;
+      slug: {
+        __typename?: 'Word';
+        word: string;
+        hiragana: string;
+        furigana: Array<{ __typename?: 'Furigana'; kanji: string; hiragana: string }>;
+        pitch: Array<{ __typename?: 'Pitch'; hiragana: string; pitch: Array<PitchType> }>;
+      };
+      forms: Array<{
+        __typename?: 'Word';
+        word: string;
+        hiragana: string;
+        furigana: Array<{ __typename?: 'Furigana'; kanji: string; hiragana: string }>;
+        pitch: Array<{ __typename?: 'Pitch'; hiragana: string; pitch: Array<PitchType> }>;
+      }>;
+      senses: Array<{
+        __typename?: 'Sense';
+        definition: Array<string>;
+        partOfSpeech: Array<string>;
+        tags: Array<string>;
+      }>;
+      audio: Array<{ __typename?: 'Audio'; type: string; source: string }>;
+    }>;
+  } | null;
+};
 
-export type GetLemmasQuery = { __typename?: 'Query', Lemmas?: { __typename?: 'Lemmas', lemmas: Array<{ __typename?: 'Lemma', tags: Array<string>, slug: { __typename?: 'Word', word: string, hiragana: string, furigana: Array<{ __typename?: 'Furigana', kanji: string, hiragana: string }>, pitch: Array<{ __typename?: 'Pitch', hiragana: string, pitch: Array<PitchType> }> }, forms: Array<{ __typename?: 'Word', word: string, hiragana: string, furigana: Array<{ __typename?: 'Furigana', kanji: string, hiragana: string }>, pitch: Array<{ __typename?: 'Pitch', hiragana: string, pitch: Array<PitchType> }> }>, senses: Array<{ __typename?: 'Sense', definition: Array<string>, partOfSpeech: Array<string>, tags: Array<string> }>, audio: Array<{ __typename?: 'Audio', type: string, source: string }> }> } | null };
-
-
-export const GetLemmasDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetLemmas"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"query"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"Lemmas"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"query"},"value":{"kind":"Variable","name":{"kind":"Name","value":"query"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"lemmas"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"slug"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"word"}},{"kind":"Field","name":{"kind":"Name","value":"hiragana"}},{"kind":"Field","name":{"kind":"Name","value":"furigana"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"kanji"}},{"kind":"Field","name":{"kind":"Name","value":"hiragana"}}]}},{"kind":"Field","name":{"kind":"Name","value":"pitch"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"hiragana"}},{"kind":"Field","name":{"kind":"Name","value":"pitch"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"tags"}},{"kind":"Field","name":{"kind":"Name","value":"forms"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"word"}},{"kind":"Field","name":{"kind":"Name","value":"hiragana"}},{"kind":"Field","name":{"kind":"Name","value":"furigana"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"kanji"}},{"kind":"Field","name":{"kind":"Name","value":"hiragana"}}]}},{"kind":"Field","name":{"kind":"Name","value":"pitch"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"hiragana"}},{"kind":"Field","name":{"kind":"Name","value":"pitch"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"senses"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"definition"}},{"kind":"Field","name":{"kind":"Name","value":"partOfSpeech"}},{"kind":"Field","name":{"kind":"Name","value":"tags"}}]}},{"kind":"Field","name":{"kind":"Name","value":"audio"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"type"}},{"kind":"Field","name":{"kind":"Name","value":"source"}}]}}]}}]}}]}}]} as unknown as DocumentNode<GetLemmasQuery, GetLemmasQueryVariables>;
+export const GetHealthStatusDocument = {
+  kind: 'Document',
+  definitions: [
+    {
+      kind: 'OperationDefinition',
+      operation: 'query',
+      name: { kind: 'Name', value: 'GetHealthStatus' },
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'AnkiConfigState' },
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [
+                {
+                  kind: 'Field',
+                  name: { kind: 'Name', value: 'ankiConfigState' },
+                  selectionSet: {
+                    kind: 'SelectionSet',
+                    selections: [
+                      { kind: 'Field', name: { kind: 'Name', value: 'version' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'deckExists' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'noteTypeExists' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'noteHasAllFields' } },
+                    ],
+                  },
+                },
+                {
+                  kind: 'Field',
+                  name: { kind: 'Name', value: 'error' },
+                  selectionSet: {
+                    kind: 'SelectionSet',
+                    selections: [
+                      {
+                        kind: 'InlineFragment',
+                        typeCondition: {
+                          kind: 'NamedType',
+                          name: { kind: 'Name', value: 'AnkiConnectionError' },
+                        },
+                        selectionSet: {
+                          kind: 'SelectionSet',
+                          selections: [{ kind: 'Field', name: { kind: 'Name', value: 'message' } }],
+                        },
+                      },
+                      {
+                        kind: 'InlineFragment',
+                        typeCondition: {
+                          kind: 'NamedType',
+                          name: { kind: 'Name', value: 'AnkiPermissionError' },
+                        },
+                        selectionSet: {
+                          kind: 'SelectionSet',
+                          selections: [
+                            { kind: 'Field', name: { kind: 'Name', value: 'version' } },
+                            { kind: 'Field', name: { kind: 'Name', value: 'message' } },
+                          ],
+                        },
+                      },
+                      {
+                        kind: 'InlineFragment',
+                        typeCondition: {
+                          kind: 'NamedType',
+                          name: { kind: 'Name', value: 'AnkiUnauthorizedError' },
+                        },
+                        selectionSet: {
+                          kind: 'SelectionSet',
+                          selections: [
+                            { kind: 'Field', name: { kind: 'Name', value: 'version' } },
+                            { kind: 'Field', name: { kind: 'Name', value: 'message' } },
+                          ],
+                        },
+                      },
+                      {
+                        kind: 'InlineFragment',
+                        typeCondition: {
+                          kind: 'NamedType',
+                          name: { kind: 'Name', value: 'Error' },
+                        },
+                        selectionSet: {
+                          kind: 'SelectionSet',
+                          selections: [{ kind: 'Field', name: { kind: 'Name', value: 'message' } }],
+                        },
+                      },
+                    ],
+                  },
+                },
+              ],
+            },
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<GetHealthStatusQuery, GetHealthStatusQueryVariables>;
+export const GetConnectionConfigDocument = {
+  kind: 'Document',
+  definitions: [
+    {
+      kind: 'OperationDefinition',
+      operation: 'query',
+      name: { kind: 'Name', value: 'GetConnectionConfig' },
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'AnkiConfig' },
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [
+                { kind: 'Field', name: { kind: 'Name', value: 'addr' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'apiKey' } },
+              ],
+            },
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<GetConnectionConfigQuery, GetConnectionConfigQueryVariables>;
+export const UpdateConnectionConfigDocument = {
+  kind: 'Document',
+  definitions: [
+    {
+      kind: 'OperationDefinition',
+      operation: 'mutation',
+      name: { kind: 'Name', value: 'UpdateConnectionConfig' },
+      variableDefinitions: [
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'addr' } },
+          type: {
+            kind: 'NonNullType',
+            type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } },
+          },
+        },
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'apiKey' } },
+          type: {
+            kind: 'NonNullType',
+            type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } },
+          },
+        },
+      ],
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'setAnkiConfigConnection' },
+            arguments: [
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'input' },
+                value: {
+                  kind: 'ObjectValue',
+                  fields: [
+                    {
+                      kind: 'ObjectField',
+                      name: { kind: 'Name', value: 'addr' },
+                      value: { kind: 'Variable', name: { kind: 'Name', value: 'addr' } },
+                    },
+                    {
+                      kind: 'ObjectField',
+                      name: { kind: 'Name', value: 'apiKey' },
+                      value: { kind: 'Variable', name: { kind: 'Name', value: 'apiKey' } },
+                    },
+                  ],
+                },
+              },
+            ],
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [
+                {
+                  kind: 'Field',
+                  name: { kind: 'Name', value: 'error' },
+                  selectionSet: {
+                    kind: 'SelectionSet',
+                    selections: [
+                      {
+                        kind: 'InlineFragment',
+                        typeCondition: {
+                          kind: 'NamedType',
+                          name: { kind: 'Name', value: 'ValidationError' },
+                        },
+                        selectionSet: {
+                          kind: 'SelectionSet',
+                          selections: [
+                            { kind: 'Field', name: { kind: 'Name', value: 'paths' } },
+                            { kind: 'Field', name: { kind: 'Name', value: 'message' } },
+                          ],
+                        },
+                      },
+                    ],
+                  },
+                },
+              ],
+            },
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<
+  UpdateConnectionConfigMutation,
+  UpdateConnectionConfigMutationVariables
+>;
+export const GetAnkiConfigCurrentDeckDocument = {
+  kind: 'Document',
+  definitions: [
+    {
+      kind: 'OperationDefinition',
+      operation: 'query',
+      name: { kind: 'Name', value: 'GetAnkiConfigCurrentDeck' },
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'AnkiConfig' },
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [{ kind: 'Field', name: { kind: 'Name', value: 'deck' } }],
+            },
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<GetAnkiConfigCurrentDeckQuery, GetAnkiConfigCurrentDeckQueryVariables>;
+export const GetAnkiDecksDocument = {
+  kind: 'Document',
+  definitions: [
+    {
+      kind: 'OperationDefinition',
+      operation: 'query',
+      name: { kind: 'Name', value: 'GetAnkiDecks' },
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'Anki' },
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [
+                {
+                  kind: 'Field',
+                  name: { kind: 'Name', value: 'anki' },
+                  selectionSet: {
+                    kind: 'SelectionSet',
+                    selections: [{ kind: 'Field', name: { kind: 'Name', value: 'decks' } }],
+                  },
+                },
+                {
+                  kind: 'Field',
+                  name: { kind: 'Name', value: 'error' },
+                  selectionSet: {
+                    kind: 'SelectionSet',
+                    selections: [{ kind: 'Field', name: { kind: 'Name', value: '__typename' } }],
+                  },
+                },
+              ],
+            },
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<GetAnkiDecksQuery, GetAnkiDecksQueryVariables>;
+export const SetAnkiConfigCurrentDeckDocument = {
+  kind: 'Document',
+  definitions: [
+    {
+      kind: 'OperationDefinition',
+      operation: 'mutation',
+      name: { kind: 'Name', value: 'SetAnkiConfigCurrentDeck' },
+      variableDefinitions: [
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'name' } },
+          type: {
+            kind: 'NonNullType',
+            type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } },
+          },
+        },
+      ],
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'setAnkiConfigDeck' },
+            arguments: [
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'input' },
+                value: {
+                  kind: 'ObjectValue',
+                  fields: [
+                    {
+                      kind: 'ObjectField',
+                      name: { kind: 'Name', value: 'name' },
+                      value: { kind: 'Variable', name: { kind: 'Name', value: 'name' } },
+                    },
+                  ],
+                },
+              },
+            ],
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [
+                {
+                  kind: 'Field',
+                  name: { kind: 'Name', value: 'error' },
+                  selectionSet: {
+                    kind: 'SelectionSet',
+                    selections: [{ kind: 'Field', name: { kind: 'Name', value: 'message' } }],
+                  },
+                },
+              ],
+            },
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<
+  SetAnkiConfigCurrentDeckMutation,
+  SetAnkiConfigCurrentDeckMutationVariables
+>;
+export const CreateAnkiDeckDocument = {
+  kind: 'Document',
+  definitions: [
+    {
+      kind: 'OperationDefinition',
+      operation: 'mutation',
+      name: { kind: 'Name', value: 'CreateAnkiDeck' },
+      variableDefinitions: [
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'name' } },
+          type: {
+            kind: 'NonNullType',
+            type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } },
+          },
+        },
+      ],
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'createAnkiDeck' },
+            arguments: [
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'input' },
+                value: {
+                  kind: 'ObjectValue',
+                  fields: [
+                    {
+                      kind: 'ObjectField',
+                      name: { kind: 'Name', value: 'name' },
+                      value: { kind: 'Variable', name: { kind: 'Name', value: 'name' } },
+                    },
+                  ],
+                },
+              },
+            ],
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [
+                {
+                  kind: 'Field',
+                  name: { kind: 'Name', value: 'ankiError' },
+                  selectionSet: {
+                    kind: 'SelectionSet',
+                    selections: [
+                      {
+                        kind: 'InlineFragment',
+                        typeCondition: {
+                          kind: 'NamedType',
+                          name: { kind: 'Name', value: 'Error' },
+                        },
+                        selectionSet: {
+                          kind: 'SelectionSet',
+                          selections: [{ kind: 'Field', name: { kind: 'Name', value: 'message' } }],
+                        },
+                      },
+                    ],
+                  },
+                },
+                {
+                  kind: 'Field',
+                  name: { kind: 'Name', value: 'error' },
+                  selectionSet: {
+                    kind: 'SelectionSet',
+                    selections: [
+                      {
+                        kind: 'InlineFragment',
+                        typeCondition: {
+                          kind: 'NamedType',
+                          name: { kind: 'Name', value: 'CreateAnkiDeckAlreadyExists' },
+                        },
+                        selectionSet: {
+                          kind: 'SelectionSet',
+                          selections: [{ kind: 'Field', name: { kind: 'Name', value: 'message' } }],
+                        },
+                      },
+                      {
+                        kind: 'InlineFragment',
+                        typeCondition: {
+                          kind: 'NamedType',
+                          name: { kind: 'Name', value: 'ValidationError' },
+                        },
+                        selectionSet: {
+                          kind: 'SelectionSet',
+                          selections: [{ kind: 'Field', name: { kind: 'Name', value: 'message' } }],
+                        },
+                      },
+                      {
+                        kind: 'InlineFragment',
+                        typeCondition: {
+                          kind: 'NamedType',
+                          name: { kind: 'Name', value: 'Error' },
+                        },
+                        selectionSet: {
+                          kind: 'SelectionSet',
+                          selections: [{ kind: 'Field', name: { kind: 'Name', value: 'message' } }],
+                        },
+                      },
+                    ],
+                  },
+                },
+              ],
+            },
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<CreateAnkiDeckMutation, CreateAnkiDeckMutationVariables>;
+export const GetLemmasDocument = {
+  kind: 'Document',
+  definitions: [
+    {
+      kind: 'OperationDefinition',
+      operation: 'query',
+      name: { kind: 'Name', value: 'GetLemmas' },
+      variableDefinitions: [
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'query' } },
+          type: {
+            kind: 'NonNullType',
+            type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } },
+          },
+        },
+      ],
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'Lemmas' },
+            arguments: [
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'query' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'query' } },
+              },
+            ],
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [
+                {
+                  kind: 'Field',
+                  name: { kind: 'Name', value: 'lemmas' },
+                  selectionSet: {
+                    kind: 'SelectionSet',
+                    selections: [
+                      {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'slug' },
+                        selectionSet: {
+                          kind: 'SelectionSet',
+                          selections: [
+                            { kind: 'Field', name: { kind: 'Name', value: 'word' } },
+                            { kind: 'Field', name: { kind: 'Name', value: 'hiragana' } },
+                            {
+                              kind: 'Field',
+                              name: { kind: 'Name', value: 'furigana' },
+                              selectionSet: {
+                                kind: 'SelectionSet',
+                                selections: [
+                                  { kind: 'Field', name: { kind: 'Name', value: 'kanji' } },
+                                  { kind: 'Field', name: { kind: 'Name', value: 'hiragana' } },
+                                ],
+                              },
+                            },
+                            {
+                              kind: 'Field',
+                              name: { kind: 'Name', value: 'pitch' },
+                              selectionSet: {
+                                kind: 'SelectionSet',
+                                selections: [
+                                  { kind: 'Field', name: { kind: 'Name', value: 'hiragana' } },
+                                  { kind: 'Field', name: { kind: 'Name', value: 'pitch' } },
+                                ],
+                              },
+                            },
+                          ],
+                        },
+                      },
+                      { kind: 'Field', name: { kind: 'Name', value: 'tags' } },
+                      {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'forms' },
+                        selectionSet: {
+                          kind: 'SelectionSet',
+                          selections: [
+                            { kind: 'Field', name: { kind: 'Name', value: 'word' } },
+                            { kind: 'Field', name: { kind: 'Name', value: 'hiragana' } },
+                            {
+                              kind: 'Field',
+                              name: { kind: 'Name', value: 'furigana' },
+                              selectionSet: {
+                                kind: 'SelectionSet',
+                                selections: [
+                                  { kind: 'Field', name: { kind: 'Name', value: 'kanji' } },
+                                  { kind: 'Field', name: { kind: 'Name', value: 'hiragana' } },
+                                ],
+                              },
+                            },
+                            {
+                              kind: 'Field',
+                              name: { kind: 'Name', value: 'pitch' },
+                              selectionSet: {
+                                kind: 'SelectionSet',
+                                selections: [
+                                  { kind: 'Field', name: { kind: 'Name', value: 'hiragana' } },
+                                  { kind: 'Field', name: { kind: 'Name', value: 'pitch' } },
+                                ],
+                              },
+                            },
+                          ],
+                        },
+                      },
+                      {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'senses' },
+                        selectionSet: {
+                          kind: 'SelectionSet',
+                          selections: [
+                            { kind: 'Field', name: { kind: 'Name', value: 'definition' } },
+                            { kind: 'Field', name: { kind: 'Name', value: 'partOfSpeech' } },
+                            { kind: 'Field', name: { kind: 'Name', value: 'tags' } },
+                          ],
+                        },
+                      },
+                      {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'audio' },
+                        selectionSet: {
+                          kind: 'SelectionSet',
+                          selections: [
+                            { kind: 'Field', name: { kind: 'Name', value: 'type' } },
+                            { kind: 'Field', name: { kind: 'Name', value: 'source' } },
+                          ],
+                        },
+                      },
+                    ],
+                  },
+                },
+              ],
+            },
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<GetLemmasQuery, GetLemmasQueryVariables>;

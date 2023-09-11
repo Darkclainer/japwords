@@ -1,23 +1,55 @@
-extend type Query {
-  AnkiState: AnkiStatePayload!
-  AnkiConfig: AnkiConfig!
-}
-
-type AnkiState {
-  version: Int!
-  connected: Boolean!
-  permissionGranted: Boolean!
-  apiKeyRequired: Boolean!
-  deckExists: Boolean!
-  noteTypeExists: Boolean!
-  noteMissingFields: [String!]!
-}
-
 type AnkiConnectionError implements Error {
   message: String!
 }
 
-union AnkiStatePayload = AnkiState | AnkiConnectionError
+type AnkiPermissionError implements Error {
+  message: String!
+  version: Int!
+}
+
+type AnkiUnauthorizedError implements Error {
+  message: String!
+  version: Int!
+}
+
+union AnkiError =  AnkiConnectionError | AnkiPermissionError | AnkiUnauthorizedError 
+
+extend type Query {
+  # Anki represents data available in Anki by AnkiConnect
+  Anki: AnkiResult!
+}
+
+type AnkiResult {
+  anki: Anki
+  error: AnkiError
+}
+
+type Anki {
+  decks: [String!]!
+  notes: [String!]!
+  noteFields(name: String!): [String!]!
+}
+
+extend type Query {
+  # AnkiConfigState represents health state of integration with Anki
+  AnkiConfigState: AnkiConfigStateResult!
+}
+
+type AnkiConfigStateResult {
+  ankiConfigState: AnkiConfigState
+  error: AnkiError
+}
+
+type AnkiConfigState {
+  version: Int!
+  deckExists: Boolean!
+  noteTypeExists: Boolean!
+  noteHasAllFields: Boolean!
+}
+
+extend type Query {
+  AnkiConfig: AnkiConfig!
+}
 
 type AnkiConfig {
   addr: String!
@@ -33,50 +65,104 @@ type AnkiMappingElement {
 }
 
 extend type Mutation {
-  setAnkiConnection(input: AnkiConnectionInput!): AnkiConnectionPayload
-  setAnkiDeck(input: AnkiDeckInput!): AnkiDeckPayload
-  setAnkiNoteType(input: AnkiNoteTypeInput!): AnkiNoteTypePayload
-  setAnkiMapping(input: AnkiMappingInput!): AnkiMappingPayload
+  setAnkiConfigConnection(input: SetAnkiConfigConnectionInput!): SetAnkiConfigConnectionResult!
 }
 
-
-input AnkiConnectionInput {
+input SetAnkiConfigConnectionInput {
   addr: String!
   apiKey: String!
 }
 
-union AnkiConnectionPayload = ValidationError
+type SetAnkiConfigConnectionResult {
+  error: ValidationError
+}
 
-input AnkiDeckInput {
+extend type Mutation {
+  setAnkiConfigDeck(input: SetAnkiConfigDeckInput!): SetAnkiConfigDeckResult!
+}
+
+input SetAnkiConfigDeckInput {
   name: String!
 }
 
-union AnkiDeckPayload = ValidationError
+type SetAnkiConfigDeckResult {
+  error: ValidationError
+}
 
-input AnkiNoteTypeInput {
+extend type Mutation {
+  setAnkiConfigNote(input: SetAnkiConfigNote!): SetAnkiConfigNoteResult!
+}
+
+input SetAnkiConfigNote{
   name: String!
 }
 
-union AnkiNoteTypePayload = ValidationError
-
-input AnkiMappingInput {
-  mapping: [AnkiMappingElementInput!]!
+type SetAnkiConfigNoteResult {
+  error: ValidationError
 }
 
-input AnkiMappingElementInput {
+extend type Mutation {
+  setAnkiConfigMapping(input: SetAnkiConfigMappingInput!): SetAnkiConfigMappingResult!
+}
+
+input SetAnkiConfigMappingInput {
+  mapping: [AnkiConfigMappingElementInput!]!
+}
+
+input AnkiConfigMappingElementInput {
   key: String!
   value: String!
 }
 
-type AnkiMappingError implements Error {
-  fieldErrors: [AnkiMappingElementError!]
-  valueErrors: [AnkiMappingElementError!]
+type AnkiConfigMappingError implements Error {
+  fieldErrors: [AnkiConfigMappingElementError!]
+  valueErrors: [AnkiConfigMappingElementError!]
   message: String!
 }
 
-type AnkiMappingElementError {
+type AnkiConfigMappingElementError {
   key: String!
   message: String!
 }
 
-union AnkiMappingPayload = AnkiMappingError
+type SetAnkiConfigMappingResult {
+  error: AnkiConfigMappingError
+}
+
+extend type Mutation {
+  createAnkiDeck(input: CreateAnkiDeckInput): CreateAnkiDeckResult!
+}
+
+input CreateAnkiDeckInput {
+  name: String!
+}
+
+type CreateAnkiDeckAlreadyExists implements Error {
+  message: String!
+}
+
+union CreateAnkiDeckError = CreateAnkiDeckAlreadyExists | ValidationError
+
+type CreateAnkiDeckResult {
+  ankiError: AnkiError
+  error: CreateAnkiDeckError
+}
+
+extend type Mutation {
+  createAnkiNote(input: CreateAnkiNoteInput): CreateAnkiNoteResult!
+}
+
+input CreateAnkiNoteInput {
+  name: String!
+}
+
+type CreateAnkiNoteAlreadyExists implements Error {
+  message: String!
+}
+
+union CreateAnkiNoteError = CreateAnkiNoteAlreadyExists | ValidationError
+
+type CreateAnkiNoteResult {
+  AnkiError: AnkiError
+  Error: CreateAnkiDeckError
+}

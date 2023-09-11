@@ -1,7 +1,17 @@
-import { ApolloClient, InMemoryCache, HttpLink } from '@apollo/client';
+import { ApolloClient, HttpLink, InMemoryCache } from '@apollo/client';
 
 const cache = new InMemoryCache({
   addTypename: true,
+  typePolicies: {
+    AnkiState: {
+      // AnkiState is singleton
+      keyFields: [],
+    },
+    AnkiConfig: {
+      // AnkiConfig is singleton
+      keyFields: [],
+    },
+  },
 });
 
 function getQueryPath(): string {
@@ -9,7 +19,6 @@ function getQueryPath(): string {
   if (import.meta.env.DEV) {
     queryPath = 'http://' + import.meta.env.VITE_HOST + queryPath;
   }
-  console.log('query path', queryPath, import.meta.env);
   return queryPath;
 }
 

@@ -1,17 +1,18 @@
+import { clsx } from 'clsx';
+import { useEffect, useRef } from 'react';
 import {
   Form,
   LoaderFunctionArgs,
-  useNavigate,
   useLoaderData,
+  useNavigate,
   useNavigation,
 } from 'react-router-dom';
+
+import { gql } from '../api/__generated__/gql';
+import { Lemma } from '../api/__generated__/graphql';
+import apolloClient from '../apollo-client';
 import LemmaList from '../components/LemmaList';
 import { LoaderData } from '../loader-type';
-import apolloClient from '../apollo-client';
-import { Lemma } from '../api/__generated__/graphql';
-import { gql } from '../api/__generated__/gql';
-import { clsx } from 'clsx';
-import { useEffect } from 'react';
 
 const GET_LEMMAS = gql(`
   query GetLemmas($query: String!) {
@@ -67,32 +68,52 @@ export async function loader({ params }: LoaderFunctionArgs): Promise<{
       query,
     };
   }
-  const lemmas = await apolloClient.query({
+  const { data } = await apolloClient.query({
     query: GET_LEMMAS,
     variables: {
       query: query,
     },
   });
 
-  return { lemmas: lemmas.data.Lemmas?.lemmas, query };
+  return { lemmas: data.Lemmas?.lemmas, query };
+}
+
+enum SearchState {
+  Typing,
+  Routing,
 }
 
 export default function Search() {
   const { lemmas, query } = useLoaderData() as LoaderData<typeof loader>;
   const navigate = useNavigate();
   const navigation = useNavigation();
+  const inputQuery = useRef<HTMLInputElement>(null);
+  // searchState needed to track what user doing: because we want to change inputQuery only in case
+  // when user changed query manually or typed submit and did type anything in form
+  const searchState = useRef<SearchState>(SearchState.Typing);
+  const handleChange = () => {
+    searchState.current = SearchState.Typing;
+  };
   const handleSubmit: React.FormEventHandler = (event) => {
     event.preventDefault();
-    const queryInput = document.getElementById('query') as HTMLInputElement;
+    searchState.current = SearchState.Routing;
+    if (!inputQuery.current) {
+      return;
+    }
     // TODO: this is ugly, but workarounds seems to be complicated
-    navigate(`/search/${queryInput.value}`);
+    navigate(`/search/${inputQuery.current.value}`);
   };
   useEffect(() => {
-    (document.getElementById('query') as HTMLInputElement).value = query;
+    if (inputQuery.current && searchState.current == SearchState.Routing) {
+      inputQuery.current.value = query;
+    }
   }, [query]);
+  useEffect(() => {
+    searchState.current = SearchState.Routing;
+  }, [navigation.state]);
 
   return (
-    <>
+    <div className="flex flex-col flex-1">
       <Form className="group relative" onSubmit={handleSubmit}>
         <svg
           width="20"
@@ -109,11 +130,13 @@ export default function Search() {
         </svg>
         <input
           id="query"
-          className="focus:ring-2 focus:ring-green focus:outline-none appearance-none w-full text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 pl-10 ring-1 ring-blue shadow-sm"
+          className="focus:ring-2 focus:outline-none appearance-none w-full text-lg leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 pl-10 ring-1 ring-blue shadow-sm"
           type="text"
           aria-label="Enter japanese word"
           placeholder="Enter japanese word..."
           defaultValue={query}
+          ref={inputQuery}
+          onChange={handleChange}
         />
       </Form>
       <div
@@ -136,6 +159,6 @@ export default function Search() {
           </div>
         )}
       </div>
-    </>
+    </div>
   );
 }

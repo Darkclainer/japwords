@@ -1,14 +1,16 @@
-import { createBrowserRouter, RouterProvider, Navigate } from 'react-router-dom';
-
-import Root from './routes/root';
-import ErrorPage from './error-page';
-import Search, { loader as searchLoader } from './routes/search';
 import { ApolloProvider } from '@apollo/client';
-import apolloClient from './apollo-client';
+import { createBrowserRouter, Navigate, RouterProvider } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
-import AnkiRoot from './routes/anki/root';
+
+import apolloClient from './apollo-client';
+import { HealthStatusProvider } from './contexts/health-status';
+import ErrorPage from './error-page';
 import AnkiConnectionSettings from './routes/anki/connection-settings';
+import AnkiRoot from './routes/anki/root';
 import AnkiUserSettings from './routes/anki/user-settings';
+import HealthDashboard from './routes/health-dashboard';
+import Root from './routes/root';
+import Search, { loader as searchLoader } from './routes/search';
 
 const router = createBrowserRouter([
   {
@@ -27,6 +29,10 @@ const router = createBrowserRouter([
             path: 'search/:query?',
             element: <Search />,
             loader: searchLoader,
+          },
+          {
+            path: 'health-dashboard',
+            element: <HealthDashboard />,
           },
           {
             path: 'anki',
@@ -54,11 +60,15 @@ const router = createBrowserRouter([
 
 export default function App() {
   return (
-    <ApolloProvider client={apolloClient}>
-      <div className="flex flex-col md:max-w-4xl mx-auto min-h-screen space-y-4 p-4 bg-white">
-        <RouterProvider router={router} />
-      </div>
+    <>
+      <ApolloProvider client={apolloClient}>
+        <HealthStatusProvider>
+          <div className="flex flex-col md:max-w-screen-xl mx-auto min-h-screen bg-white px-4">
+            <RouterProvider router={router} />
+          </div>
+        </HealthStatusProvider>
+      </ApolloProvider>
       <ToastContainer />
-    </ApolloProvider>
+    </>
   );
 }
