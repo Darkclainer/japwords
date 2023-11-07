@@ -163,6 +163,6 @@ type CreateAnkiNoteAlreadyExists implements Error {
 union CreateAnkiNoteError = CreateAnkiNoteAlreadyExists | ValidationError
 
 type CreateAnkiNoteResult {
-  AnkiError: AnkiError
-  Error: CreateAnkiDeckError
+  ankiError: AnkiError
+  error: CreateAnkiDeckError
 }

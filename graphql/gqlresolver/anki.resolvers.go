@@ -11,7 +11,6 @@ import (
 	"slices"
 
 	"github.com/99designs/gqlgen/graphql"
-
 	"github.com/Darkclainer/japwords/graphql/gqlgenerated"
 	"github.com/Darkclainer/japwords/graphql/gqlmodel"
 	"github.com/Darkclainer/japwords/pkg/anki"
@@ -25,7 +24,7 @@ func (r *mutationResolver) SetAnkiConfigConnection(ctx context.Context, input gq
 			Error: validationErr,
 		}, nil
 	}
-	return nil, err
+	return &gqlmodel.SetAnkiConfigConnectionResult{}, err
 }
 
 // SetAnkiConfigDeck is the resolver for the setAnkiConfigDeck field.
@@ -47,7 +46,7 @@ func (r *mutationResolver) SetAnkiConfigNote(ctx context.Context, input gqlmodel
 			Error: validationErr,
 		}, nil
 	}
-	return nil, err
+	return &gqlmodel.SetAnkiConfigNoteResult{}, err
 }
 
 // SetAnkiConfigMapping is the resolver for the setAnkiConfigMapping field.
@@ -83,7 +82,7 @@ func (r *mutationResolver) SetAnkiConfigMapping(ctx context.Context, input gqlmo
 		}
 		return &gqlmodel.SetAnkiConfigMappingResult{Error: mappingErrs}, nil
 	}
-	return nil, nil
+	return &gqlmodel.SetAnkiConfigMappingResult{}, nil
 }
 
 // CreateAnkiDeck is the resolver for the createAnkiDeck field.

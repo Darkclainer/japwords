@@ -474,14 +474,14 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.CreateAnkiNoteAlreadyExists.Message(childComplexity), true
 
-	case "CreateAnkiNoteResult.AnkiError":
+	case "CreateAnkiNoteResult.ankiError":
 		if e.complexity.CreateAnkiNoteResult.AnkiError == nil {
 			break
 		}
 
 		return e.complexity.CreateAnkiNoteResult.AnkiError(childComplexity), true
 
-	case "CreateAnkiNoteResult.Error":
+	case "CreateAnkiNoteResult.error":
 		if e.complexity.CreateAnkiNoteResult.Error == nil {
 			break
 		}
@@ -1031,8 +1031,8 @@ type CreateAnkiNoteAlreadyExists implements Error {
 union CreateAnkiNoteError = CreateAnkiNoteAlreadyExists | ValidationError
 
 type CreateAnkiNoteResult {
-  AnkiError: AnkiError
-  Error: CreateAnkiDeckError
+  ankiError: AnkiError
+  error: CreateAnkiDeckError
 }
 `, BuiltIn: false},
 	{Name: "../schema/directives.graphqls", Input: `directive @goModel(
@@ -2813,8 +2813,8 @@ func (ec *executionContext) fieldContext_CreateAnkiNoteAlreadyExists_message(ctx
 	return fc, nil
 }
 
-func (ec *executionContext) _CreateAnkiNoteResult_AnkiError(ctx context.Context, field graphql.CollectedField, obj *gqlmodel.CreateAnkiNoteResult) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_CreateAnkiNoteResult_AnkiError(ctx, field)
+func (ec *executionContext) _CreateAnkiNoteResult_ankiError(ctx context.Context, field graphql.CollectedField, obj *gqlmodel.CreateAnkiNoteResult) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_CreateAnkiNoteResult_ankiError(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -2841,7 +2841,7 @@ func (ec *executionContext) _CreateAnkiNoteResult_AnkiError(ctx context.Context,
 	return ec.marshalOAnkiError2githubᚗcomᚋDarkclainerᚋjapwordsᚋgraphqlᚋgqlmodelᚐAnkiError(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_CreateAnkiNoteResult_AnkiError(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_CreateAnkiNoteResult_ankiError(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "CreateAnkiNoteResult",
 		Field:      field,
@@ -2854,8 +2854,8 @@ func (ec *executionContext) fieldContext_CreateAnkiNoteResult_AnkiError(ctx cont
 	return fc, nil
 }
 
-func (ec *executionContext) _CreateAnkiNoteResult_Error(ctx context.Context, field graphql.CollectedField, obj *gqlmodel.CreateAnkiNoteResult) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_CreateAnkiNoteResult_Error(ctx, field)
+func (ec *executionContext) _CreateAnkiNoteResult_error(ctx context.Context, field graphql.CollectedField, obj *gqlmodel.CreateAnkiNoteResult) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_CreateAnkiNoteResult_error(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -2882,7 +2882,7 @@ func (ec *executionContext) _CreateAnkiNoteResult_Error(ctx context.Context, fie
 	return ec.marshalOCreateAnkiDeckError2githubᚗcomᚋDarkclainerᚋjapwordsᚋgraphqlᚋgqlmodelᚐCreateAnkiDeckError(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_CreateAnkiNoteResult_Error(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_CreateAnkiNoteResult_error(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "CreateAnkiNoteResult",
 		Field:      field,
@@ -3629,10 +3629,10 @@ func (ec *executionContext) fieldContext_Mutation_createAnkiNote(ctx context.Con
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
-			case "AnkiError":
-				return ec.fieldContext_CreateAnkiNoteResult_AnkiError(ctx, field)
-			case "Error":
-				return ec.fieldContext_CreateAnkiNoteResult_Error(ctx, field)
+			case "ankiError":
+				return ec.fieldContext_CreateAnkiNoteResult_ankiError(ctx, field)
+			case "error":
+				return ec.fieldContext_CreateAnkiNoteResult_error(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type CreateAnkiNoteResult", field.Name)
 		},
@@ -7481,10 +7481,10 @@ func (ec *executionContext) _CreateAnkiNoteResult(ctx context.Context, sel ast.S
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("CreateAnkiNoteResult")
-		case "AnkiError":
-			out.Values[i] = ec._CreateAnkiNoteResult_AnkiError(ctx, field, obj)
-		case "Error":
-			out.Values[i] = ec._CreateAnkiNoteResult_Error(ctx, field, obj)
+		case "ankiError":
+			out.Values[i] = ec._CreateAnkiNoteResult_ankiError(ctx, field, obj)
+		case "error":
+			out.Values[i] = ec._CreateAnkiNoteResult_error(ctx, field, obj)
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}

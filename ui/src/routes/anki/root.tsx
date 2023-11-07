@@ -28,7 +28,7 @@ export default function AnkiRoot() {
           <Tab to="connection-settings" title="Anki Connect" />
           <Tab to="user-settings" title="Anki User Settings" last />
         </div>
-        <div className="bg-gray pt-8 pb-12 px-10">
+        <div className="bg-gray pt-8 pb-8 px-10">
           <Outlet></Outlet>
         </div>
       </div>

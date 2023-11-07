@@ -146,8 +146,8 @@ type CreateAnkiNoteInput struct {
 }
 
 type CreateAnkiNoteResult struct {
-	AnkiError AnkiError           `json:"AnkiError,omitempty"`
-	Error     CreateAnkiDeckError `json:"Error,omitempty"`
+	AnkiError AnkiError           `json:"ankiError,omitempty"`
+	Error     CreateAnkiDeckError `json:"error,omitempty"`
 }
 
 type Furigana struct {

@@ -24,7 +24,7 @@ function HealthStatusPlaceholder({ children }: { children: React.ReactNode }) {
     return children;
   }
   return (
-    <div className="flex flex-col items-center gap-5 text-xl">
+    <div className="flex flex-col items-center gap-5 text-xl my-8">
       <div className="flex flex-row gap-3">
         <StatusIcon kind={props.iconKind} />
         <h1 className="text-3xl">{props.head}</h1>
