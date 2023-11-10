@@ -170,14 +170,9 @@ func (a *Anki) CreateDefaultNote(ctx context.Context, name string) error {
 		return &ValidationError{Msg: err.Error()}
 	}
 	client, _ := a.getClient()
-	_, err := client.CreateModel(ctx, &ankiconnect.CreateModelRequest{
-		ModelName: name,
-		Fields: []string{
-			"a", "b",
-		},
-		CSS:           "",
-		CardTemplates: []ankiconnect.CreateModelCardTemplate{},
-	})
+	modelRequest := defaultCreateModelRequest()
+	modelRequest.ModelName = name
+	_, err := client.CreateModel(ctx, modelRequest)
 	return err
 }
 
