@@ -119,11 +119,11 @@ type ComplexityRoot struct {
 		Error     func(childComplexity int) int
 	}
 
-	CreateAnkiNoteAlreadyExists struct {
+	CreateDefaultAnkiNoteAlreadyExists struct {
 		Message func(childComplexity int) int
 	}
 
-	CreateAnkiNoteResult struct {
+	CreateDefaultAnkiNoteResult struct {
 		AnkiError func(childComplexity int) int
 		Error     func(childComplexity int) int
 	}
@@ -147,7 +147,7 @@ type ComplexityRoot struct {
 
 	Mutation struct {
 		CreateAnkiDeck          func(childComplexity int, input *gqlmodel.CreateAnkiDeckInput) int
-		CreateAnkiNote          func(childComplexity int, input *gqlmodel.CreateAnkiNoteInput) int
+		CreateDefaultAnkiNote   func(childComplexity int, input *gqlmodel.CreateDefaultAnkiNoteInput) int
 		SetAnkiConfigConnection func(childComplexity int, input gqlmodel.SetAnkiConfigConnectionInput) int
 		SetAnkiConfigDeck       func(childComplexity int, input gqlmodel.SetAnkiConfigDeckInput) int
 		SetAnkiConfigMapping    func(childComplexity int, input gqlmodel.SetAnkiConfigMappingInput) int
@@ -207,7 +207,7 @@ type MutationResolver interface {
 	SetAnkiConfigNote(ctx context.Context, input gqlmodel.SetAnkiConfigNote) (*gqlmodel.SetAnkiConfigNoteResult, error)
 	SetAnkiConfigMapping(ctx context.Context, input gqlmodel.SetAnkiConfigMappingInput) (*gqlmodel.SetAnkiConfigMappingResult, error)
 	CreateAnkiDeck(ctx context.Context, input *gqlmodel.CreateAnkiDeckInput) (*gqlmodel.CreateAnkiDeckResult, error)
-	CreateAnkiNote(ctx context.Context, input *gqlmodel.CreateAnkiNoteInput) (*gqlmodel.CreateAnkiNoteResult, error)
+	CreateDefaultAnkiNote(ctx context.Context, input *gqlmodel.CreateDefaultAnkiNoteInput) (*gqlmodel.CreateDefaultAnkiNoteResult, error)
 }
 type QueryResolver interface {
 	Anki(ctx context.Context) (*gqlmodel.AnkiResult, error)
@@ -467,26 +467,26 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.CreateAnkiDeckResult.Error(childComplexity), true
 
-	case "CreateAnkiNoteAlreadyExists.message":
-		if e.complexity.CreateAnkiNoteAlreadyExists.Message == nil {
+	case "CreateDefaultAnkiNoteAlreadyExists.message":
+		if e.complexity.CreateDefaultAnkiNoteAlreadyExists.Message == nil {
 			break
 		}
 
-		return e.complexity.CreateAnkiNoteAlreadyExists.Message(childComplexity), true
+		return e.complexity.CreateDefaultAnkiNoteAlreadyExists.Message(childComplexity), true
 
-	case "CreateAnkiNoteResult.ankiError":
-		if e.complexity.CreateAnkiNoteResult.AnkiError == nil {
+	case "CreateDefaultAnkiNoteResult.ankiError":
+		if e.complexity.CreateDefaultAnkiNoteResult.AnkiError == nil {
 			break
 		}
 
-		return e.complexity.CreateAnkiNoteResult.AnkiError(childComplexity), true
+		return e.complexity.CreateDefaultAnkiNoteResult.AnkiError(childComplexity), true
 
-	case "CreateAnkiNoteResult.error":
-		if e.complexity.CreateAnkiNoteResult.Error == nil {
+	case "CreateDefaultAnkiNoteResult.error":
+		if e.complexity.CreateDefaultAnkiNoteResult.Error == nil {
 			break
 		}
 
-		return e.complexity.CreateAnkiNoteResult.Error(childComplexity), true
+		return e.complexity.CreateDefaultAnkiNoteResult.Error(childComplexity), true
 
 	case "Furigana.hiragana":
 		if e.complexity.Furigana.Hiragana == nil {
@@ -556,17 +556,17 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.CreateAnkiDeck(childComplexity, args["input"].(*gqlmodel.CreateAnkiDeckInput)), true
 
-	case "Mutation.createAnkiNote":
-		if e.complexity.Mutation.CreateAnkiNote == nil {
+	case "Mutation.createDefaultAnkiNote":
+		if e.complexity.Mutation.CreateDefaultAnkiNote == nil {
 			break
 		}
 
-		args, err := ec.field_Mutation_createAnkiNote_args(context.TODO(), rawArgs)
+		args, err := ec.field_Mutation_createDefaultAnkiNote_args(context.TODO(), rawArgs)
 		if err != nil {
 			return 0, false
 		}
 
-		return e.complexity.Mutation.CreateAnkiNote(childComplexity, args["input"].(*gqlmodel.CreateAnkiNoteInput)), true
+		return e.complexity.Mutation.CreateDefaultAnkiNote(childComplexity, args["input"].(*gqlmodel.CreateDefaultAnkiNoteInput)), true
 
 	case "Mutation.setAnkiConfigConnection":
 		if e.complexity.Mutation.SetAnkiConfigConnection == nil {
@@ -764,7 +764,7 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 	inputUnmarshalMap := graphql.BuildUnmarshalerMap(
 		ec.unmarshalInputAnkiConfigMappingElementInput,
 		ec.unmarshalInputCreateAnkiDeckInput,
-		ec.unmarshalInputCreateAnkiNoteInput,
+		ec.unmarshalInputCreateDefaultAnkiNoteInput,
 		ec.unmarshalInputSetAnkiConfigConnectionInput,
 		ec.unmarshalInputSetAnkiConfigDeckInput,
 		ec.unmarshalInputSetAnkiConfigMappingInput,
@@ -1017,22 +1017,22 @@ type CreateAnkiDeckResult {
 }
 
 extend type Mutation {
-  createAnkiNote(input: CreateAnkiNoteInput): CreateAnkiNoteResult!
+  createDefaultAnkiNote(input: CreateDefaultAnkiNoteInput): CreateDefaultAnkiNoteResult!
 }
 
-input CreateAnkiNoteInput {
+input CreateDefaultAnkiNoteInput {
   name: String!
 }
 
-type CreateAnkiNoteAlreadyExists implements Error {
+type CreateDefaultAnkiNoteAlreadyExists implements Error {
   message: String!
 }
 
-union CreateAnkiNoteError = CreateAnkiNoteAlreadyExists | ValidationError
+union CreateDefaultAnkiNoteError = CreateDefaultAnkiNoteAlreadyExists | ValidationError
 
-type CreateAnkiNoteResult {
+type CreateDefaultAnkiNoteResult {
   ankiError: AnkiError
-  error: CreateAnkiDeckError
+  error: CreateDefaultAnkiNoteError
 }
 `, BuiltIn: false},
 	{Name: "../schema/directives.graphqls", Input: `directive @goModel(
@@ -1151,13 +1151,13 @@ func (ec *executionContext) field_Mutation_createAnkiDeck_args(ctx context.Conte
 	return args, nil
 }
 
-func (ec *executionContext) field_Mutation_createAnkiNote_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+func (ec *executionContext) field_Mutation_createDefaultAnkiNote_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 *gqlmodel.CreateAnkiNoteInput
+	var arg0 *gqlmodel.CreateDefaultAnkiNoteInput
 	if tmp, ok := rawArgs["input"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
-		arg0, err = ec.unmarshalOCreateAnkiNoteInput2ᚖgithubᚗcomᚋDarkclainerᚋjapwordsᚋgraphqlᚋgqlmodelᚐCreateAnkiNoteInput(ctx, tmp)
+		arg0, err = ec.unmarshalOCreateDefaultAnkiNoteInput2ᚖgithubᚗcomᚋDarkclainerᚋjapwordsᚋgraphqlᚋgqlmodelᚐCreateDefaultAnkiNoteInput(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -2769,8 +2769,8 @@ func (ec *executionContext) fieldContext_CreateAnkiDeckResult_error(ctx context.
 	return fc, nil
 }
 
-func (ec *executionContext) _CreateAnkiNoteAlreadyExists_message(ctx context.Context, field graphql.CollectedField, obj *gqlmodel.CreateAnkiNoteAlreadyExists) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_CreateAnkiNoteAlreadyExists_message(ctx, field)
+func (ec *executionContext) _CreateDefaultAnkiNoteAlreadyExists_message(ctx context.Context, field graphql.CollectedField, obj *gqlmodel.CreateDefaultAnkiNoteAlreadyExists) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_CreateDefaultAnkiNoteAlreadyExists_message(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -2800,9 +2800,9 @@ func (ec *executionContext) _CreateAnkiNoteAlreadyExists_message(ctx context.Con
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_CreateAnkiNoteAlreadyExists_message(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_CreateDefaultAnkiNoteAlreadyExists_message(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
-		Object:     "CreateAnkiNoteAlreadyExists",
+		Object:     "CreateDefaultAnkiNoteAlreadyExists",
 		Field:      field,
 		IsMethod:   false,
 		IsResolver: false,
@@ -2813,8 +2813,8 @@ func (ec *executionContext) fieldContext_CreateAnkiNoteAlreadyExists_message(ctx
 	return fc, nil
 }
 
-func (ec *executionContext) _CreateAnkiNoteResult_ankiError(ctx context.Context, field graphql.CollectedField, obj *gqlmodel.CreateAnkiNoteResult) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_CreateAnkiNoteResult_ankiError(ctx, field)
+func (ec *executionContext) _CreateDefaultAnkiNoteResult_ankiError(ctx context.Context, field graphql.CollectedField, obj *gqlmodel.CreateDefaultAnkiNoteResult) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_CreateDefaultAnkiNoteResult_ankiError(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -2841,9 +2841,9 @@ func (ec *executionContext) _CreateAnkiNoteResult_ankiError(ctx context.Context,
 	return ec.marshalOAnkiError2githubᚗcomᚋDarkclainerᚋjapwordsᚋgraphqlᚋgqlmodelᚐAnkiError(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_CreateAnkiNoteResult_ankiError(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_CreateDefaultAnkiNoteResult_ankiError(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
-		Object:     "CreateAnkiNoteResult",
+		Object:     "CreateDefaultAnkiNoteResult",
 		Field:      field,
 		IsMethod:   false,
 		IsResolver: false,
@@ -2854,8 +2854,8 @@ func (ec *executionContext) fieldContext_CreateAnkiNoteResult_ankiError(ctx cont
 	return fc, nil
 }
 
-func (ec *executionContext) _CreateAnkiNoteResult_error(ctx context.Context, field graphql.CollectedField, obj *gqlmodel.CreateAnkiNoteResult) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_CreateAnkiNoteResult_error(ctx, field)
+func (ec *executionContext) _CreateDefaultAnkiNoteResult_error(ctx context.Context, field graphql.CollectedField, obj *gqlmodel.CreateDefaultAnkiNoteResult) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_CreateDefaultAnkiNoteResult_error(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -2877,19 +2877,19 @@ func (ec *executionContext) _CreateAnkiNoteResult_error(ctx context.Context, fie
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(gqlmodel.CreateAnkiDeckError)
+	res := resTmp.(gqlmodel.CreateDefaultAnkiNoteError)
 	fc.Result = res
-	return ec.marshalOCreateAnkiDeckError2githubᚗcomᚋDarkclainerᚋjapwordsᚋgraphqlᚋgqlmodelᚐCreateAnkiDeckError(ctx, field.Selections, res)
+	return ec.marshalOCreateDefaultAnkiNoteError2githubᚗcomᚋDarkclainerᚋjapwordsᚋgraphqlᚋgqlmodelᚐCreateDefaultAnkiNoteError(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_CreateAnkiNoteResult_error(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_CreateDefaultAnkiNoteResult_error(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
-		Object:     "CreateAnkiNoteResult",
+		Object:     "CreateDefaultAnkiNoteResult",
 		Field:      field,
 		IsMethod:   false,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type CreateAnkiDeckError does not have child fields")
+			return nil, errors.New("field of type CreateDefaultAnkiNoteError does not have child fields")
 		},
 	}
 	return fc, nil
@@ -3590,8 +3590,8 @@ func (ec *executionContext) fieldContext_Mutation_createAnkiDeck(ctx context.Con
 	return fc, nil
 }
 
-func (ec *executionContext) _Mutation_createAnkiNote(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Mutation_createAnkiNote(ctx, field)
+func (ec *executionContext) _Mutation_createDefaultAnkiNote(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_createDefaultAnkiNote(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -3604,7 +3604,7 @@ func (ec *executionContext) _Mutation_createAnkiNote(ctx context.Context, field 
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().CreateAnkiNote(rctx, fc.Args["input"].(*gqlmodel.CreateAnkiNoteInput))
+		return ec.resolvers.Mutation().CreateDefaultAnkiNote(rctx, fc.Args["input"].(*gqlmodel.CreateDefaultAnkiNoteInput))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -3616,12 +3616,12 @@ func (ec *executionContext) _Mutation_createAnkiNote(ctx context.Context, field 
 		}
 		return graphql.Null
 	}
-	res := resTmp.(*gqlmodel.CreateAnkiNoteResult)
+	res := resTmp.(*gqlmodel.CreateDefaultAnkiNoteResult)
 	fc.Result = res
-	return ec.marshalNCreateAnkiNoteResult2ᚖgithubᚗcomᚋDarkclainerᚋjapwordsᚋgraphqlᚋgqlmodelᚐCreateAnkiNoteResult(ctx, field.Selections, res)
+	return ec.marshalNCreateDefaultAnkiNoteResult2ᚖgithubᚗcomᚋDarkclainerᚋjapwordsᚋgraphqlᚋgqlmodelᚐCreateDefaultAnkiNoteResult(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Mutation_createAnkiNote(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Mutation_createDefaultAnkiNote(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Mutation",
 		Field:      field,
@@ -3630,11 +3630,11 @@ func (ec *executionContext) fieldContext_Mutation_createAnkiNote(ctx context.Con
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
 			case "ankiError":
-				return ec.fieldContext_CreateAnkiNoteResult_ankiError(ctx, field)
+				return ec.fieldContext_CreateDefaultAnkiNoteResult_ankiError(ctx, field)
 			case "error":
-				return ec.fieldContext_CreateAnkiNoteResult_error(ctx, field)
+				return ec.fieldContext_CreateDefaultAnkiNoteResult_error(ctx, field)
 			}
-			return nil, fmt.Errorf("no field named %q was found under type CreateAnkiNoteResult", field.Name)
+			return nil, fmt.Errorf("no field named %q was found under type CreateDefaultAnkiNoteResult", field.Name)
 		},
 	}
 	defer func() {
@@ -3644,7 +3644,7 @@ func (ec *executionContext) fieldContext_Mutation_createAnkiNote(ctx context.Con
 		}
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Mutation_createAnkiNote_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+	if fc.Args, err = ec.field_Mutation_createDefaultAnkiNote_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -6518,8 +6518,8 @@ func (ec *executionContext) unmarshalInputCreateAnkiDeckInput(ctx context.Contex
 	return it, nil
 }
 
-func (ec *executionContext) unmarshalInputCreateAnkiNoteInput(ctx context.Context, obj interface{}) (gqlmodel.CreateAnkiNoteInput, error) {
-	var it gqlmodel.CreateAnkiNoteInput
+func (ec *executionContext) unmarshalInputCreateDefaultAnkiNoteInput(ctx context.Context, obj interface{}) (gqlmodel.CreateDefaultAnkiNoteInput, error) {
+	var it gqlmodel.CreateDefaultAnkiNoteInput
 	asMap := map[string]interface{}{}
 	for k, v := range obj.(map[string]interface{}) {
 		asMap[k] = v
@@ -6729,17 +6729,17 @@ func (ec *executionContext) _CreateAnkiDeckError(ctx context.Context, sel ast.Se
 	}
 }
 
-func (ec *executionContext) _CreateAnkiNoteError(ctx context.Context, sel ast.SelectionSet, obj gqlmodel.CreateAnkiNoteError) graphql.Marshaler {
+func (ec *executionContext) _CreateDefaultAnkiNoteError(ctx context.Context, sel ast.SelectionSet, obj gqlmodel.CreateDefaultAnkiNoteError) graphql.Marshaler {
 	switch obj := (obj).(type) {
 	case nil:
 		return graphql.Null
-	case gqlmodel.CreateAnkiNoteAlreadyExists:
-		return ec._CreateAnkiNoteAlreadyExists(ctx, sel, &obj)
-	case *gqlmodel.CreateAnkiNoteAlreadyExists:
+	case gqlmodel.CreateDefaultAnkiNoteAlreadyExists:
+		return ec._CreateDefaultAnkiNoteAlreadyExists(ctx, sel, &obj)
+	case *gqlmodel.CreateDefaultAnkiNoteAlreadyExists:
 		if obj == nil {
 			return graphql.Null
 		}
-		return ec._CreateAnkiNoteAlreadyExists(ctx, sel, obj)
+		return ec._CreateDefaultAnkiNoteAlreadyExists(ctx, sel, obj)
 	case gqlmodel.ValidationError:
 		return ec._ValidationError(ctx, sel, &obj)
 	case *gqlmodel.ValidationError:
@@ -6791,13 +6791,13 @@ func (ec *executionContext) _Error(ctx context.Context, sel ast.SelectionSet, ob
 			return graphql.Null
 		}
 		return ec._CreateAnkiDeckAlreadyExists(ctx, sel, obj)
-	case gqlmodel.CreateAnkiNoteAlreadyExists:
-		return ec._CreateAnkiNoteAlreadyExists(ctx, sel, &obj)
-	case *gqlmodel.CreateAnkiNoteAlreadyExists:
+	case gqlmodel.CreateDefaultAnkiNoteAlreadyExists:
+		return ec._CreateDefaultAnkiNoteAlreadyExists(ctx, sel, &obj)
+	case *gqlmodel.CreateDefaultAnkiNoteAlreadyExists:
 		if obj == nil {
 			return graphql.Null
 		}
-		return ec._CreateAnkiNoteAlreadyExists(ctx, sel, obj)
+		return ec._CreateDefaultAnkiNoteAlreadyExists(ctx, sel, obj)
 	case gqlmodel.ValidationError:
 		return ec._ValidationError(ctx, sel, &obj)
 	case *gqlmodel.ValidationError:
@@ -7431,19 +7431,19 @@ func (ec *executionContext) _CreateAnkiDeckResult(ctx context.Context, sel ast.S
 	return out
 }
 
-var createAnkiNoteAlreadyExistsImplementors = []string{"CreateAnkiNoteAlreadyExists", "Error", "CreateAnkiNoteError"}
+var createDefaultAnkiNoteAlreadyExistsImplementors = []string{"CreateDefaultAnkiNoteAlreadyExists", "Error", "CreateDefaultAnkiNoteError"}
 
-func (ec *executionContext) _CreateAnkiNoteAlreadyExists(ctx context.Context, sel ast.SelectionSet, obj *gqlmodel.CreateAnkiNoteAlreadyExists) graphql.Marshaler {
-	fields := graphql.CollectFields(ec.OperationContext, sel, createAnkiNoteAlreadyExistsImplementors)
+func (ec *executionContext) _CreateDefaultAnkiNoteAlreadyExists(ctx context.Context, sel ast.SelectionSet, obj *gqlmodel.CreateDefaultAnkiNoteAlreadyExists) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, createDefaultAnkiNoteAlreadyExistsImplementors)
 
 	out := graphql.NewFieldSet(fields)
 	deferred := make(map[string]*graphql.FieldSet)
 	for i, field := range fields {
 		switch field.Name {
 		case "__typename":
-			out.Values[i] = graphql.MarshalString("CreateAnkiNoteAlreadyExists")
+			out.Values[i] = graphql.MarshalString("CreateDefaultAnkiNoteAlreadyExists")
 		case "message":
-			out.Values[i] = ec._CreateAnkiNoteAlreadyExists_message(ctx, field, obj)
+			out.Values[i] = ec._CreateDefaultAnkiNoteAlreadyExists_message(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
@@ -7470,21 +7470,21 @@ func (ec *executionContext) _CreateAnkiNoteAlreadyExists(ctx context.Context, se
 	return out
 }
 
-var createAnkiNoteResultImplementors = []string{"CreateAnkiNoteResult"}
+var createDefaultAnkiNoteResultImplementors = []string{"CreateDefaultAnkiNoteResult"}
 
-func (ec *executionContext) _CreateAnkiNoteResult(ctx context.Context, sel ast.SelectionSet, obj *gqlmodel.CreateAnkiNoteResult) graphql.Marshaler {
-	fields := graphql.CollectFields(ec.OperationContext, sel, createAnkiNoteResultImplementors)
+func (ec *executionContext) _CreateDefaultAnkiNoteResult(ctx context.Context, sel ast.SelectionSet, obj *gqlmodel.CreateDefaultAnkiNoteResult) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, createDefaultAnkiNoteResultImplementors)
 
 	out := graphql.NewFieldSet(fields)
 	deferred := make(map[string]*graphql.FieldSet)
 	for i, field := range fields {
 		switch field.Name {
 		case "__typename":
-			out.Values[i] = graphql.MarshalString("CreateAnkiNoteResult")
+			out.Values[i] = graphql.MarshalString("CreateDefaultAnkiNoteResult")
 		case "ankiError":
-			out.Values[i] = ec._CreateAnkiNoteResult_ankiError(ctx, field, obj)
+			out.Values[i] = ec._CreateDefaultAnkiNoteResult_ankiError(ctx, field, obj)
 		case "error":
-			out.Values[i] = ec._CreateAnkiNoteResult_error(ctx, field, obj)
+			out.Values[i] = ec._CreateDefaultAnkiNoteResult_error(ctx, field, obj)
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -7704,9 +7704,9 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
-		case "createAnkiNote":
+		case "createDefaultAnkiNote":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._Mutation_createAnkiNote(ctx, field)
+				return ec._Mutation_createDefaultAnkiNote(ctx, field)
 			})
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
@@ -8106,7 +8106,7 @@ func (ec *executionContext) _SetAnkiConfigNoteResult(ctx context.Context, sel as
 	return out
 }
 
-var validationErrorImplementors = []string{"ValidationError", "CreateAnkiDeckError", "CreateAnkiNoteError", "Error"}
+var validationErrorImplementors = []string{"ValidationError", "CreateAnkiDeckError", "CreateDefaultAnkiNoteError", "Error"}
 
 func (ec *executionContext) _ValidationError(ctx context.Context, sel ast.SelectionSet, obj *gqlmodel.ValidationError) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.OperationContext, sel, validationErrorImplementors)
@@ -8741,18 +8741,18 @@ func (ec *executionContext) marshalNCreateAnkiDeckResult2ᚖgithubᚗcomᚋDarkc
 	return ec._CreateAnkiDeckResult(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalNCreateAnkiNoteResult2githubᚗcomᚋDarkclainerᚋjapwordsᚋgraphqlᚋgqlmodelᚐCreateAnkiNoteResult(ctx context.Context, sel ast.SelectionSet, v gqlmodel.CreateAnkiNoteResult) graphql.Marshaler {
-	return ec._CreateAnkiNoteResult(ctx, sel, &v)
+func (ec *executionContext) marshalNCreateDefaultAnkiNoteResult2githubᚗcomᚋDarkclainerᚋjapwordsᚋgraphqlᚋgqlmodelᚐCreateDefaultAnkiNoteResult(ctx context.Context, sel ast.SelectionSet, v gqlmodel.CreateDefaultAnkiNoteResult) graphql.Marshaler {
+	return ec._CreateDefaultAnkiNoteResult(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNCreateAnkiNoteResult2ᚖgithubᚗcomᚋDarkclainerᚋjapwordsᚋgraphqlᚋgqlmodelᚐCreateAnkiNoteResult(ctx context.Context, sel ast.SelectionSet, v *gqlmodel.CreateAnkiNoteResult) graphql.Marshaler {
+func (ec *executionContext) marshalNCreateDefaultAnkiNoteResult2ᚖgithubᚗcomᚋDarkclainerᚋjapwordsᚋgraphqlᚋgqlmodelᚐCreateDefaultAnkiNoteResult(ctx context.Context, sel ast.SelectionSet, v *gqlmodel.CreateDefaultAnkiNoteResult) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
 		}
 		return graphql.Null
 	}
-	return ec._CreateAnkiNoteResult(ctx, sel, v)
+	return ec._CreateDefaultAnkiNoteResult(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalNFurigana2ᚕᚖgithubᚗcomᚋDarkclainerᚋjapwordsᚋgraphqlᚋgqlmodelᚐFuriganaᚄ(ctx context.Context, sel ast.SelectionSet, v []*gqlmodel.Furigana) graphql.Marshaler {
@@ -9603,11 +9603,18 @@ func (ec *executionContext) unmarshalOCreateAnkiDeckInput2ᚖgithubᚗcomᚋDark
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) unmarshalOCreateAnkiNoteInput2ᚖgithubᚗcomᚋDarkclainerᚋjapwordsᚋgraphqlᚋgqlmodelᚐCreateAnkiNoteInput(ctx context.Context, v interface{}) (*gqlmodel.CreateAnkiNoteInput, error) {
+func (ec *executionContext) marshalOCreateDefaultAnkiNoteError2githubᚗcomᚋDarkclainerᚋjapwordsᚋgraphqlᚋgqlmodelᚐCreateDefaultAnkiNoteError(ctx context.Context, sel ast.SelectionSet, v gqlmodel.CreateDefaultAnkiNoteError) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._CreateDefaultAnkiNoteError(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalOCreateDefaultAnkiNoteInput2ᚖgithubᚗcomᚋDarkclainerᚋjapwordsᚋgraphqlᚋgqlmodelᚐCreateDefaultAnkiNoteInput(ctx context.Context, v interface{}) (*gqlmodel.CreateDefaultAnkiNoteInput, error) {
 	if v == nil {
 		return nil, nil
 	}
-	res, err := ec.unmarshalInputCreateAnkiNoteInput(ctx, v)
+	res, err := ec.unmarshalInputCreateDefaultAnkiNoteInput(ctx, v)
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
 

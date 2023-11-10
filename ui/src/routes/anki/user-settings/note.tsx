@@ -53,16 +53,16 @@ const SET_CURRENT_NOTE = gql(`
   }
 `);
 
-const CREATE_NOTE = gql(`
-  mutation CreateAnkiNote($name: String!) {
-    createAnkiNote(input: { name: $name }) {
+const CREATE_DEFAULT_NOTE = gql(`
+  mutation CreateDefaultAnkiNote($name: String!) {
+    createDefaultAnkiNote(input: { name: $name }) {
       ankiError {
         ... on Error {
           message
         }
       }
       error {
-        ... on CreateAnkiDeckAlreadyExists {
+        ... on CreateDefaultAnkiNoteAlreadyExists {
           message
         }
         ... on ValidationError {
@@ -82,7 +82,7 @@ function NoteSelectBody({ triggerId }: { triggerId: string }) {
     refetchQueries: [GET_CURRENT_NOTE],
     awaitRefetchQueries: true,
   });
-  const [createNote] = useMutation(CREATE_NOTE, {
+  const [createNote] = useMutation(CREATE_DEFAULT_NOTE, {
     refetchQueries: [GET_ANKI_NOTES],
     awaitRefetchQueries: true,
   });
@@ -142,16 +142,16 @@ function NoteSelectBody({ triggerId }: { triggerId: string }) {
             toast('Note creation failed!', { type: 'error' });
             return err('request failed');
           }
-          if (resp.data.createAnkiNote.ankiError) {
+          if (resp.data.createDefaultAnkiNote.ankiError) {
             toast('Note creation failed! No anki connection', { type: 'error' });
             return err('request failed');
           }
-          if (resp.data.createAnkiNote.error) {
-            const error = resp.data.createAnkiNote.error;
+          if (resp.data.createDefaultAnkiNote.error) {
+            const error = resp.data.createDefaultAnkiNote.error;
             switch (error.__typename) {
               case 'ValidationError':
                 return err(error.message);
-              case 'CreateAnkiDeckAlreadyExists':
+              case 'CreateDefaultAnkiNoteAlreadyExists':
                 return err('note with specified name already exists');
               default:
                 return err('uknown error');

@@ -16,8 +16,8 @@ type CreateAnkiDeckError interface {
 	IsCreateAnkiDeckError()
 }
 
-type CreateAnkiNoteError interface {
-	IsCreateAnkiNoteError()
+type CreateDefaultAnkiNoteError interface {
+	IsCreateDefaultAnkiNoteError()
 }
 
 type Error interface {
@@ -132,22 +132,22 @@ type CreateAnkiDeckResult struct {
 	Error     CreateAnkiDeckError `json:"error,omitempty"`
 }
 
-type CreateAnkiNoteAlreadyExists struct {
+type CreateDefaultAnkiNoteAlreadyExists struct {
 	Message string `json:"message"`
 }
 
-func (CreateAnkiNoteAlreadyExists) IsError()                {}
-func (this CreateAnkiNoteAlreadyExists) GetMessage() string { return this.Message }
+func (CreateDefaultAnkiNoteAlreadyExists) IsError()                {}
+func (this CreateDefaultAnkiNoteAlreadyExists) GetMessage() string { return this.Message }
 
-func (CreateAnkiNoteAlreadyExists) IsCreateAnkiNoteError() {}
+func (CreateDefaultAnkiNoteAlreadyExists) IsCreateDefaultAnkiNoteError() {}
 
-type CreateAnkiNoteInput struct {
+type CreateDefaultAnkiNoteInput struct {
 	Name string `json:"name"`
 }
 
-type CreateAnkiNoteResult struct {
-	AnkiError AnkiError           `json:"ankiError,omitempty"`
-	Error     CreateAnkiDeckError `json:"error,omitempty"`
+type CreateDefaultAnkiNoteResult struct {
+	AnkiError AnkiError                  `json:"ankiError,omitempty"`
+	Error     CreateDefaultAnkiNoteError `json:"error,omitempty"`
 }
 
 type Furigana struct {
@@ -218,7 +218,7 @@ type ValidationError struct {
 
 func (ValidationError) IsCreateAnkiDeckError() {}
 
-func (ValidationError) IsCreateAnkiNoteError() {}
+func (ValidationError) IsCreateDefaultAnkiNoteError() {}
 
 func (ValidationError) IsError()                {}
 func (this ValidationError) GetMessage() string { return this.Message }

@@ -149,20 +149,20 @@ type CreateAnkiDeckResult {
 }
 
 extend type Mutation {
-  createAnkiNote(input: CreateAnkiNoteInput): CreateAnkiNoteResult!
+  createDefaultAnkiNote(input: CreateDefaultAnkiNoteInput): CreateDefaultAnkiNoteResult!
 }
 
-input CreateAnkiNoteInput {
+input CreateDefaultAnkiNoteInput {
   name: String!
 }
 
-type CreateAnkiNoteAlreadyExists implements Error {
+type CreateDefaultAnkiNoteAlreadyExists implements Error {
   message: String!
 }
 
-union CreateAnkiNoteError = CreateAnkiNoteAlreadyExists | ValidationError
+union CreateDefaultAnkiNoteError = CreateDefaultAnkiNoteAlreadyExists | ValidationError
 
-type CreateAnkiNoteResult {
+type CreateDefaultAnkiNoteResult {
   ankiError: AnkiError
-  error: CreateAnkiDeckError
+  error: CreateDefaultAnkiNoteError
 }

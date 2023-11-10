@@ -112,22 +112,22 @@ func (r *mutationResolver) CreateAnkiDeck(ctx context.Context, input *gqlmodel.C
 }
 
 // CreateAnkiNote is the resolver for the createAnkiNote field.
-func (r *mutationResolver) CreateAnkiNote(ctx context.Context, input *gqlmodel.CreateAnkiNoteInput) (*gqlmodel.CreateAnkiNoteResult, error) {
+func (r *mutationResolver) CreateDefaultAnkiNote(ctx context.Context, input *gqlmodel.CreateDefaultAnkiNoteInput) (*gqlmodel.CreateDefaultAnkiNoteResult, error) {
 	err := r.ankiClient.CreateDefaultNote(ctx, input.Name)
 	if err != nil {
 		if validationErr, _ := convertAnkiValidationError(ctx, err); validationErr != nil {
-			return &gqlmodel.CreateAnkiNoteResult{
+			return &gqlmodel.CreateDefaultAnkiNoteResult{
 				Error: validationErr,
 			}, nil
 		}
 		if ankiErr, _ := convertAnkiError(err); ankiErr != nil {
-			return &gqlmodel.CreateAnkiNoteResult{
+			return &gqlmodel.CreateDefaultAnkiNoteResult{
 				AnkiError: ankiErr,
 			}, nil
 		}
 		return nil, err
 	}
-	return &gqlmodel.CreateAnkiNoteResult{}, nil
+	return &gqlmodel.CreateDefaultAnkiNoteResult{}, nil
 }
 
 // Anki is the resolver for the Anki field.
@@ -236,7 +236,5 @@ func (r *Resolver) Mutation() gqlgenerated.MutationResolver { return &mutationRe
 // Query returns gqlgenerated.QueryResolver implementation.
 func (r *Resolver) Query() gqlgenerated.QueryResolver { return &queryResolver{r} }
 
-type (
-	mutationResolver struct{ *Resolver }
-	queryResolver    struct{ *Resolver }
-)
+type mutationResolver struct{ *Resolver }
+type queryResolver struct{ *Resolver }
