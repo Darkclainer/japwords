@@ -11,6 +11,7 @@ import (
 	"slices"
 
 	"github.com/99designs/gqlgen/graphql"
+
 	"github.com/Darkclainer/japwords/graphql/gqlgenerated"
 	"github.com/Darkclainer/japwords/graphql/gqlmodel"
 	"github.com/Darkclainer/japwords/pkg/anki"
@@ -161,7 +162,7 @@ loop:
 				break loop
 			}
 		case "noteFields":
-			args := field.ArgumentMap(nil)
+			args := field.ArgumentMap(opCtx.Variables)
 			name := args["name"].(string)
 			result.NoteFields, err = r.ankiClient.NoteTypeFields(ctx, name)
 			if err != nil {
@@ -236,5 +237,7 @@ func (r *Resolver) Mutation() gqlgenerated.MutationResolver { return &mutationRe
 // Query returns gqlgenerated.QueryResolver implementation.
 func (r *Resolver) Query() gqlgenerated.QueryResolver { return &queryResolver{r} }
 
-type mutationResolver struct{ *Resolver }
-type queryResolver struct{ *Resolver }
+type (
+	mutationResolver struct{ *Resolver }
+	queryResolver    struct{ *Resolver }
+)
