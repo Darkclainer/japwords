@@ -13,7 +13,7 @@ import (
 
 func Test_convertMapping(t *testing.T) {
 	testLemma := &Lemma{
-		Slug: lemma.Word{
+		Slug: Word{
 			Word:     "hello",
 			Hiragana: "world",
 		},
@@ -133,7 +133,7 @@ func Test_initTemplate(t *testing.T) {
 		{
 			Name: "sprig functions imported",
 			Lemma: Lemma{
-				Slug: lemma.Word{
+				Slug: Word{
 					Word: "hello",
 				},
 			},
@@ -144,7 +144,7 @@ func Test_initTemplate(t *testing.T) {
 		{
 			Name: "renderFurigana",
 			Lemma: Lemma{
-				Slug: lemma.Word{
+				Slug: Word{
 					Furigana: lemma.Furigana{
 						{
 							Kanji:    "he",
@@ -164,16 +164,21 @@ func Test_initTemplate(t *testing.T) {
 		{
 			Name: "renderPitch",
 			Lemma: Lemma{
-				Slug: lemma.Word{
+				Slug: Word{
 					Hiragana: "hello",
-					Pitches: []lemma.Pitch{
+					Pitches: []lemma.PitchShape{
 						{
-							Position: 1,
-							IsHigh:   false,
+							Hiragana: "h",
+							Directions: []lemma.AccentDirection{
+								lemma.AccentDirectionDown,
+							},
 						},
 						{
-							Position: 5,
-							IsHigh:   true,
+							Hiragana: "ello",
+							Directions: []lemma.AccentDirection{
+								lemma.AccentDirectionUp,
+								lemma.AccentDirectionLeft,
+							},
 						},
 					},
 				},
@@ -347,7 +352,7 @@ func Test_renderFurigana(t *testing.T) {
 	for i := range testCases {
 		tc := testCases[i]
 		t.Run(t.Name(), func(t *testing.T) {
-			word := lemma.Word{
+			word := Word{
 				Furigana: tc.Furigana,
 			}
 			actual := renderFuriganaTemplate(&word)
@@ -361,7 +366,7 @@ func Test_renderPitch(t *testing.T) {
 	directionClasses := []string{"u", "r", "d", "l"}
 	testCases := []struct {
 		Name             string
-		Word             lemma.Word
+		Word             Word
 		Tag              string
 		DirectionClasses []string
 		Expected         string
@@ -373,9 +378,13 @@ func Test_renderPitch(t *testing.T) {
 		},
 		{
 			Name: "no pitch",
-			Word: lemma.Word{
+			Word: Word{
 				Hiragana: "hello",
-				Pitches:  []lemma.Pitch{},
+				Pitches: []lemma.PitchShape{
+					{
+						Hiragana: "hello",
+					},
+				},
 			},
 			DirectionClasses: directionClasses,
 			Tag:              "span",
@@ -383,12 +392,14 @@ func Test_renderPitch(t *testing.T) {
 		},
 		{
 			Name: "simple up",
-			Word: lemma.Word{
+			Word: Word{
 				Hiragana: "hello",
-				Pitches: []lemma.Pitch{
+				Pitches: []lemma.PitchShape{
 					{
-						Position: 5,
-						IsHigh:   true,
+						Hiragana: "hello",
+						Directions: []lemma.AccentDirection{
+							lemma.AccentDirectionUp,
+						},
 					},
 				},
 			},
@@ -398,16 +409,15 @@ func Test_renderPitch(t *testing.T) {
 		},
 		{
 			Name: "tail up down",
-			Word: lemma.Word{
+			Word: Word{
 				Hiragana: "hello",
-				Pitches: []lemma.Pitch{
+				Pitches: []lemma.PitchShape{
 					{
-						Position: 5,
-						IsHigh:   true,
-					},
-					{
-						Position: 5,
-						IsHigh:   false,
+						Hiragana: "hello",
+						Directions: []lemma.AccentDirection{
+							lemma.AccentDirectionUp,
+							lemma.AccentDirectionRight,
+						},
 					},
 				},
 			},
@@ -417,16 +427,15 @@ func Test_renderPitch(t *testing.T) {
 		},
 		{
 			Name: "head down up",
-			Word: lemma.Word{
+			Word: Word{
 				Hiragana: "hello",
-				Pitches: []lemma.Pitch{
+				Pitches: []lemma.PitchShape{
 					{
-						Position: 0,
-						IsHigh:   false,
-					},
-					{
-						Position: 5,
-						IsHigh:   true,
+						Hiragana: "hello",
+						Directions: []lemma.AccentDirection{
+							lemma.AccentDirectionUp,
+							lemma.AccentDirectionLeft,
+						},
 					},
 				},
 			},
@@ -436,16 +445,21 @@ func Test_renderPitch(t *testing.T) {
 		},
 		{
 			Name: "middle down up",
-			Word: lemma.Word{
+			Word: Word{
 				Hiragana: "hello",
-				Pitches: []lemma.Pitch{
+				Pitches: []lemma.PitchShape{
 					{
-						Position: 2,
-						IsHigh:   false,
+						Hiragana: "he",
+						Directions: []lemma.AccentDirection{
+							lemma.AccentDirectionDown,
+						},
 					},
 					{
-						Position: 5,
-						IsHigh:   true,
+						Hiragana: "llo",
+						Directions: []lemma.AccentDirection{
+							lemma.AccentDirectionUp,
+							lemma.AccentDirectionLeft,
+						},
 					},
 				},
 			},
@@ -455,16 +469,21 @@ func Test_renderPitch(t *testing.T) {
 		},
 		{
 			Name: "middle up down",
-			Word: lemma.Word{
+			Word: Word{
 				Hiragana: "hello",
-				Pitches: []lemma.Pitch{
+				Pitches: []lemma.PitchShape{
 					{
-						Position: 2,
-						IsHigh:   true,
+						Hiragana: "he",
+						Directions: []lemma.AccentDirection{
+							lemma.AccentDirectionUp,
+						},
 					},
 					{
-						Position: 5,
-						IsHigh:   false,
+						Hiragana: "llo",
+						Directions: []lemma.AccentDirection{
+							lemma.AccentDirectionDown,
+							lemma.AccentDirectionLeft,
+						},
 					},
 				},
 			},
@@ -474,12 +493,17 @@ func Test_renderPitch(t *testing.T) {
 		},
 		{
 			Name: "incomplet",
-			Word: lemma.Word{
+			Word: Word{
 				Hiragana: "hello",
-				Pitches: []lemma.Pitch{
+				Pitches: []lemma.PitchShape{
 					{
-						Position: 2,
-						IsHigh:   true,
+						Hiragana: "he",
+						Directions: []lemma.AccentDirection{
+							lemma.AccentDirectionUp,
+						},
+					},
+					{
+						Hiragana: "llo",
 					},
 				},
 			},
@@ -489,20 +513,22 @@ func Test_renderPitch(t *testing.T) {
 		},
 		{
 			Name: "all directions",
-			Word: lemma.Word{
+			Word: Word{
 				Hiragana: "hello",
-				Pitches: []lemma.Pitch{
+				Pitches: []lemma.PitchShape{
 					{
-						Position: 2,
-						IsHigh:   false,
+						Hiragana: "he",
+						Directions: []lemma.AccentDirection{
+							lemma.AccentDirectionDown,
+						},
 					},
 					{
-						Position: 5,
-						IsHigh:   true,
-					},
-					{
-						Position: 5,
-						IsHigh:   false,
+						Hiragana: "llo",
+						Directions: []lemma.AccentDirection{
+							lemma.AccentDirectionUp,
+							lemma.AccentDirectionLeft,
+							lemma.AccentDirectionRight,
+						},
 					},
 				},
 			},
@@ -512,20 +538,22 @@ func Test_renderPitch(t *testing.T) {
 		},
 		{
 			Name: "different tag",
-			Word: lemma.Word{
+			Word: Word{
 				Hiragana: "hello",
-				Pitches: []lemma.Pitch{
+				Pitches: []lemma.PitchShape{
 					{
-						Position: 2,
-						IsHigh:   false,
+						Hiragana: "he",
+						Directions: []lemma.AccentDirection{
+							lemma.AccentDirectionDown,
+						},
 					},
 					{
-						Position: 5,
-						IsHigh:   true,
-					},
-					{
-						Position: 5,
-						IsHigh:   false,
+						Hiragana: "llo",
+						Directions: []lemma.AccentDirection{
+							lemma.AccentDirectionUp,
+							lemma.AccentDirectionLeft,
+							lemma.AccentDirectionRight,
+						},
 					},
 				},
 			},
@@ -535,20 +563,22 @@ func Test_renderPitch(t *testing.T) {
 		},
 		{
 			Name: "different classes",
-			Word: lemma.Word{
+			Word: Word{
 				Hiragana: "hello",
-				Pitches: []lemma.Pitch{
+				Pitches: []lemma.PitchShape{
 					{
-						Position: 2,
-						IsHigh:   false,
+						Hiragana: "he",
+						Directions: []lemma.AccentDirection{
+							lemma.AccentDirectionDown,
+						},
 					},
 					{
-						Position: 5,
-						IsHigh:   true,
-					},
-					{
-						Position: 5,
-						IsHigh:   false,
+						Hiragana: "llo",
+						Directions: []lemma.AccentDirection{
+							lemma.AccentDirectionUp,
+							lemma.AccentDirectionLeft,
+							lemma.AccentDirectionRight,
+						},
 					},
 				},
 			},
@@ -558,20 +588,22 @@ func Test_renderPitch(t *testing.T) {
 		},
 		{
 			Name: "more classes than needed",
-			Word: lemma.Word{
+			Word: Word{
 				Hiragana: "hello",
-				Pitches: []lemma.Pitch{
+				Pitches: []lemma.PitchShape{
 					{
-						Position: 2,
-						IsHigh:   false,
+						Hiragana: "he",
+						Directions: []lemma.AccentDirection{
+							lemma.AccentDirectionDown,
+						},
 					},
 					{
-						Position: 5,
-						IsHigh:   true,
-					},
-					{
-						Position: 5,
-						IsHigh:   false,
+						Hiragana: "llo",
+						Directions: []lemma.AccentDirection{
+							lemma.AccentDirectionUp,
+							lemma.AccentDirectionLeft,
+							lemma.AccentDirectionRight,
+						},
 					},
 				},
 			},
@@ -618,7 +650,7 @@ func Test_renderPitch_error(t *testing.T) {
 	for i := range testCases {
 		tc := testCases[i]
 		t.Run(tc.Name, func(t *testing.T) {
-			_, err := renderPitch(&lemma.Word{}, tc.Tag, tc.DirectionClasses)
+			_, err := renderPitch(&Word{}, tc.Tag, tc.DirectionClasses)
 			tc.ErrorAssert(t, err)
 		})
 	}
