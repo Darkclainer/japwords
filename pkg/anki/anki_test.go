@@ -3,7 +3,6 @@ package anki
 import (
 	"context"
 	"errors"
-	"slices"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -94,6 +93,7 @@ func Test_Anki_FullStateCheck_OK(t *testing.T) {
 		ModelNames      []string
 		ModelFieldNames []string
 		Expected        *StateResult
+		AssertError     assert.ErrorAssertionFunc
 	}{
 		{
 			Name:   "permission denied",
@@ -104,10 +104,10 @@ func Test_Anki_FullStateCheck_OK(t *testing.T) {
 				Version:       5,
 			},
 			Expected: &StateResult{
-				Connected:         true,
-				Version:           5,
-				PermissionGranted: false,
-				APIKeyRequired:    true,
+				Version: 5,
+			},
+			AssertError: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorIs(tt, err, ErrPermissionDenied)
 			},
 		},
 		{
@@ -118,10 +118,8 @@ func Test_Anki_FullStateCheck_OK(t *testing.T) {
 			Permissions: &ankiconnect.RequestPermissionResponse{
 				Permission: ankiconnect.PermissionGranted,
 			},
-			Expected: &StateResult{
-				Connected:         true,
-				PermissionGranted: true,
-			},
+			Expected:    &StateResult{},
+			AssertError: assert.NoError,
 		},
 		{
 			Name: "deck exists",
@@ -133,10 +131,9 @@ func Test_Anki_FullStateCheck_OK(t *testing.T) {
 			},
 			DeckNames: []string{"mydeck", "testdeck"},
 			Expected: &StateResult{
-				Connected:         true,
-				PermissionGranted: true,
-				DeckExists:        true,
+				DeckExists: true,
 			},
+			AssertError: assert.NoError,
 		},
 		{
 			Name: "note type exists",
@@ -148,10 +145,10 @@ func Test_Anki_FullStateCheck_OK(t *testing.T) {
 			},
 			ModelNames: []string{"mynote", "testnote"},
 			Expected: &StateResult{
-				Connected:         true,
-				PermissionGranted: true,
-				NoteTypeExists:    true,
+				NoteTypeExists:   true,
+				NoteHasAllFields: true,
 			},
+			AssertError: assert.NoError,
 		},
 		{
 			Name: "missing fields",
@@ -169,11 +166,9 @@ func Test_Anki_FullStateCheck_OK(t *testing.T) {
 			ModelNames:      []string{"testnote"},
 			ModelFieldNames: []string{"key2"},
 			Expected: &StateResult{
-				Connected:         true,
-				PermissionGranted: true,
-				NoteTypeExists:    true,
-				NoteMissingFields: []string{"key1", "key3"},
+				NoteTypeExists: true,
 			},
+			AssertError: assert.NoError,
 		},
 		{
 			Name: "no missing fields",
@@ -191,10 +186,10 @@ func Test_Anki_FullStateCheck_OK(t *testing.T) {
 			ModelNames:      []string{"testnote"},
 			ModelFieldNames: []string{"key1", "key2", "key3", "key4"},
 			Expected: &StateResult{
-				Connected:         true,
-				PermissionGranted: true,
-				NoteTypeExists:    true,
+				NoteTypeExists:   true,
+				NoteHasAllFields: true,
 			},
+			AssertError: assert.NoError,
 		},
 	}
 	for i := range testCases {
@@ -220,8 +215,7 @@ func Test_Anki_FullStateCheck_OK(t *testing.T) {
 			err := anki.ReloadConfig(tc.Config)
 			require.NoError(t, err)
 			actual, err := anki.FullStateCheck(context.Background())
-			assert.NoError(t, err)
-			slices.Sort(actual.NoteMissingFields)
+			tc.AssertError(t, err)
 			assert.Equal(t, tc.Expected, actual)
 			client.AssertExpectations(t)
 		})

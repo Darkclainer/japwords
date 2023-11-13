@@ -15,6 +15,78 @@ type MockAnkiClient struct {
 	mock.Mock
 }
 
+// AddNote provides a mock function with given fields: ctx, params, opts
+func (_m *MockAnkiClient) AddNote(ctx context.Context, params *ankiconnect.AddNoteParams, opts *ankiconnect.AddNoteOptions) (int64, error) {
+	ret := _m.Called(ctx, params, opts)
+
+	var r0 int64
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, *ankiconnect.AddNoteParams, *ankiconnect.AddNoteOptions) (int64, error)); ok {
+		return rf(ctx, params, opts)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, *ankiconnect.AddNoteParams, *ankiconnect.AddNoteOptions) int64); ok {
+		r0 = rf(ctx, params, opts)
+	} else {
+		r0 = ret.Get(0).(int64)
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, *ankiconnect.AddNoteParams, *ankiconnect.AddNoteOptions) error); ok {
+		r1 = rf(ctx, params, opts)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// CreateDeck provides a mock function with given fields: ctx, name
+func (_m *MockAnkiClient) CreateDeck(ctx context.Context, name string) (int64, error) {
+	ret := _m.Called(ctx, name)
+
+	var r0 int64
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, string) (int64, error)); ok {
+		return rf(ctx, name)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, string) int64); ok {
+		r0 = rf(ctx, name)
+	} else {
+		r0 = ret.Get(0).(int64)
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
+		r1 = rf(ctx, name)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// CreateModel provides a mock function with given fields: ctx, parameters
+func (_m *MockAnkiClient) CreateModel(ctx context.Context, parameters *ankiconnect.CreateModelRequest) (int64, error) {
+	ret := _m.Called(ctx, parameters)
+
+	var r0 int64
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, *ankiconnect.CreateModelRequest) (int64, error)); ok {
+		return rf(ctx, parameters)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, *ankiconnect.CreateModelRequest) int64); ok {
+		r0 = rf(ctx, parameters)
+	} else {
+		r0 = ret.Get(0).(int64)
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, *ankiconnect.CreateModelRequest) error); ok {
+		r1 = rf(ctx, parameters)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // DeckNames provides a mock function with given fields: ctx
 func (_m *MockAnkiClient) DeckNames(ctx context.Context) ([]string, error) {
 	ret := _m.Called(ctx)
