@@ -59,11 +59,34 @@ func DefaultUserConfig() *UserConfig {
 	return &UserConfig{
 		Addr: "",
 		Anki: Anki{
-			Addr:         "127.0.0.1:8765",
-			APIKey:       "",
-			Deck:         "Japwords",
-			NoteType:     "JapwordsDefaultNote",
-			FieldMapping: map[string]string{},
+			Addr:     "127.0.0.1:8765",
+			APIKey:   "",
+			Deck:     "Japwords",
+			NoteType: "JapwordsDefaultNote",
+			FieldMapping: map[string]string{
+				"Sort": `{{- $def := "" -}}
+{{- if gt (len .Definitions) 0 -}}
+        {{- $first := index .Definitions 0 -}}
+	{{- $firstLen := int (min (len $first) 10) -}}
+	{{- $def = trim (substr 0 $firstLen (index .Definitions 0)) | replace " " "_" -}}
+{{- end -}}
+{{.Slug.Word}}-{{ $def }}-{{.SenseIndex}}`,
+				"Kanji":    `{{.Slug.Word}}`,
+				"Furigana": `{{renderFurigana .Slug}}`,
+				"Kana":     `{{renderPitch .Slug "span" "border-u" "border-r" "border-d" "border-l"}}`,
+				"PoS": `{{- $lastIndex := sub (len .PartsOfSpeech) 1 -}}
+{{- range $index, $_ := .PartsOfSpeech -}}
+	<span class="pos">{{.}}</span>{{ ne $index $lastIndex | ternary " " ""  }}
+{{- end -}}`,
+				"English": `{{- $lastIndex := sub (len .Definitions) 1 -}}
+{{- range $index, $_ := .Definitions -}}
+	<span>{{.}}</span>{{ ne $index $lastIndex | ternary " " ""  }}
+{{- end -}}`,
+				"SenseTags": `{{- $lastIndex := sub (len .SenseTags) 1 -}}
+{{- range $index, $_ := .SenseTags -}}
+	<span class="sensetag">{{.}}</span>{{ ne $index $lastIndex | ternary " " ""  }}
+{{- end -}}`,
+			},
 		},
 		Dictionary: Dictionary{
 			Workers:   0,
