@@ -1,6 +1,7 @@
 package anki
 
 import (
+	"bytes"
 	"errors"
 	"io"
 	"strings"
@@ -30,6 +31,21 @@ func (tm TemplateMapping) Equal(otm TemplateMapping) bool {
 		}
 	}
 	return true
+}
+
+// RenderRawTemplate renders template with specified lemma, intended to use for API.
+func RenderRawTemplate(templateSrc string, lemma *Lemma) (string, error) {
+	tmpl := template.New("")
+	err := initTemplate(tmpl, templateSrc)
+	if err != nil {
+		return "", err
+	}
+	var buffer bytes.Buffer
+	err = tmpl.Execute(&buffer, lemma)
+	if err != nil {
+		return "", err
+	}
+	return buffer.String(), nil
 }
 
 func convertMapping(mapping map[string]string) (TemplateMapping, []*MappingValidationError) {

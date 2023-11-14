@@ -29,6 +29,8 @@ const documents = {
     types.CreateAnkiDeckDocument,
   '\n  query GetAnkiConfigCurrentNote {\n    AnkiConfig {\n      noteType\n    }\n  }\n':
     types.GetAnkiConfigCurrentNoteDocument,
+  '\n  query GetAnkiNoteFieldsAndMapping($noteName: String!) {\n    AnkiConfig {\n      mapping {\n        key\n        value\n      }\n    }\n    Anki {\n      anki {\n        noteFields(name: $noteName)\n      }\n      error {\n        ... on Error {\n          message\n        }\n      }\n    }\n  }\n':
+    types.GetAnkiNoteFieldsAndMappingDocument,
   '\n  query GetAnkiNotes {\n    Anki {\n      anki {\n        notes\n      }\n      error {\n        __typename\n      }\n    }\n  }\n':
     types.GetAnkiNotesDocument,
   '\n  mutation SetAnkiConfigCurrentNote($name: String!) {\n    setAnkiConfigNote(input: { name: $name }) {\n      error {\n          message\n      }\n    }\n  }\n':
@@ -101,6 +103,12 @@ export function gql(
 export function gql(
   source: '\n  query GetAnkiConfigCurrentNote {\n    AnkiConfig {\n      noteType\n    }\n  }\n',
 ): (typeof documents)['\n  query GetAnkiConfigCurrentNote {\n    AnkiConfig {\n      noteType\n    }\n  }\n'];
+/**
+ * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function gql(
+  source: '\n  query GetAnkiNoteFieldsAndMapping($noteName: String!) {\n    AnkiConfig {\n      mapping {\n        key\n        value\n      }\n    }\n    Anki {\n      anki {\n        noteFields(name: $noteName)\n      }\n      error {\n        ... on Error {\n          message\n        }\n      }\n    }\n  }\n',
+): (typeof documents)['\n  query GetAnkiNoteFieldsAndMapping($noteName: String!) {\n    AnkiConfig {\n      mapping {\n        key\n        value\n      }\n    }\n    Anki {\n      anki {\n        noteFields(name: $noteName)\n      }\n      error {\n        ... on Error {\n          message\n        }\n      }\n    }\n  }\n'];
 /**
  * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */

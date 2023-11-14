@@ -172,6 +172,18 @@ type Pitch struct {
 	Pitch    []PitchType `json:"pitch"`
 }
 
+type RenderedField struct {
+	Field  string  `json:"field"`
+	Result string  `json:"result"`
+	Error  *string `json:"error,omitempty"`
+}
+
+type RenderedFields struct {
+	Template      string           `json:"template"`
+	TemplateError *string          `json:"templateError,omitempty"`
+	Fields        []*RenderedField `json:"fields"`
+}
+
 type Sense struct {
 	Definition   []string `json:"definition"`
 	PartOfSpeech []string `json:"partOfSpeech"`

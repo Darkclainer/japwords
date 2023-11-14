@@ -386,6 +386,27 @@ export type GetAnkiConfigCurrentNoteQuery = {
   AnkiConfig: { __typename?: 'AnkiConfig'; noteType: string };
 };
 
+export type GetAnkiNoteFieldsAndMappingQueryVariables = Exact<{
+  noteName: Scalars['String']['input'];
+}>;
+
+export type GetAnkiNoteFieldsAndMappingQuery = {
+  __typename?: 'Query';
+  AnkiConfig: {
+    __typename?: 'AnkiConfig';
+    mapping: Array<{ __typename?: 'AnkiMappingElement'; key: string; value: string }>;
+  };
+  Anki: {
+    __typename?: 'AnkiResult';
+    anki?: { __typename?: 'Anki'; noteFields: Array<string> } | null;
+    error?:
+      | { __typename?: 'AnkiConnectionError'; message: string }
+      | { __typename?: 'AnkiPermissionError'; message: string }
+      | { __typename?: 'AnkiUnauthorizedError'; message: string }
+      | null;
+  };
+};
+
 export type GetAnkiNotesQueryVariables = Exact<{ [key: string]: never }>;
 
 export type GetAnkiNotesQuery = {
@@ -939,6 +960,103 @@ export const GetAnkiConfigCurrentNoteDocument = {
     },
   ],
 } as unknown as DocumentNode<GetAnkiConfigCurrentNoteQuery, GetAnkiConfigCurrentNoteQueryVariables>;
+export const GetAnkiNoteFieldsAndMappingDocument = {
+  kind: 'Document',
+  definitions: [
+    {
+      kind: 'OperationDefinition',
+      operation: 'query',
+      name: { kind: 'Name', value: 'GetAnkiNoteFieldsAndMapping' },
+      variableDefinitions: [
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'noteName' } },
+          type: {
+            kind: 'NonNullType',
+            type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } },
+          },
+        },
+      ],
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'AnkiConfig' },
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [
+                {
+                  kind: 'Field',
+                  name: { kind: 'Name', value: 'mapping' },
+                  selectionSet: {
+                    kind: 'SelectionSet',
+                    selections: [
+                      { kind: 'Field', name: { kind: 'Name', value: 'key' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'value' } },
+                    ],
+                  },
+                },
+              ],
+            },
+          },
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'Anki' },
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [
+                {
+                  kind: 'Field',
+                  name: { kind: 'Name', value: 'anki' },
+                  selectionSet: {
+                    kind: 'SelectionSet',
+                    selections: [
+                      {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'noteFields' },
+                        arguments: [
+                          {
+                            kind: 'Argument',
+                            name: { kind: 'Name', value: 'name' },
+                            value: { kind: 'Variable', name: { kind: 'Name', value: 'noteName' } },
+                          },
+                        ],
+                      },
+                    ],
+                  },
+                },
+                {
+                  kind: 'Field',
+                  name: { kind: 'Name', value: 'error' },
+                  selectionSet: {
+                    kind: 'SelectionSet',
+                    selections: [
+                      {
+                        kind: 'InlineFragment',
+                        typeCondition: {
+                          kind: 'NamedType',
+                          name: { kind: 'Name', value: 'Error' },
+                        },
+                        selectionSet: {
+                          kind: 'SelectionSet',
+                          selections: [{ kind: 'Field', name: { kind: 'Name', value: 'message' } }],
+                        },
+                      },
+                    ],
+                  },
+                },
+              ],
+            },
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<
+  GetAnkiNoteFieldsAndMappingQuery,
+  GetAnkiNoteFieldsAndMappingQueryVariables
+>;
 export const GetAnkiNotesDocument = {
   kind: 'Document',
   definitions: [

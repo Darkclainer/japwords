@@ -1,26 +1,126 @@
 package anki
 
-import "github.com/Darkclainer/japwords/pkg/lemma"
+import (
+	"encoding/json"
+	"sync"
+
+	"github.com/Darkclainer/japwords/pkg/lemma"
+)
 
 // TODO: Need different pitch representation?
 // Lemma is more specific variant of lemma.Lemma.
 // This structure include only one meaning.
 type Lemma struct {
-	Slug          Word
-	SenseIndex    int
-	Tags          []string
-	Forms         []Word
-	Definitions   []string
-	PartsOfSpeech []string
-	SenseTags     []string
-	Audio         map[string]string
+	Slug          Word              `json:"Slug,omitempty"`
+	SenseIndex    int               `json:"SenseIndex,omitempty"`
+	Tags          []string          `json:"Tags,omitempty"`
+	Forms         []Word            `json:"Forms,omitempty"`
+	Definitions   []string          `json:"Definitions,omitempty"`
+	PartsOfSpeech []string          `json:"PartsOfSpeech,omitempty"`
+	SenseTags     []string          `json:"SenseTags,omitempty"`
+	Audio         map[string]string `json:"Audio,omitempty"`
 }
 
 // Word is simplified version of lemma.Word,
 // difference is in Pitch representation.
 type Word struct {
-	Word     string
-	Hiragana string
-	Furigana lemma.Furigana
-	Pitches  []lemma.PitchShape
+	Word     string             `json:"Word,omitempty"`
+	Hiragana string             `json:"Hiragana,omitempty"`
+	Furigana lemma.Furigana     `json:"Furigana,omitempty"`
+	Pitches  []lemma.PitchShape `json:"Pitches,omitempty"`
 }
+
+var DefaultExampleLemma = Lemma{
+	Slug: Word{
+		Word:     "一二わ三はい",
+		Hiragana: "いちにわさんはい",
+		Furigana: []lemma.FuriganaChar{
+			{
+				Kanji:    "一",
+				Hiragana: "いち",
+			},
+			{
+				Kanji:    "二",
+				Hiragana: "に",
+			},
+			{
+				Hiragana: "わ",
+			},
+			{
+				Kanji:    "三",
+				Hiragana: "さん",
+			},
+			{
+				Hiragana: "は",
+			},
+			{
+				Hiragana: "い",
+			},
+		},
+		Pitches: []lemma.PitchShape{
+			{
+				Hiragana: "いち",
+				Directions: []lemma.AccentDirection{
+					lemma.AccentDirectionDown,
+				},
+			},
+			{
+				Hiragana: "わ",
+				Directions: []lemma.AccentDirection{
+					lemma.AccentDirectionUp,
+					lemma.AccentDirectionLeft,
+				},
+			},
+			{
+				Hiragana: "さんは",
+				Directions: []lemma.AccentDirection{
+					lemma.AccentDirectionDown,
+					lemma.AccentDirectionLeft,
+				},
+			},
+			{
+				Hiragana: "い",
+				Directions: []lemma.AccentDirection{
+					lemma.AccentDirectionUp,
+					lemma.AccentDirectionLeft,
+					lemma.AccentDirectionRight,
+				},
+			},
+		},
+	},
+	SenseIndex: 3,
+	Tags: []string{
+		"Common word",
+		"JLPT N5",
+		"Wanikani level 2",
+		"Test database",
+	},
+	Forms: []Word{},
+	Definitions: []string{
+		"this is test lemma, it means nothing, just useful for tests",
+		"use it only for tests",
+		"don't use it for anything else",
+	},
+	PartsOfSpeech: []string{
+		"Expressions (phrases, clauses, etc.)",
+		"Test noun (probably verb)",
+		"I-adjective (keiyoushi)",
+	},
+	SenseTags: []string{
+		"Test",
+		"Nonsense",
+		"Usually written using kana alone",
+	},
+	Audio: map[string]string{
+		"mp3": "https://example.com/somelink/mp3",
+		"ogg": "https://example.com/somelink/ogg",
+	},
+}
+
+var GetDefaultExampleLemmaJSON = sync.OnceValue(func() string {
+	src, err := json.MarshalIndent(&DefaultExampleLemma, "", "  ")
+	if err != nil {
+		panic(err)
+	}
+	return string(src)
+})

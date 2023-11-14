@@ -64,6 +64,23 @@ type AnkiMappingElement {
   value: String!
 }
 
+extend type Query {
+  RenderFields(fields: [String!], template: String): RenderedFields!
+}
+
+type RenderedFields {
+  template: String!
+  templateError: String
+  fields: [RenderedField!]!
+}
+
+type RenderedField {
+  field: String!
+  result: String!
+  error: String
+}
+
+
 extend type Mutation {
   setAnkiConfigConnection(input: SetAnkiConfigConnectionInput!): SetAnkiConfigConnectionResult!
 }

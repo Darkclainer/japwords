@@ -7,6 +7,42 @@ import (
 )
 
 func Test_Word_PitchShapes(t *testing.T) {
+	// just some case, because it works through ConvertPitchToShapes
+	hiragana := "hello"
+	pitches := []Pitch{
+		{
+			Position: 1,
+			IsHigh:   false,
+		},
+		{
+			Position: 5,
+			IsHigh:   true,
+		},
+	}
+	expected := []PitchShape{
+		{
+			Hiragana: "h",
+			Directions: []AccentDirection{
+				AccentDirectionDown,
+			},
+		},
+		{
+			Hiragana: "ello",
+			Directions: []AccentDirection{
+				AccentDirectionUp,
+				AccentDirectionLeft,
+			},
+		},
+	}
+	word := Word{
+		Hiragana: hiragana,
+		Pitches:  pitches,
+	}
+	result := word.PitchShapes()
+	assert.Equal(t, expected, result)
+}
+
+func Test_ConvertPitchToShapes(t *testing.T) {
 	testCases := []struct {
 		Name     string
 		Hiragana string
@@ -187,11 +223,7 @@ func Test_Word_PitchShapes(t *testing.T) {
 	for i := range testCases {
 		tc := testCases[i]
 		t.Run(tc.Name, func(t *testing.T) {
-			word := Word{
-				Hiragana: tc.Hiragana,
-				Pitches:  tc.Pitches,
-			}
-			result := word.PitchShapes()
+			result := ConvertPitchToShapes(tc.Hiragana, tc.Pitches)
 			assert.Equal(t, tc.Expected, result)
 		})
 	}

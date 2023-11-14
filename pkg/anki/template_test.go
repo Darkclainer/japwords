@@ -11,6 +11,26 @@ import (
 	"github.com/Darkclainer/japwords/pkg/lemma"
 )
 
+func Test_RenderRawTemplate(t *testing.T) {
+	t.Run("OK", func(t *testing.T) {
+		result, err := RenderRawTemplate("{{.Slug.Word}}-test", &Lemma{
+			Slug: Word{
+				Word: "hello",
+			},
+		})
+		require.NoError(t, err)
+		assert.Equal(t, "hello-test", result)
+	})
+	t.Run("Error", func(t *testing.T) {
+		_, err := RenderRawTemplate("{{.NotExists}}-test", &Lemma{
+			Slug: Word{
+				Word: "hello",
+			},
+		})
+		require.Error(t, err)
+	})
+}
+
 func Test_convertMapping(t *testing.T) {
 	testLemma := &Lemma{
 		Slug: Word{

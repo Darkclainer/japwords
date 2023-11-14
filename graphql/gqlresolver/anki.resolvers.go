@@ -7,11 +7,11 @@ package gqlresolver
 import (
 	"cmp"
 	"context"
+	"encoding/json"
 	"errors"
 	"slices"
 
 	"github.com/99designs/gqlgen/graphql"
-
 	"github.com/Darkclainer/japwords/graphql/gqlgenerated"
 	"github.com/Darkclainer/japwords/graphql/gqlmodel"
 	"github.com/Darkclainer/japwords/pkg/anki"
@@ -229,6 +229,53 @@ func (r *queryResolver) AnkiConfig(ctx context.Context) (*gqlmodel.AnkiConfig, e
 	})
 	result.Mapping = mapping
 	return result, nil
+}
+
+// RenderFields is the resolver for the RenderFields field.
+func (r *queryResolver) RenderFields(ctx context.Context, fields []string, template *string) (*gqlmodel.RenderedFields, error) {
+	var (
+		lemma    = anki.DefaultExampleLemma
+		lemmaSrc = anki.GetDefaultExampleLemmaJSON()
+	)
+	if template != nil {
+		var newLemma anki.Lemma
+		err := json.Unmarshal([]byte(*template), &newLemma)
+		if err != nil {
+			errString := err.Error()
+			return &gqlmodel.RenderedFields{
+				Template:      lemmaSrc,
+				TemplateError: &errString,
+			}, nil
+		}
+		lemma = newLemma
+		src, err := json.MarshalIndent(&lemma, "", "  ")
+		if err != nil {
+			errString := err.Error()
+			return &gqlmodel.RenderedFields{
+				Template:      lemmaSrc,
+				TemplateError: &errString,
+			}, nil
+		}
+		lemmaSrc = string(src)
+	}
+	renderedFields := make([]*gqlmodel.RenderedField, len(fields))
+	for i, field := range fields {
+		renderedField := &gqlmodel.RenderedField{
+			Field: field,
+		}
+		result, err := anki.RenderRawTemplate(field, &lemma)
+		if err != nil {
+			errString := err.Error()
+			renderedField.Error = &errString
+		} else {
+			renderedField.Result = result
+		}
+		renderedFields[i] = renderedField
+	}
+	return &gqlmodel.RenderedFields{
+		Template: lemmaSrc,
+		Fields:   renderedFields,
+	}, nil
 }
 
 // Mutation returns gqlgenerated.MutationResolver implementation.

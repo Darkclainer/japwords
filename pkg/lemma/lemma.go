@@ -3,19 +3,19 @@
 package lemma
 
 type Lemma struct {
-	Slug   Word
-	Tags   []string
-	Forms  []Word
-	Senses []WordSense
+	Slug   Word        `json:"Slug,omitempty"`
+	Tags   []string    `json:"Tags,omitempty"`
+	Forms  []Word      `json:"Forms,omitempty"`
+	Senses []WordSense `json:"Senses,omitempty"`
 	// Audio is array of links to audio files.
 	// Key is format
-	Audio map[string]string
+	Audio map[string]string `json:"Audio,omitempty"`
 }
 
 type Word struct {
-	Word     string
-	Hiragana string
-	Furigana Furigana
+	Word     string   `json:"Word,omitempty"`
+	Hiragana string   `json:"Hiragana,omitempty"`
+	Furigana Furigana `json:"Furigana,omitempty"`
 	// Pitches are encoded japanese pitch accent.
 	// Every element of Pitches describe what accent (high or low)
 	// should be used from previous element of Pitches up to and including
@@ -38,23 +38,27 @@ type Word struct {
 	// Note: Tokyo dialect can be encoded in much easier way, but I left
 	// flexibility in case dictionary contain some entries that doesn't
 	// follow Tokyo dialect rules.
-	Pitches []Pitch
+	Pitches []Pitch `json:"Pitches,omitempty"`
 }
 
 func (w *Word) PitchShapes() []PitchShape {
+	return ConvertPitchToShapes(w.Hiragana, w.Pitches)
+}
+
+func ConvertPitchToShapes(hiragana string, pitches []Pitch) []PitchShape {
 	var pitchShapes []PitchShape
 	// we copy first pitch, so we always think, that there was some pitch before current,
 	// for invariant
 	previousPitch := Pitch{
 		Position: 0,
 	}
-	if len(w.Pitches) > 0 {
-		previousPitch.IsHigh = w.Pitches[0].IsHigh
+	if len(pitches) > 0 {
+		previousPitch.IsHigh = pitches[0].IsHigh
 	}
-	for i, currentPitch := range w.Pitches {
+	for i, currentPitch := range pitches {
 		directions := []AccentDirection{convertBasePitch(currentPitch.IsHigh)}
 		if previousPitch.Position == currentPitch.Position {
-			if i == len(w.Pitches)-1 && previousPitch.IsHigh != currentPitch.IsHigh {
+			if i == len(pitches)-1 && previousPitch.IsHigh != currentPitch.IsHigh {
 				pitchShapes[i-1].Directions = append(pitchShapes[i-1].Directions, AccentDirectionRight)
 			}
 			continue
@@ -63,36 +67,36 @@ func (w *Word) PitchShapes() []PitchShape {
 			directions = append(directions, AccentDirectionLeft)
 		}
 		pitchShapes = append(pitchShapes, PitchShape{
-			Hiragana:   w.Hiragana[previousPitch.Position:currentPitch.Position],
+			Hiragana:   hiragana[previousPitch.Position:currentPitch.Position],
 			Directions: directions,
 		})
 		previousPitch = currentPitch
 	}
-	if previousPitch.Position < len(w.Hiragana)-1 {
+	if previousPitch.Position < len(hiragana)-1 {
 		pitchShapes = append(pitchShapes, PitchShape{
-			Hiragana: w.Hiragana[previousPitch.Position:],
+			Hiragana: hiragana[previousPitch.Position:],
 		})
 	}
 	return pitchShapes
 }
 
 type Pitch struct {
-	Position int
-	IsHigh   bool
+	Position int  `json:"Position,omitempty"`
+	IsHigh   bool `json:"IsHigh,omitempty"`
 }
 
 type Furigana []FuriganaChar
 
 type FuriganaChar struct {
-	Kanji    string
-	Hiragana string
+	Kanji    string `json:"Kanji,omitempty"`
+	Hiragana string `json:"Hiragana,omitempty"`
 }
 
 type WordSense struct {
 	// Definition is slice of synonymous definitions in english
-	Definition   []string
-	PartOfSpeech []string
-	Tags         []string
+	Definition   []string `json:"Definition,omitempty"`
+	PartOfSpeech []string `json:"PartOfSpeech,omitempty"`
+	Tags         []string `json:"Tags,omitempty"`
 }
 
 //go:generate $ENUMER_TOOL -type=AccentDirection -trimprefix=AccentDirection -transform=snake -text
@@ -106,8 +110,8 @@ const (
 )
 
 type PitchShape struct {
-	Hiragana   string
-	Directions []AccentDirection
+	Hiragana   string            `json:"Hiragana,omitempty"`
+	Directions []AccentDirection `json:"Directions,omitempty"`
 }
 
 func convertBasePitch(isHigh bool) AccentDirection {

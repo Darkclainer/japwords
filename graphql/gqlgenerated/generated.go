@@ -164,6 +164,19 @@ type ComplexityRoot struct {
 		AnkiConfig      func(childComplexity int) int
 		AnkiConfigState func(childComplexity int) int
 		Lemmas          func(childComplexity int, query string) int
+		RenderFields    func(childComplexity int, fields []string, template *string) int
+	}
+
+	RenderedField struct {
+		Error  func(childComplexity int) int
+		Field  func(childComplexity int) int
+		Result func(childComplexity int) int
+	}
+
+	RenderedFields struct {
+		Fields        func(childComplexity int) int
+		Template      func(childComplexity int) int
+		TemplateError func(childComplexity int) int
 	}
 
 	Sense struct {
@@ -213,6 +226,7 @@ type QueryResolver interface {
 	Anki(ctx context.Context) (*gqlmodel.AnkiResult, error)
 	AnkiConfigState(ctx context.Context) (*gqlmodel.AnkiConfigStateResult, error)
 	AnkiConfig(ctx context.Context) (*gqlmodel.AnkiConfig, error)
+	RenderFields(ctx context.Context, fields []string, template *string) (*gqlmodel.RenderedFields, error)
 	Lemmas(ctx context.Context, query string) (*gqlmodel.Lemmas, error)
 }
 
@@ -663,6 +677,60 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.Lemmas(childComplexity, args["query"].(string)), true
 
+	case "Query.RenderFields":
+		if e.complexity.Query.RenderFields == nil {
+			break
+		}
+
+		args, err := ec.field_Query_RenderFields_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.RenderFields(childComplexity, args["fields"].([]string), args["template"].(*string)), true
+
+	case "RenderedField.error":
+		if e.complexity.RenderedField.Error == nil {
+			break
+		}
+
+		return e.complexity.RenderedField.Error(childComplexity), true
+
+	case "RenderedField.field":
+		if e.complexity.RenderedField.Field == nil {
+			break
+		}
+
+		return e.complexity.RenderedField.Field(childComplexity), true
+
+	case "RenderedField.result":
+		if e.complexity.RenderedField.Result == nil {
+			break
+		}
+
+		return e.complexity.RenderedField.Result(childComplexity), true
+
+	case "RenderedFields.fields":
+		if e.complexity.RenderedFields.Fields == nil {
+			break
+		}
+
+		return e.complexity.RenderedFields.Fields(childComplexity), true
+
+	case "RenderedFields.template":
+		if e.complexity.RenderedFields.Template == nil {
+			break
+		}
+
+		return e.complexity.RenderedFields.Template(childComplexity), true
+
+	case "RenderedFields.templateError":
+		if e.complexity.RenderedFields.TemplateError == nil {
+			break
+		}
+
+		return e.complexity.RenderedFields.TemplateError(childComplexity), true
+
 	case "Sense.definition":
 		if e.complexity.Sense.Definition == nil {
 			break
@@ -931,6 +999,23 @@ type AnkiMappingElement {
   key: String!
   value: String!
 }
+
+extend type Query {
+  RenderFields(fields: [String!], template: String): RenderedFields!
+}
+
+type RenderedFields {
+  template: String!
+  templateError: String
+  fields: [RenderedField!]!
+}
+
+type RenderedField {
+  field: String!
+  result: String!
+  error: String
+}
+
 
 extend type Mutation {
   setAnkiConfigConnection(input: SetAnkiConfigConnectionInput!): SetAnkiConfigConnectionResult!
@@ -1238,6 +1323,30 @@ func (ec *executionContext) field_Query_Lemmas_args(ctx context.Context, rawArgs
 		}
 	}
 	args["query"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_RenderFields_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 []string
+	if tmp, ok := rawArgs["fields"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("fields"))
+		arg0, err = ec.unmarshalOString2ᚕstringᚄ(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["fields"] = arg0
+	var arg1 *string
+	if tmp, ok := rawArgs["template"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("template"))
+		arg1, err = ec.unmarshalOString2ᚖstring(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["template"] = arg1
 	return args, nil
 }
 
@@ -3895,6 +4004,69 @@ func (ec *executionContext) fieldContext_Query_AnkiConfig(ctx context.Context, f
 	return fc, nil
 }
 
+func (ec *executionContext) _Query_RenderFields(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_RenderFields(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().RenderFields(rctx, fc.Args["fields"].([]string), fc.Args["template"].(*string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*gqlmodel.RenderedFields)
+	fc.Result = res
+	return ec.marshalNRenderedFields2ᚖgithubᚗcomᚋDarkclainerᚋjapwordsᚋgraphqlᚋgqlmodelᚐRenderedFields(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_RenderFields(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "template":
+				return ec.fieldContext_RenderedFields_template(ctx, field)
+			case "templateError":
+				return ec.fieldContext_RenderedFields_templateError(ctx, field)
+			case "fields":
+				return ec.fieldContext_RenderedFields_fields(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type RenderedFields", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_RenderFields_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Query_Lemmas(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Query_Lemmas(ctx, field)
 	if err != nil {
@@ -4075,6 +4247,272 @@ func (ec *executionContext) fieldContext_Query___schema(ctx context.Context, fie
 				return ec.fieldContext___Schema_directives(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type __Schema", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _RenderedField_field(ctx context.Context, field graphql.CollectedField, obj *gqlmodel.RenderedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_RenderedField_field(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Field, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_RenderedField_field(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "RenderedField",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _RenderedField_result(ctx context.Context, field graphql.CollectedField, obj *gqlmodel.RenderedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_RenderedField_result(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Result, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_RenderedField_result(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "RenderedField",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _RenderedField_error(ctx context.Context, field graphql.CollectedField, obj *gqlmodel.RenderedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_RenderedField_error(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Error, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_RenderedField_error(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "RenderedField",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _RenderedFields_template(ctx context.Context, field graphql.CollectedField, obj *gqlmodel.RenderedFields) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_RenderedFields_template(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Template, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_RenderedFields_template(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "RenderedFields",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _RenderedFields_templateError(ctx context.Context, field graphql.CollectedField, obj *gqlmodel.RenderedFields) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_RenderedFields_templateError(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.TemplateError, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_RenderedFields_templateError(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "RenderedFields",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _RenderedFields_fields(ctx context.Context, field graphql.CollectedField, obj *gqlmodel.RenderedFields) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_RenderedFields_fields(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Fields, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*gqlmodel.RenderedField)
+	fc.Result = res
+	return ec.marshalNRenderedField2ᚕᚖgithubᚗcomᚋDarkclainerᚋjapwordsᚋgraphqlᚋgqlmodelᚐRenderedFieldᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_RenderedFields_fields(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "RenderedFields",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "field":
+				return ec.fieldContext_RenderedField_field(ctx, field)
+			case "result":
+				return ec.fieldContext_RenderedField_result(ctx, field)
+			case "error":
+				return ec.fieldContext_RenderedField_error(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type RenderedField", field.Name)
 		},
 	}
 	return fc, nil
@@ -7863,6 +8301,28 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "RenderFields":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_RenderFields(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
 		case "Lemmas":
 			field := field
 
@@ -7890,6 +8350,98 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Query___schema(ctx, field)
 			})
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var renderedFieldImplementors = []string{"RenderedField"}
+
+func (ec *executionContext) _RenderedField(ctx context.Context, sel ast.SelectionSet, obj *gqlmodel.RenderedField) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, renderedFieldImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("RenderedField")
+		case "field":
+			out.Values[i] = ec._RenderedField_field(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "result":
+			out.Values[i] = ec._RenderedField_result(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "error":
+			out.Values[i] = ec._RenderedField_error(ctx, field, obj)
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var renderedFieldsImplementors = []string{"RenderedFields"}
+
+func (ec *executionContext) _RenderedFields(ctx context.Context, sel ast.SelectionSet, obj *gqlmodel.RenderedFields) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, renderedFieldsImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("RenderedFields")
+		case "template":
+			out.Values[i] = ec._RenderedFields_template(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "templateError":
+			out.Values[i] = ec._RenderedFields_templateError(ctx, field, obj)
+		case "fields":
+			out.Values[i] = ec._RenderedFields_fields(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -9001,6 +9553,74 @@ func (ec *executionContext) marshalNPitchType2ᚕgithubᚗcomᚋDarkclainerᚋja
 	}
 
 	return ret
+}
+
+func (ec *executionContext) marshalNRenderedField2ᚕᚖgithubᚗcomᚋDarkclainerᚋjapwordsᚋgraphqlᚋgqlmodelᚐRenderedFieldᚄ(ctx context.Context, sel ast.SelectionSet, v []*gqlmodel.RenderedField) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNRenderedField2ᚖgithubᚗcomᚋDarkclainerᚋjapwordsᚋgraphqlᚋgqlmodelᚐRenderedField(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) marshalNRenderedField2ᚖgithubᚗcomᚋDarkclainerᚋjapwordsᚋgraphqlᚋgqlmodelᚐRenderedField(ctx context.Context, sel ast.SelectionSet, v *gqlmodel.RenderedField) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._RenderedField(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNRenderedFields2githubᚗcomᚋDarkclainerᚋjapwordsᚋgraphqlᚋgqlmodelᚐRenderedFields(ctx context.Context, sel ast.SelectionSet, v gqlmodel.RenderedFields) graphql.Marshaler {
+	return ec._RenderedFields(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNRenderedFields2ᚖgithubᚗcomᚋDarkclainerᚋjapwordsᚋgraphqlᚋgqlmodelᚐRenderedFields(ctx context.Context, sel ast.SelectionSet, v *gqlmodel.RenderedFields) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._RenderedFields(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalNSense2ᚕᚖgithubᚗcomᚋDarkclainerᚋjapwordsᚋgraphqlᚋgqlmodelᚐSenseᚄ(ctx context.Context, sel ast.SelectionSet, v []*gqlmodel.Sense) graphql.Marshaler {
