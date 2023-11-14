@@ -366,7 +366,35 @@ func Test_renderFurigana(t *testing.T) {
 					Kanji:    "56",
 				},
 			},
-			Expected: "12[hel]34[lo]wo56[rld]",
+			Expected: "12[hel]34[lo]wo 56[rld]",
+		},
+		{
+			Name: "group delimiting",
+			Furigana: lemma.Furigana{
+				{
+					Kanji:    "12",
+					Hiragana: "hel",
+				},
+				{
+					Hiragana: "w",
+				},
+				{
+					Kanji:    "34",
+					Hiragana: "lo",
+				},
+				{
+					Hiragana: "w",
+				},
+				{
+					Kanji:    "56",
+					Hiragana: "rld",
+				},
+				{
+					Kanji:    "789",
+					Hiragana: "foo",
+				},
+			},
+			Expected: "12[hel]w 34[lo]w 56[rld]789[foo]",
 		},
 	}
 	for i := range testCases {

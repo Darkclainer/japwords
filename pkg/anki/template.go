@@ -109,6 +109,10 @@ func checkTemplate(tmpl *template.Template) error {
 func renderFuriganaTemplate(word *Word) string {
 	furigana := word.Furigana
 	var buffer strings.Builder
+	// previousPlain need to correctly delimit character with furigana and without:
+	// 犬も食わない should be written like 犬[いぬ]も 食[く]わない, this way
+	// く will be tied to 食 no to も食
+	previousPlain := false
 	for _, part := range furigana {
 		// if only hiragana presented, print it. Else use special syntax, supported by anki
 		kanji, hiragana := part.Kanji != "", part.Hiragana != ""
@@ -116,11 +120,16 @@ func renderFuriganaTemplate(word *Word) string {
 			// either of them has value
 			buffer.WriteString(part.Kanji)
 			buffer.WriteString(part.Hiragana)
+			previousPlain = true
 		} else {
+			if previousPlain {
+				buffer.WriteByte(' ')
+			}
 			buffer.WriteString(part.Kanji)
 			buffer.WriteByte('[')
 			buffer.WriteString(part.Hiragana)
 			buffer.WriteByte(']')
+			previousPlain = false
 		}
 	}
 	return buffer.String()
