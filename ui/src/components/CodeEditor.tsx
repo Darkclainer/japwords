@@ -3,13 +3,15 @@ import { ReactNode, useEffect, useId, useRef, useState } from 'react';
 import Editor from 'react-simple-code-editor';
 
 type CodeEditorProps = {
+  id?: string;
   value: string;
   onValueChange: (v: string) => void;
 };
 
-export default function CodeEditor({ value, onValueChange }: CodeEditorProps) {
+export default function CodeEditor({ id, value, onValueChange }: CodeEditorProps) {
   const [inFocus, setInFocus] = useState(false);
-  const textareaId = useId();
+  const generatedTextareaId = useId();
+  const textareaId = id ?? generatedTextareaId;
   const textareaRef = useRef<HTMLTextAreaElement>();
   useEffect(() => {
     textareaRef.current = document.getElementById(textareaId) as HTMLTextAreaElement;
