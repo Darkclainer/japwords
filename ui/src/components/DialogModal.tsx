@@ -30,7 +30,7 @@ export function DialogModal({
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <Dialog.Portal>
-        <Dialog.Overlay className="fixed h-full w-full top-0 left-0 overflow-y-auto overflow-x-hidden bg-blue opacity-80" />
+        <Dialog.Overlay className="fixed h-full w-full top-0 left-0 overflow-y-auto overflow-x-hidden backdrop-blur-sm bg-blue/60" />
         <Dialog.Content
           className={clsx(
             'fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-gray p-10',
@@ -41,7 +41,7 @@ export function DialogModal({
           {children}
           <Dialog.Close asChild>
             <button className="absolute right-5 top-5" aria-label="Close">
-              <Cross1Icon width="1.25rem" height="1.25rem" />
+              <Cross1Icon className="hover:drop-shadow" width="1.25rem" height="1.25rem" />
             </button>
           </Dialog.Close>
         </Dialog.Content>
