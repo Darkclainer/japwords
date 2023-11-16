@@ -33,8 +33,8 @@ export default function CodeEditor({ value, onValueChange }: CodeEditorProps) {
     >
       <Editor
         className="text-lg min-h-full font-mono"
-        preClassName="!pl-14"
-        textareaClassName="!pl-14 focus:outline-none"
+        preClassName="!pl-14 !break-all"
+        textareaClassName="!pl-14 !break-all focus:outline-none"
         textareaId={textareaId}
         onFocus={() => setInFocus(true)}
         onBlur={() => setInFocus(false)}
