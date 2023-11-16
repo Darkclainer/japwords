@@ -4,6 +4,7 @@ import { useId, useMemo } from 'react';
 import { err, ok } from 'true-myth/result';
 
 import { gql } from '../../../api/__generated__';
+import { GET_HEALTH_STATUS } from '../../../api/health-status';
 import SelectCreate from '../../../components/SelectCreate';
 import SuspenseLoading from '../../../components/SuspenseLoading';
 import { useToastify } from '../../../hooks/toastify';
@@ -73,7 +74,7 @@ const CREATE_DEFAULT_NOTE = gql(`
 
 function NoteSelectBody({ triggerId, currentNote }: { triggerId: string; currentNote: string }) {
   const [setCurrentNote] = useMutation(SET_CURRENT_NOTE, {
-    refetchQueries: [GET_CURRENT_NOTE],
+    refetchQueries: [GET_CURRENT_NOTE, GET_HEALTH_STATUS],
     awaitRefetchQueries: true,
   });
   const [createNote] = useMutation(CREATE_DEFAULT_NOTE, {

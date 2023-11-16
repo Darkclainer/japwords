@@ -5,6 +5,7 @@ import StatusIcon, { StatusIconKind } from '../../../components/StatusIcon';
 import { HealthStatusContext } from '../../../contexts/health-status';
 import { throwErrorHealthStatus } from '../../../model/health-status';
 import { DeckSelect } from './deck';
+import { MappingEdit } from './mapping';
 import { NoteSelect } from './note';
 import { useSuspenseQuery } from '@apollo/client';
 import { GET_CURRENT_NOTE } from './api';
@@ -32,6 +33,7 @@ function NoteMappingSettings() {
   return (
     <>
       <NoteSelect currentNote={currentNote} />
+      <MappingEdit currentNote={currentNote} />
     </>
   );
 }

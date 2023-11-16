@@ -30,6 +30,7 @@
     "react-toastify": "^9.1.3",
     "tailwindcss-radix": "2.8.0",
     "true-myth": "^7.1.0",
+    "use-debounce": "^10.0.0",
     "yup": "^1.2.0"
   },
   "devDependencies": {

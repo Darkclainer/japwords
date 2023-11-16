@@ -41,6 +41,7 @@ export default {
       },
       animation: {
         rspin: 'rspin 1s linear infinite',
+        reversePing: 'reversePing 250ms cubic-bezier(0, 0, 0.2, 1)',
 
         slideDownAndFade: 'slideDownAndFade 400ms cubic-bezier(0.16, 1, 0.3, 1)',
         slideLeftAndFade: 'slideLeftAndFade 400ms cubic-bezier(0.16, 1, 0.3, 1)',
@@ -67,6 +68,10 @@ export default {
         slideRightAndFade: {
           from: { opacity: '0', transform: 'translateX(-2px)' },
           to: { opacity: '1', transform: 'translateX(0)' },
+        },
+        reversePing: {
+          from: { opacity: '0', transform: 'scale(1.5)' },
+          to: { opacity: '1', transform: 'scale(1)' },
         },
       },
     },

@@ -4,6 +4,7 @@ import { useId, useMemo } from 'react';
 import { err, ok } from 'true-myth/result';
 
 import { gql } from '../../../api/__generated__';
+import { GET_HEALTH_STATUS } from '../../../api/health-status';
 import SelectCreate from '../../../components/SelectCreate';
 import SuspenseLoading from '../../../components/SuspenseLoading';
 import { useToastify } from '../../../hooks/toastify';
@@ -80,7 +81,7 @@ export function DeckSelect() {
 
 function DeckSelectBody({ triggerId }: { triggerId: string }) {
   const [setCurrentDeck] = useMutation(SET_CURRENT_DECK, {
-    refetchQueries: [GET_CURRENT_DECK],
+    refetchQueries: [GET_CURRENT_DECK, GET_HEALTH_STATUS],
     awaitRefetchQueries: true,
   });
   const [createDeck] = useMutation(CREATE_DECK, {
