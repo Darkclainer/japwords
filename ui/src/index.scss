@@ -26,20 +26,27 @@
   src: url('/fonts/RobotoMono-VariableFont_wght.ttf') format('truetype');
 }
 
+@function strrgb($hexcolor){
+  $red:red($hexcolor);
+  $green:green($hexcolor);
+  $blue:blue($hexcolor);
+  @return unquote("#{$red} #{$green} #{$blue}");
+}
+
 :root {
-  --gray: #{$gray};
-  --mid-gray: #{$mid-gray};
-  --dark-gray: #{$dark-gray};
-  --blue: #{$blue};
-  --dark-blue: #{$dark-blue};
-  --black: #{$black};
-  --white: #{$white};
-  --green: #{$green};
-  --dark-green: #{$dark-green};
-  --red: #{$red};
-  --light-red: #{$light-red};
-  --dark-red: #{$dark-red};
-  --error-red: #{$error-red};
+  --gray: #{strrgb($gray)};
+  --mid-gray: #{strrgb($mid-gray)};
+  --dark-gray: #{strrgb($dark-gray)};
+  --blue: #{strrgb($blue)};
+  --dark-blue: #{strrgb($dark-blue)};
+  --black: #{strrgb($black)};
+  --white: #{strrgb($white)};
+  --green: #{strrgb($green)};
+  --dark-green: #{strrgb($dark-green)};
+  --red: #{strrgb($red)};
+  --light-red: #{strrgb($light-red)};
+  --dark-red: #{strrgb($dark-red)};
+  --error-red: #{strrgb($error-red)};
 
   --toastify-color-info: var(--blue);
   --toastify-color-success: var(--green);

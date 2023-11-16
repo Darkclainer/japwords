@@ -1,10 +1,13 @@
 import type { Config } from 'tailwindcss';
 
+const defaultTheme = require('tailwindcss/defaultTheme');
+
 export default {
   content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
   theme: {
     fontFamily: {
-      sans: ['Inter'],
+      sans: ['Inter', ...defaultTheme.fontFamily.sans],
+      mono: ['"Roboto mono"', ...defaultTheme.fontFamily.mono],
     },
     fontSize: {
       sm: ['0.875rem', '1.25rem'],
@@ -18,19 +21,19 @@ export default {
       '6xl': ['3.75rem', '1'],
     },
     colors: {
-      gray: 'var(--gray)',
-      'dark-gray': 'var(--dark-gray)',
-      'mid-gray': 'var(--mid-gray)',
-      blue: 'var(--blue)',
-      'dark-blue': 'var(--dark-blue)',
-      black: 'var(--black)',
-      white: 'var(--white)',
-      green: 'var(--green)',
-      'dark-green': 'var(--dark-green)',
-      red: 'var(--red)',
-      'light-red': 'var(--light-red)',
-      'dark-red': 'var(--dark-red)',
-      'error-red': 'var(--error-red)',
+      gray: 'rgb(var(--gray) / <alpha-value>)',
+      'dark-gray': 'rgb(var(--dark-gray) / <alpha-value>)',
+      'mid-gray': 'rgb(var(--mid-gray) / <alpha-value>)',
+      blue: 'rgb(var(--blue) / <alpha-value>)',
+      'dark-blue': 'rgb(var(--dark-blue) / <alpha-value>)',
+      black: 'rgb(var(--black) / <alpha-value>)',
+      white: 'rgb(var(--white) / <alpha-value>)',
+      green: 'rgb(var(--green) / <alpha-value>)',
+      'dark-green': 'rgb(var(--dark-green) / <alpha-value>)',
+      red: 'rgb(var(--red) / <alpha-value>)',
+      'light-red': 'rgb(var(--light-red) / <alpha-value>)',
+      'dark-red': 'rgb(var(--dark-red) / <alpha-value>)',
+      'error-red': 'rgb(var(--error-red) / <alpha-value>)',
     },
     extend: {
       boxShadow: {
