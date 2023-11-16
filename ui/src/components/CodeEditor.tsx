@@ -1,5 +1,5 @@
 import { clsx } from 'clsx';
-import { ReactNode, useState } from 'react';
+import { ReactNode, useEffect, useId, useRef, useState } from 'react';
 import Editor from 'react-simple-code-editor';
 
 type CodeEditorProps = {
@@ -9,6 +9,11 @@ type CodeEditorProps = {
 
 export default function CodeEditor({ value, onValueChange }: CodeEditorProps) {
   const [inFocus, setInFocus] = useState(false);
+  const textareaId = useId();
+  const textareaRef = useRef<HTMLTextAreaElement>();
+  useEffect(() => {
+    textareaRef.current = document.getElementById(textareaId) as HTMLTextAreaElement;
+  });
   return (
     <div
       className={clsx(
@@ -16,11 +21,21 @@ export default function CodeEditor({ value, onValueChange }: CodeEditorProps) {
         'bg-white ring-blue focus:outline-none',
         inFocus ? 'ring-[3px]' : 'ring-1',
       )}
+      onClick={() => {
+        // little fix for selection when we have on line and empty space
+        if (inFocus || textareaRef.current === undefined) {
+          return;
+        }
+        const end = textareaRef.current.value.length;
+        textareaRef.current.setSelectionRange(end, end);
+        textareaRef.current.focus();
+      }}
     >
       <Editor
         className="text-lg min-h-full font-mono"
         preClassName="!pl-14"
         textareaClassName="!pl-14 focus:outline-none"
+        textareaId={textareaId}
         onFocus={() => setInFocus(true)}
         onBlur={() => setInFocus(false)}
         value={value}
