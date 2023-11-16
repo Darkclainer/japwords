@@ -3,14 +3,30 @@ import { Cross1Icon } from '@radix-ui/react-icons';
 import { clsx } from 'clsx';
 import { ReactNode } from 'react';
 
+export enum DialogWidth {
+  Small = 'dialog-sm',
+  Medium = 'dialog-md',
+  Large = 'dialog-lg',
+}
+
 export type DialogProps = {
   children: ReactNode;
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
   onCloseAutoFocus?: (event: Event) => void;
+
+  widthVariant?: DialogWidth;
 };
 
-export function DialogModal({ children, open, onOpenChange, onCloseAutoFocus }: DialogProps) {
+export function DialogModal({
+  children,
+  open,
+  onOpenChange,
+  onCloseAutoFocus,
+  widthVariant,
+}: DialogProps) {
+  widthVariant = widthVariant ?? DialogWidth.Small;
+
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <Dialog.Portal>
@@ -18,7 +34,7 @@ export function DialogModal({ children, open, onOpenChange, onCloseAutoFocus }: 
         <Dialog.Content
           className={clsx(
             'fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-gray p-10',
-            'w-[90%] sm:w-[calc(0.90*640px)]',
+            widthVariant,
           )}
           onCloseAutoFocus={onCloseAutoFocus}
         >

@@ -4,6 +4,18 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer components {
+  .dialog-sm {
+    @apply w-[90%] sm:w-[calc(0.90*640px)];
+  }
+  .dialog-md {
+    @apply w-[90%] md:w-[calc(0.90*768px)];
+  }
+  .dialog-lg {
+    @apply w-[90%] lg:w-[calc(0.90*1024px)];
+  }
+}
+
 @font-face {
   font-family: Inter;
   src: url('/fonts/Inter-VariableFont_slnt,wght.ttf') format('truetype');
