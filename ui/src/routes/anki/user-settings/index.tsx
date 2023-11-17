@@ -6,15 +6,33 @@ import { HealthStatusContext } from '../../../contexts/health-status';
 import { throwErrorHealthStatus } from '../../../model/health-status';
 import { DeckSelect } from './deck';
 import { NoteSelect } from './note';
+import { useSuspenseQuery } from '@apollo/client';
+import { GET_CURRENT_NOTE } from './api';
+import SuspenseLoading from '../../../components/SuspenseLoading';
 
 export default function AnkiUserSettings() {
   return (
     <HealthStatusPlaceholder>
       <div className="flex flex-col gap-8">
         <DeckSelect />
-        <NoteSelect />
+        <SuspenseLoading>
+          <NoteMappingSettings />
+        </SuspenseLoading>
       </div>
     </HealthStatusPlaceholder>
+  );
+}
+
+// TODO: probably need suspense too?
+function NoteMappingSettings() {
+  const { data: currentNoteResp } = useSuspenseQuery(GET_CURRENT_NOTE, {
+    fetchPolicy: 'network-only',
+  });
+  const currentNote = currentNoteResp.AnkiConfig.noteType;
+  return (
+    <>
+      <NoteSelect currentNote={currentNote} />
+    </>
   );
 }
 

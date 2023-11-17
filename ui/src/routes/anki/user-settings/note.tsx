@@ -8,8 +8,9 @@ import SelectCreate from '../../../components/SelectCreate';
 import SuspenseLoading from '../../../components/SuspenseLoading';
 import { useToastify } from '../../../hooks/toastify';
 import { validateNoteType } from '../../../lib/validate';
+import { GET_CURRENT_NOTE } from './api';
 
-export function NoteSelect() {
+export function NoteSelect({ currentNote }: { currentNote: string }) {
   const noteTriggerId = useId();
   return (
     <div className="flex flex-col gap-5">
@@ -17,18 +18,11 @@ export function NoteSelect() {
         Choose a note type:
       </Label>
       <SuspenseLoading>
-        <NoteSelectBody triggerId={noteTriggerId} />
+        <NoteSelectBody triggerId={noteTriggerId} currentNote={currentNote} />
       </SuspenseLoading>
     </div>
   );
 }
-const GET_CURRENT_NOTE = gql(`
-  query GetAnkiConfigCurrentNote {
-    AnkiConfig {
-      noteType
-    }
-  }
-`);
 
 const GET_ANKI_NOTES = gql(`
   query GetAnkiNotes {
@@ -77,7 +71,7 @@ const CREATE_DEFAULT_NOTE = gql(`
   }
 `);
 
-function NoteSelectBody({ triggerId }: { triggerId: string }) {
+function NoteSelectBody({ triggerId, currentNote }: { triggerId: string; currentNote: string }) {
   const [setCurrentNote] = useMutation(SET_CURRENT_NOTE, {
     refetchQueries: [GET_CURRENT_NOTE],
     awaitRefetchQueries: true,
@@ -86,10 +80,6 @@ function NoteSelectBody({ triggerId }: { triggerId: string }) {
     refetchQueries: [GET_ANKI_NOTES],
     awaitRefetchQueries: true,
   });
-  const { data: currentNoteResp } = useSuspenseQuery(GET_CURRENT_NOTE, {
-    fetchPolicy: 'network-only',
-  });
-  const currentNote = currentNoteResp.AnkiConfig.noteType;
   const { data: notesResp } = useSuspenseQuery(GET_ANKI_NOTES, {
     fetchPolicy: 'network-only',
   });
