@@ -205,10 +205,10 @@ function FormTextField({ name, label, ...rest }: FormTextFieldProps) {
 function StatusBox({ status }: { status: HealthStatusOk | HealthStatusLoading }) {
   const { iconKind, title, titleClassName, body } = getStatusBoxContent(status);
   return (
-    <div className="flex flex-row gap-2 basis-16 items-center">
+    <div className="flex flex-row justify-start items-start gap-2 basis-16">
       <StatusIcon size="2.5rem" kind={iconKind} />
       <div className="text-2xl">
-        <h1 className={clsx('text-bold', titleClassName)}>{title}</h1>
+        <h1 className={clsx('text-bold leading-10', titleClassName)}>{title}</h1>
         {body}
       </div>
     </div>
