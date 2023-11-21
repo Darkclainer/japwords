@@ -37,7 +37,7 @@ export function MappingEdit({ currentNote }: { currentNote?: string }) {
     (healthStatus.anki.kind == 'Ok' || healthStatus.anki.kind == 'UserError') &&
     healthStatus.anki.noteTypeExists;
   return (
-    <div className="flex flex-col gap-5">
+    <div className="flex flex-col gap-2.5">
       <Label.Root className="text-2xl">Mapping:</Label.Root>
       {mappingAvailable && currentNote ? (
         <SuspenseLoading>
@@ -181,10 +181,10 @@ function Mapping({ currentNote }: { currentNote: string }) {
 
   return (
     <>
-      <div className="flex flex-col gap-5">
+      <div className="flex flex-col gap-2.5">
         <div className="flex flex-col text-xl gap-8">
           <ul>
-            <Field>
+            <Field className="pb-2">
               <FieldColumn className="font-bold">Note Field Name</FieldColumn>
               <FieldColumn className="font-bold">Mapping</FieldColumn>
               <FieldColumn className="flex flex-row gap-3 font-bold">
@@ -334,26 +334,30 @@ function EditFieldForm({
   const updating = debouncedTemplateState.isPending() || renderLoading;
   const isError = updating || !!renderedField?.error;
   return (
-    <div className="flex flex-col gap-5">
+    <div className="flex flex-col gap-8">
       <Dialog.Title className="text-2xl font-bold text-blue">
         Field mapping: {field.name}
       </Dialog.Title>
 
-      <Label.Root className="text-2xl" htmlFor={templateEditorId}>
-        Template:
-      </Label.Root>
-      <CodeEditor id={templateEditorId} value={template} onValueChange={(v) => setTemplate(v)} />
+      <div className="flex flex-col gap-2.5">
+        <Label.Root className="text-2xl" htmlFor={templateEditorId}>
+          Template:
+        </Label.Root>
+        <CodeEditor id={templateEditorId} value={template} onValueChange={(v) => setTemplate(v)} />
+      </div>
 
-      <Label.Root className="text-2xl">
-        <div className="flex gap-2 justify-between place-items-center">
-          <div>Result:</div>
-          <div>{updating && <LoadingIcon size="1.25rem" />}</div>
-        </div>
-      </Label.Root>
-      <div className="h-40 bg-mid-gray overflow-y-auto whitespace-pre-wrap p-2">
-        <div>{renderedField?.result}</div>
-        <div className="text-error-red">
-          {renderedField?.error && 'Error: ' + renderedField?.error}
+      <div className="flex flex-col gap-2.5">
+        <Label.Root className="text-2xl">
+          <div className="flex gap-2 justify-between place-items-center">
+            <div>Result:</div>
+            <div>{updating && <LoadingIcon size="1.25rem" />}</div>
+          </div>
+        </Label.Root>
+        <div className="h-40 bg-mid-gray overflow-y-auto whitespace-pre-wrap p-2">
+          <div>{renderedField?.result}</div>
+          <div className="text-error-red">
+            {renderedField?.error && 'Error: ' + renderedField?.error}
+          </div>
         </div>
       </div>
 
@@ -402,7 +406,7 @@ function Field({ children, className }: { children: ReactNode; className?: strin
   return (
     <li
       className={clsx(
-        'grid grid-cols-3 grid-cols-[minmax(125px,_15%)_auto_minmax(125px,_30%)] py-1 gap-x-5 even:bg-mid-gray',
+        'grid grid-cols-3 grid-cols-[minmax(160px,_15%)_auto_minmax(220px,_30%)] py-1 gap-x-5 even:bg-mid-gray',
         className,
       )}
     >

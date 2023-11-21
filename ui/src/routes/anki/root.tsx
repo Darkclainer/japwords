@@ -23,7 +23,7 @@ function Tab(props: { title: string; to: string; last?: boolean; active?: boolea
 export default function AnkiRoot() {
   return (
     <>
-      <div className="flex flex-col shadow-md rounded-md bg-mid-gray">
+      <div className="flex flex-col shadow-md rounded-md bg-mid-gray mb-8">
         <div className="flex flex-row text-2xl text-slate-500">
           <Tab to="connection-settings" title="Anki Connect" />
           <Tab to="user-settings" title="Anki User Settings" last />

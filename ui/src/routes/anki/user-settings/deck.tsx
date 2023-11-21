@@ -68,7 +68,7 @@ const CREATE_DECK = gql(`
 export function DeckSelect() {
   const deckTriggerId = useId();
   return (
-    <div className="flex flex-col gap-5">
+    <div className="flex flex-col gap-2.5">
       <Label className="text-2xl" htmlFor={deckTriggerId}>
         Choose a deck:
       </Label>

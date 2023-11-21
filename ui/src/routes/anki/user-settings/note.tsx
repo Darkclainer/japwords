@@ -14,7 +14,7 @@ import { GET_CURRENT_NOTE } from './api';
 export function NoteSelect({ currentNote }: { currentNote: string }) {
   const noteTriggerId = useId();
   return (
-    <div className="flex flex-col gap-5">
+    <div className="flex flex-col gap-2.5">
       <Label className="text-2xl" htmlFor={noteTriggerId}>
         Choose a note type:
       </Label>
