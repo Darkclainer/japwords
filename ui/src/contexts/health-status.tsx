@@ -45,7 +45,6 @@ export function HealthStatusProvider({ children }: { children: ReactNode }) {
   const healthStatus: HealthStatus = useMemo(() => {
     return reloading ? { kind: 'Loading' } : healthStatusFromGql(lastData, lastError);
   }, [lastData, lastError, reloading]);
-  console.log(healthStatus);
   return (
     <HealthStatusReloadContext.Provider value={reload}>
       <HealthStatusContext.Provider value={healthStatus}>{children}</HealthStatusContext.Provider>
