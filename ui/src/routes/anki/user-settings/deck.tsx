@@ -93,7 +93,7 @@ function DeckSelectBody({ triggerId }: { triggerId: string }) {
   });
   const currentDeck = currentDeckResp.AnkiConfig.deck;
   const { data: decksResp } = useSuspenseQuery(GET_ANKI_DECKS, {
-    fetchPolicy: 'network-only',
+    fetchPolicy: 'no-cache',
   });
   const decks = useMemo(() => {
     if (!decksResp.Anki.anki) {

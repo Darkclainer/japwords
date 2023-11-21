@@ -72,7 +72,7 @@ function Notice() {
 
 function NoteMappingSettings() {
   const { data: currentNoteResp } = useSuspenseQuery(GET_CURRENT_NOTE, {
-    fetchPolicy: 'network-only',
+    fetchPolicy: 'no-cache',
   });
   const currentNote = currentNoteResp.AnkiConfig.noteType;
   return (

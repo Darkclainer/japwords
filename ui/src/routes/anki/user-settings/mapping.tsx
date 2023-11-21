@@ -8,7 +8,6 @@ import {
   ReactNode,
   SetStateAction,
   useCallback,
-  useContext,
   useId,
   useMemo,
   useState,
@@ -19,7 +18,6 @@ import { GetAnkiNoteFieldsAndMappingQuery } from '../../../api/__generated__/gra
 import { COLORS } from '../../../colors';
 import Button, { ButtonVariant } from '../../../components/Button';
 import SuspenseLoading from '../../../components/SuspenseLoading';
-import { HealthStatusContext } from '../../../contexts/health-status';
 import { clsx } from 'clsx';
 import { LoadingIcon } from '../../../components/StatusIcon';
 import Tooltip from '../../../components/Tooltip';
@@ -36,13 +34,30 @@ export function MappingEdit({ currentNote }: { currentNote?: string }) {
       <Label.Root className="text-2xl">Mapping:</Label.Root>
       {currentNote ? (
         <SuspenseLoading>
-          <Mapping key={currentNote} currentNote={currentNote} />
+          <MappingWithFields key={currentNote} currentNote={currentNote} />
         </SuspenseLoading>
       ) : (
-        <p className="text-xl">Mapping unavailable</p>
+        <Unavailable />
       )}
     </div>
   );
+}
+
+function MappingWithFields({ currentNote }: { currentNote: string }) {
+  const { data: fieldAndMappingResp } = useSuspenseQuery(GET_NOTE_FIELDS_AND_MAPPING, {
+    fetchPolicy: 'no-cache',
+    variables: {
+      noteName: currentNote,
+    },
+  });
+  if (fieldAndMappingResp.Anki.error) {
+    return <Unavailable />;
+  }
+  return <Mapping fieldAndMappingResp={fieldAndMappingResp} />;
+}
+
+function Unavailable() {
+  return <p className="text-xl">Mapping unavailable</p>;
 }
 
 const GET_NOTE_FIELDS_AND_MAPPING = gql(`
@@ -93,13 +108,11 @@ const SET_ANKI_CONFIG_MAPPING = gql(`
   }
 `);
 
-function Mapping({ currentNote }: { currentNote: string }) {
-  const { data: fieldAndMappingResp } = useSuspenseQuery(GET_NOTE_FIELDS_AND_MAPPING, {
-    fetchPolicy: 'network-only',
-    variables: {
-      noteName: currentNote,
-    },
-  });
+function Mapping({
+  fieldAndMappingResp,
+}: {
+  fieldAndMappingResp: GetAnkiNoteFieldsAndMappingQuery;
+}) {
   // we get useful state form response
   const [initalFields, initialMissingFields] = useMemo(
     () => extractFields(fieldAndMappingResp),
