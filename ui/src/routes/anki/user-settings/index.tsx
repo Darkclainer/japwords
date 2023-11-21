@@ -3,25 +3,37 @@ import { Link } from 'react-router-dom';
 
 import StatusIcon, { StatusIconKind } from '../../../components/StatusIcon';
 import { HealthStatusContext } from '../../../contexts/health-status';
-import { throwErrorHealthStatus } from '../../../model/health-status';
+import { AnkiStateOk, throwErrorHealthStatus } from '../../../model/health-status';
 import { DeckSelect } from './deck';
 import { MappingEdit } from './mapping';
 import { NoteSelect } from './note';
 import { useSuspenseQuery } from '@apollo/client';
 import { GET_CURRENT_NOTE } from './api';
 import SuspenseLoading from '../../../components/SuspenseLoading';
+import { clsx } from 'clsx';
 
 export default function AnkiUserSettings() {
-  return (
-    <HealthStatusPlaceholder>
+  const [ankiState, errorProps] = useAnkiStateOrError();
+  if (ankiState) {
+    return (
       <div className="flex flex-col gap-8">
         <Notice />
         <DeckSelect />
         <SuspenseLoading>
           <NoteMappingSettings />
         </SuspenseLoading>
+        <StatusBox ankiState={ankiState} />
       </div>
-    </HealthStatusPlaceholder>
+    );
+  }
+  return (
+    <div className="flex flex-col items-center gap-5 text-xl my-8">
+      <div className="flex flex-row gap-3">
+        <StatusIcon kind={errorProps.iconKind} />
+        <h1 className="text-3xl">{errorProps.head}</h1>
+      </div>
+      <div>{errorProps.body}</div>
+    </div>
   );
 }
 
@@ -71,56 +83,48 @@ function NoteMappingSettings() {
   );
 }
 
-function HealthStatusPlaceholder({ children }: { children: React.ReactNode }) {
-  const props = useHealthStatusProps();
-  if (!props) {
-    return children;
-  }
-  return (
-    <div className="flex flex-col items-center gap-5 text-xl my-8">
-      <div className="flex flex-row gap-3">
-        <StatusIcon kind={props.iconKind} />
-        <h1 className="text-3xl">{props.head}</h1>
-      </div>
-      <div>{props.body}</div>
-    </div>
-  );
-}
-
-function useHealthStatusProps(): {
+type ErrorProps = {
   iconKind: StatusIconKind;
   head: React.ReactNode;
   body?: React.ReactNode;
-} | null {
+};
+
+function useAnkiStateOrError(): [null, ErrorProps] | [AnkiStateOk, null] {
   const healthStatus = useContext(HealthStatusContext);
   throwErrorHealthStatus(healthStatus);
   switch (healthStatus.kind) {
     case 'Loading':
-      return {
-        iconKind: 'Loading',
-        head: 'Loading',
-        body: 'Wait a moment',
-      };
+      return [
+        null,
+        {
+          iconKind: 'Loading',
+          head: 'Loading',
+          body: 'Wait a moment',
+        },
+      ];
     case 'Ok': {
       const ankiState = healthStatus.anki;
       switch (ankiState.kind) {
         case 'Ok':
         case 'UserError':
-          return null;
+          return [ankiState, null];
         default:
-          return {
-            iconKind: 'Warning',
-            head: 'Can not connect to Anki',
-            body: (
-              <>
-                Configure connection to Anki on{' '}
-                <Link to="../connection-settings" className="text-blue underline">
-                  Anki Connect
-                </Link>{' '}
-                page
-              </>
-            ),
-          };
+          return [
+            null,
+            {
+              iconKind: 'Warning',
+              head: 'Can not connect to Anki',
+              body: (
+                <>
+                  Configure connection to Anki on{' '}
+                  <Link to="../connection-settings" className="text-blue underline">
+                    Anki Connect
+                  </Link>{' '}
+                  page
+                </>
+              ),
+            },
+          ];
       }
     }
     default: {
@@ -128,4 +132,49 @@ function useHealthStatusProps(): {
       return _exhaustiveCheck;
     }
   }
+}
+
+function StatusBox({ ankiState }: { ankiState: AnkiStateOk }) {
+  type error = {
+    key: string;
+    msg: string;
+  };
+  let errors: error[] = [];
+  if (!ankiState.deckExists) {
+    errors.push({
+      key: 'nodeck',
+      msg: "Selected deck doesn't exists.",
+    });
+  }
+  if (!ankiState.noteTypeExists) {
+    errors.push({
+      key: 'nonote',
+      msg: "Selected note type doesn't exists.",
+    });
+  }
+  if (!ankiState.noteHasAllFields) {
+    errors.push({
+      key: 'invalidfields',
+      msg: 'Mapping has fields that note type has not.',
+    });
+  }
+  return (
+    <div className="flex flex-row justify-start items-start gap-2 basis-16">
+      <StatusIcon size="2.5rem" kind={errors.length == 0 ? 'OK' : 'Error'} />
+      <div className="text-2xl">
+        <h1
+          className={clsx(
+            'text-bold leading-10',
+            errors.length == 0 ? 'text-green' : 'text-error-red',
+          )}
+        >
+          {errors.length == 0 ? 'OK' : 'Error'}
+        </h1>
+        {errors.length == 0 && 'All is configured, you can add words!'}
+        {errors.map((err) => (
+          <p key={err.key}>{err.msg}</p>
+        ))}
+      </div>
+    </div>
+  );
 }

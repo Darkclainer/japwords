@@ -31,15 +31,10 @@ import { useToastify } from '../../../hooks/toastify';
 import { apolloErrorToast } from '../../../lib/styled-toast';
 
 export function MappingEdit({ currentNote }: { currentNote?: string }) {
-  const healthStatus = useContext(HealthStatusContext);
-  const mappingAvailable =
-    healthStatus.kind == 'Ok' &&
-    (healthStatus.anki.kind == 'Ok' || healthStatus.anki.kind == 'UserError') &&
-    healthStatus.anki.noteTypeExists;
   return (
     <div className="flex flex-col gap-2.5">
       <Label.Root className="text-2xl">Mapping:</Label.Root>
-      {mappingAvailable && currentNote ? (
+      {currentNote ? (
         <SuspenseLoading>
           <Mapping key={currentNote} currentNote={currentNote} />
         </SuspenseLoading>
