@@ -1,16 +1,16 @@
+import { useSuspenseQuery } from '@apollo/client';
+import { clsx } from 'clsx';
 import { useContext } from 'react';
 import { Link } from 'react-router-dom';
 
 import StatusIcon, { StatusIconKind } from '../../../components/StatusIcon';
+import SuspenseLoading from '../../../components/SuspenseLoading';
 import { HealthStatusContext } from '../../../contexts/health-status';
 import { AnkiStateOk, throwErrorHealthStatus } from '../../../model/health-status';
+import { GET_CURRENT_NOTE } from './api';
 import { DeckSelect } from './deck';
 import { MappingEdit } from './mapping';
 import { NoteSelect } from './note';
-import { useSuspenseQuery } from '@apollo/client';
-import { GET_CURRENT_NOTE } from './api';
-import SuspenseLoading from '../../../components/SuspenseLoading';
-import { clsx } from 'clsx';
 
 export default function AnkiUserSettings() {
   const [ankiState, errorProps] = useAnkiStateOrError();
@@ -139,7 +139,7 @@ function StatusBox({ ankiState }: { ankiState: AnkiStateOk }) {
     key: string;
     msg: string;
   };
-  let errors: error[] = [];
+  const errors: error[] = [];
   if (!ankiState.deckExists) {
     errors.push({
       key: 'nodeck',
