@@ -2,16 +2,7 @@ import { useMutation, useQuery, useSuspenseQuery } from '@apollo/client';
 import { Cross2Icon, Pencil2Icon } from '@radix-ui/react-icons';
 import * as Dialog from '@radix-ui/react-dialog';
 import * as Label from '@radix-ui/react-label';
-import {
-  ComponentPropsWithoutRef,
-  Dispatch,
-  ReactNode,
-  SetStateAction,
-  useCallback,
-  useId,
-  useMemo,
-  useState,
-} from 'react';
+import { ComponentPropsWithoutRef, ReactNode, useCallback, useId, useMemo, useState } from 'react';
 
 import { gql } from '../../../api/__generated__';
 import { GetAnkiNoteFieldsAndMappingQuery } from '../../../api/__generated__/graphql';
@@ -118,7 +109,8 @@ function Mapping({
     () => extractFields(fieldAndMappingResp),
     [fieldAndMappingResp],
   );
-  // get prerendered values for inital fields only
+  // caching would be nice, but it's not clear how to implement it with apollo
+  // easy way to make many requests, but obviously it's not great solution for different reason
   const { data: renderFieldsResponse, loading: renderLoading } = useQuery(GET_RENDERED_FIELDS, {
     variables: {
       fields: fields.map((e) => e.value ?? ''),
@@ -217,9 +209,7 @@ function Mapping({
                   </div>
                 </FieldColumn>
                 <FieldColumn className="font-mono">{e.value}</FieldColumn>
-                <FieldColumn>
-                  {e.example === undefined ? renderFields?.at(index)?.result : e.example}
-                </FieldColumn>
+                <FieldColumn>{renderFields?.at(index)?.result}</FieldColumn>
               </Field>
             ))}
             {missingFields.length > 0 && (
@@ -296,17 +286,15 @@ function EditFieldForm({
   field: MappingField;
   updateField: (field: MappingField, fieldName: string) => Promise<void>;
 }) {
-  console.log('FieldName:', field);
   const templateEditorId = useId();
   const [fieldUpdating, setFieldUpdating] = useState(false);
   const update = useCallback(
-    async (newTemplate: string, example?: string) => {
+    async (newTemplate: string) => {
       setFieldUpdating(true);
       await updateField(
         {
           name: field.name,
           value: newTemplate == '' ? undefined : newTemplate,
-          example: example,
         },
         field.name,
       );
@@ -359,7 +347,7 @@ function EditFieldForm({
       <div className="flex gap-5 max-w-md">
         <Button
           disabled={fieldUpdating || renderUpdating || isError}
-          onClick={() => update(template, renderedField?.result)}
+          onClick={() => update(template)}
           className="flex-1"
         >
           Update field
@@ -380,8 +368,6 @@ function EditFieldForm({
 type MappingField = {
   name: string;
   value?: string;
-  example?: string;
-  error?: string;
 };
 
 type FieldButtonProps = {

@@ -84,7 +84,6 @@ function NoteSelectBody({ triggerId, currentNote }: { triggerId: string; current
   const { data: notesResp } = useSuspenseQuery(GET_ANKI_NOTES, {
     fetchPolicy: 'network-only',
   });
-  console.log(notesResp);
   const notes = useMemo(() => {
     if (!notesResp.Anki.notes.notes) {
       return null;

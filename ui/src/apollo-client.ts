@@ -3,13 +3,19 @@ import { ApolloClient, HttpLink, InMemoryCache } from '@apollo/client';
 const cache = new InMemoryCache({
   addTypename: true,
   typePolicies: {
-    AnkiState: {
+    Anki: {
       // AnkiState is singleton
       keyFields: [],
     },
     AnkiConfig: {
       // AnkiConfig is singleton
       keyFields: [],
+    },
+    AnkiConfigState: {
+      keyFields: [],
+    },
+    Query: {
+      fields: {},
     },
   },
 });
