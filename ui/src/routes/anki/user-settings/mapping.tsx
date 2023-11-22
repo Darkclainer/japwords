@@ -1,21 +1,29 @@
 import { useMutation, useQuery, useSuspenseQuery } from '@apollo/client';
-import { Cross2Icon, Pencil2Icon } from '@radix-ui/react-icons';
 import * as Dialog from '@radix-ui/react-dialog';
+import { Cross2Icon, Pencil2Icon } from '@radix-ui/react-icons';
 import * as Label from '@radix-ui/react-label';
-import { ComponentPropsWithoutRef, ReactNode, useCallback, useId, useMemo, useState } from 'react';
+import { clsx } from 'clsx';
+import {
+  ComponentPropsWithoutRef,
+  ReactNode,
+  useCallback,
+  useId,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
+import { useDebounce } from 'use-debounce';
 
 import { gql } from '../../../api/__generated__';
 import { GetAnkiNoteFieldsAndMappingQuery } from '../../../api/__generated__/graphql';
+import { GET_HEALTH_STATUS } from '../../../api/health-status';
 import { COLORS } from '../../../colors';
 import Button, { ButtonVariant } from '../../../components/Button';
-import SuspenseLoading from '../../../components/SuspenseLoading';
-import { clsx } from 'clsx';
-import { LoadingIcon } from '../../../components/StatusIcon';
-import Tooltip from '../../../components/Tooltip';
-import { DialogModal, DialogWidth } from '../../../components/DialogModal';
 import CodeEditor from '../../../components/CodeEditor';
-import { useDebounce } from 'use-debounce';
-import { GET_HEALTH_STATUS } from '../../../api/health-status';
+import { DialogModal, DialogWidth } from '../../../components/DialogModal';
+import { LoadingIcon } from '../../../components/StatusIcon';
+import SuspenseLoading from '../../../components/SuspenseLoading';
+import Tooltip from '../../../components/Tooltip';
 import { useToastify } from '../../../hooks/toastify';
 import { apolloErrorToast } from '../../../lib/styled-toast';
 
@@ -316,6 +324,8 @@ function EditFieldForm({
   const renderedField = (currentRenderedFields ?? previousRenderedFields)?.RenderFields.fields[0];
   const renderUpdating = debouncedTemplateState.isPending() || renderLoading;
   const isError = renderUpdating || !!renderedField?.error;
+  const updateButtonRef = useRef<HTMLButtonElement>(null);
+
   return (
     <div className="flex flex-col gap-8">
       <Dialog.Title className="text-2xl font-bold text-blue">
@@ -326,7 +336,15 @@ function EditFieldForm({
         <Label.Root className="text-2xl" htmlFor={templateEditorId}>
           Template:
         </Label.Root>
-        <CodeEditor id={templateEditorId} value={template} onValueChange={(v) => setTemplate(v)} />
+        <CodeEditor
+          id={templateEditorId}
+          value={template}
+          onValueChange={(v) => setTemplate(v)}
+          onBlur={() => {
+            // for accessibility, when we tab out of editor, we want to focus next button (update)
+            updateButtonRef.current?.focus();
+          }}
+        />
       </div>
 
       <div className="flex flex-col gap-2.5">
@@ -346,6 +364,7 @@ function EditFieldForm({
 
       <div className="flex gap-5 max-w-md">
         <Button
+          ref={updateButtonRef}
           disabled={fieldUpdating || renderUpdating || isError}
           onClick={() => update(template)}
           className="flex-1"
