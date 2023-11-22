@@ -16,18 +16,29 @@ union AnkiError =  AnkiConnectionError | AnkiPermissionError | AnkiUnauthorizedE
 
 extend type Query {
   # Anki represents data available in Anki by AnkiConnect
-  Anki: AnkiResult!
+  Anki: Anki!
 }
 
-type AnkiResult {
-  anki: Anki
+
+type Anki {
+  decks: AnkiDecksResult! @goField(forceResolver: true)
+  notes: AnkiNotesResult! @goField(forceResolver: true)
+  noteFields(name: String!): AnkiNoteFieldsResult! @goField(forceResolver: true)
+}
+
+type AnkiDecksResult {
+  decks: [String!]
   error: AnkiError
 }
 
-type Anki {
-  decks: [String!]!
-  notes: [String!]!
-  noteFields(name: String!): [String!]!
+type AnkiNotesResult {
+  notes: [String!]
+  error: AnkiError
+}
+
+type AnkiNoteFieldsResult {
+  noteFields: [String!]
+  error: AnkiError
 }
 
 extend type Query {

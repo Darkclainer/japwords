@@ -45,12 +45,12 @@ export function MappingEdit({ currentNote }: { currentNote?: string }) {
 
 function MappingWithFields({ currentNote }: { currentNote: string }) {
   const { data: fieldAndMappingResp } = useSuspenseQuery(GET_NOTE_FIELDS_AND_MAPPING, {
-    fetchPolicy: 'no-cache',
+    fetchPolicy: 'network-only',
     variables: {
       noteName: currentNote,
     },
   });
-  if (fieldAndMappingResp.Anki.error) {
+  if (fieldAndMappingResp.Anki.noteFields.error) {
     return <Unavailable />;
   }
   return <Mapping fieldAndMappingResp={fieldAndMappingResp} />;
@@ -69,12 +69,12 @@ const GET_NOTE_FIELDS_AND_MAPPING = gql(`
       }
     }
     Anki {
-      anki {
-        noteFields(name: $noteName)
-      }
-      error {
-        ... on Error {
-          message
+      noteFields(name: $noteName) {
+        noteFields 
+        error {
+          ... on Error {
+            message
+          }
         }
       }
     }
@@ -430,10 +430,10 @@ function FieldColumn({ children, className }: { children: ReactNode; className?:
 function extractFields(
   resp: GetAnkiNoteFieldsAndMappingQuery,
 ): [Array<MappingField>, Array<MappingField>] {
-  if (!resp.Anki.anki) {
+  if (!resp.Anki.noteFields.noteFields) {
     return [[], []];
   }
-  const fields: Array<MappingField> = resp.Anki.anki.noteFields.map((e) => {
+  const fields: Array<MappingField> = resp.Anki.noteFields.noteFields.map((e) => {
     return {
       name: e,
     };

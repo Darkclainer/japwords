@@ -28,11 +28,11 @@ export function NoteSelect({ currentNote }: { currentNote: string }) {
 const GET_ANKI_NOTES = gql(`
   query GetAnkiNotes {
     Anki {
-      anki {
+      notes {
         notes
-      }
-      error {
-        __typename
+        error {
+          __typename
+        }
       }
     }
   }
@@ -82,14 +82,14 @@ function NoteSelectBody({ triggerId, currentNote }: { triggerId: string; current
     awaitRefetchQueries: true,
   });
   const { data: notesResp } = useSuspenseQuery(GET_ANKI_NOTES, {
-    fetchPolicy: 'no-cache',
+    fetchPolicy: 'network-only',
   });
   console.log(notesResp);
   const notes = useMemo(() => {
-    if (!notesResp.Anki.anki) {
+    if (!notesResp.Anki.notes.notes) {
       return null;
     }
-    const notes = [...notesResp.Anki.anki.notes];
+    const notes = [...notesResp.Anki.notes.notes];
     return notes.sort().map((item) => {
       return {
         value: item,

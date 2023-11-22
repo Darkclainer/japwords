@@ -11,11 +11,58 @@ import (
 	"errors"
 	"slices"
 
-	"github.com/99designs/gqlgen/graphql"
 	"github.com/Darkclainer/japwords/graphql/gqlgenerated"
 	"github.com/Darkclainer/japwords/graphql/gqlmodel"
 	"github.com/Darkclainer/japwords/pkg/anki"
 )
+
+// Decks is the resolver for the decks field.
+func (r *ankiResolver) Decks(ctx context.Context, obj *gqlmodel.Anki) (*gqlmodel.AnkiDecksResult, error) {
+	decks, err := r.ankiClient.Decks(ctx)
+	if err != nil {
+		if ankiErr, _ := convertAnkiError(err); ankiErr != nil {
+			return &gqlmodel.AnkiDecksResult{
+				Error: ankiErr,
+			}, nil
+		}
+		return nil, err
+	}
+	return &gqlmodel.AnkiDecksResult{
+		Decks: decks,
+	}, nil
+}
+
+// Notes is the resolver for the notes field.
+func (r *ankiResolver) Notes(ctx context.Context, obj *gqlmodel.Anki) (*gqlmodel.AnkiNotesResult, error) {
+	noteTypes, err := r.ankiClient.NoteTypes(ctx)
+	if err != nil {
+		if ankiErr, _ := convertAnkiError(err); ankiErr != nil {
+			return &gqlmodel.AnkiNotesResult{
+				Error: ankiErr,
+			}, nil
+		}
+		return nil, err
+	}
+	return &gqlmodel.AnkiNotesResult{
+		Notes: noteTypes,
+	}, nil
+}
+
+// NoteFields is the resolver for the noteFields field.
+func (r *ankiResolver) NoteFields(ctx context.Context, obj *gqlmodel.Anki, name string) (*gqlmodel.AnkiNoteFieldsResult, error) {
+	fields, err := r.ankiClient.NoteTypeFields(ctx, name)
+	if err != nil {
+		if ankiErr, _ := convertAnkiError(err); ankiErr != nil {
+			return &gqlmodel.AnkiNoteFieldsResult{
+				Error: ankiErr,
+			}, nil
+		}
+		return nil, err
+	}
+	return &gqlmodel.AnkiNoteFieldsResult{
+		NoteFields: fields,
+	}, nil
+}
 
 // SetAnkiConfigConnection is the resolver for the setAnkiConfigConnection field.
 func (r *mutationResolver) SetAnkiConfigConnection(ctx context.Context, input gqlmodel.SetAnkiConfigConnectionInput) (*gqlmodel.SetAnkiConfigConnectionResult, error) {
@@ -132,57 +179,8 @@ func (r *mutationResolver) CreateDefaultAnkiNote(ctx context.Context, input *gql
 }
 
 // Anki is the resolver for the Anki field.
-func (r *queryResolver) Anki(ctx context.Context) (*gqlmodel.AnkiResult, error) {
-	fieldCtx := graphql.GetFieldContext(ctx)
-	opCtx := graphql.GetOperationContext(ctx)
-	fields := graphql.CollectFields(opCtx, fieldCtx.Field.SelectionSet, nil)
-	var ankiFields []graphql.CollectedField
-	for _, field := range fields {
-		if field.Name == "anki" {
-			ankiFields = graphql.CollectFields(opCtx, field.SelectionSet, nil)
-			break
-		}
-	}
-	var (
-		result = &gqlmodel.Anki{}
-		err    error
-	)
-
-loop:
-	for _, field := range ankiFields {
-		switch field.Name {
-		case "notes":
-			result.Notes, err = r.ankiClient.NoteTypes(ctx)
-			if err != nil {
-				break loop
-			}
-		case "decks":
-			result.Decks, err = r.ankiClient.Decks(ctx)
-			if err != nil {
-				break loop
-			}
-		case "noteFields":
-			args := field.ArgumentMap(opCtx.Variables)
-			name := args["name"].(string)
-			result.NoteFields, err = r.ankiClient.NoteTypeFields(ctx, name)
-			if err != nil {
-				break loop
-			}
-		default:
-
-		}
-	}
-	if err != nil {
-		if ankiErr, _ := convertAnkiError(err); ankiErr != nil {
-			return &gqlmodel.AnkiResult{
-				Error: ankiErr,
-			}, nil
-		}
-		return nil, err
-	}
-	return &gqlmodel.AnkiResult{
-		Anki: result,
-	}, nil
+func (r *queryResolver) Anki(ctx context.Context) (*gqlmodel.Anki, error) {
+	return &gqlmodel.Anki{}, nil
 }
 
 // AnkiConfigState is the resolver for the AnkiConfigState field.
@@ -278,13 +276,15 @@ func (r *queryResolver) RenderFields(ctx context.Context, fields []string, templ
 	}, nil
 }
 
+// Anki returns gqlgenerated.AnkiResolver implementation.
+func (r *Resolver) Anki() gqlgenerated.AnkiResolver { return &ankiResolver{r} }
+
 // Mutation returns gqlgenerated.MutationResolver implementation.
 func (r *Resolver) Mutation() gqlgenerated.MutationResolver { return &mutationResolver{r} }
 
 // Query returns gqlgenerated.QueryResolver implementation.
 func (r *Resolver) Query() gqlgenerated.QueryResolver { return &queryResolver{r} }
 
-type (
-	mutationResolver struct{ *Resolver }
-	queryResolver    struct{ *Resolver }
-)
+type ankiResolver struct{ *Resolver }
+type mutationResolver struct{ *Resolver }
+type queryResolver struct{ *Resolver }

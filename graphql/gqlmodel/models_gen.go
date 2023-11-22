@@ -26,9 +26,9 @@ type Error interface {
 }
 
 type Anki struct {
-	Decks      []string `json:"decks"`
-	Notes      []string `json:"notes"`
-	NoteFields []string `json:"noteFields"`
+	Decks      *AnkiDecksResult      `json:"decks"`
+	Notes      *AnkiNotesResult      `json:"notes"`
+	NoteFields *AnkiNoteFieldsResult `json:"noteFields"`
 }
 
 type AnkiConfig struct {
@@ -79,9 +79,24 @@ func (this AnkiConnectionError) GetMessage() string { return this.Message }
 
 func (AnkiConnectionError) IsAnkiError() {}
 
+type AnkiDecksResult struct {
+	Decks []string  `json:"decks,omitempty"`
+	Error AnkiError `json:"error,omitempty"`
+}
+
 type AnkiMappingElement struct {
 	Key   string `json:"key"`
 	Value string `json:"value"`
+}
+
+type AnkiNoteFieldsResult struct {
+	NoteFields []string  `json:"noteFields,omitempty"`
+	Error      AnkiError `json:"error,omitempty"`
+}
+
+type AnkiNotesResult struct {
+	Notes []string  `json:"notes,omitempty"`
+	Error AnkiError `json:"error,omitempty"`
 }
 
 type AnkiPermissionError struct {
@@ -93,11 +108,6 @@ func (AnkiPermissionError) IsError()                {}
 func (this AnkiPermissionError) GetMessage() string { return this.Message }
 
 func (AnkiPermissionError) IsAnkiError() {}
-
-type AnkiResult struct {
-	Anki  *Anki     `json:"anki,omitempty"`
-	Error AnkiError `json:"error,omitempty"`
-}
 
 type AnkiUnauthorizedError struct {
 	Message string `json:"message"`

@@ -21,11 +21,11 @@ const GET_CURRENT_DECK = gql(`
 const GET_ANKI_DECKS = gql(`
   query GetAnkiDecks {
     Anki {
-      anki {
+      decks {
         decks
-      }
-      error {
-        __typename
+        error {
+          __typename
+        }
       }
     }
   }
@@ -93,13 +93,13 @@ function DeckSelectBody({ triggerId }: { triggerId: string }) {
   });
   const currentDeck = currentDeckResp.AnkiConfig.deck;
   const { data: decksResp } = useSuspenseQuery(GET_ANKI_DECKS, {
-    fetchPolicy: 'no-cache',
+    fetchPolicy: 'network-only',
   });
   const decks = useMemo(() => {
-    if (!decksResp.Anki.anki) {
+    if (!decksResp.Anki.decks.decks) {
       return null;
     }
-    const decks = [...decksResp.Anki.anki.decks];
+    const decks = [...decksResp.Anki.decks.decks];
     return decks.sort().map((item) => {
       return {
         value: item,
