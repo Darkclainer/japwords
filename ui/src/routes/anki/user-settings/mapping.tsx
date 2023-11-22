@@ -114,24 +114,21 @@ function Mapping({
   fieldAndMappingResp: GetAnkiNoteFieldsAndMappingQuery;
 }) {
   // we get useful state form response
-  const [initalFields, initialMissingFields] = useMemo(
+  const [fields, missingFields] = useMemo(
     () => extractFields(fieldAndMappingResp),
     [fieldAndMappingResp],
   );
   // get prerendered values for inital fields only
   const { data: renderFieldsResponse, loading: renderLoading } = useQuery(GET_RENDERED_FIELDS, {
     variables: {
-      fields: initalFields.map((e) => e.value ?? ''),
+      fields: fields.map((e) => e.value ?? ''),
     },
   });
   const renderFields = renderFieldsResponse?.RenderFields.fields;
-  // get seperate state for fields and missing fields so that we can alter it and save later
-  const [fields, setFields] = useState(initalFields);
-  const [missingFields, setMissingFields] = useState(initialMissingFields);
-  // editingFieldId is for tracking field that we currently edit
-  const [editingFieldId, setEditingFieldId] = useState<number>();
-  // updatedFieldId is for tracking lastly updated field (for animation)
-  const [updatedFieldId, setUpdatedFieldId] = useState<number>();
+  // editingField is for tracking field that we currently edit
+  const [editingField, setEditingField] = useState<MappingField>();
+  // updatedFieldName is for tracking lastly updated field (for animation)
+  const [updatedFieldName, setUpdatedFieldName] = useState<string>();
 
   const [setAnkiConfigMapping, { loading: updateInProccess }] = useMutation(
     SET_ANKI_CONFIG_MAPPING,
@@ -144,48 +141,46 @@ function Mapping({
   );
 
   const toast = useToastify({ type: 'success' });
-  const updateFields = useCallback(async (fields: MappingField[]) => {
-    const newFields = fields
-      .map((field) => {
-        if (!field.value) {
-          return null;
-        } else {
-          return {
-            key: field.name,
-            value: field.value,
-          };
-        }
-      })
-      .filter(<T,>(item: T | null): item is T => item !== null);
-    const { data, errors } = await setAnkiConfigMapping({
-      variables: {
-        fields: newFields,
-      },
-    });
-
-    if (errors) {
-      apolloErrorToast(errors, 'Mapping update failed.', { toast: toast });
-      return;
-    } else if (data?.setAnkiConfigMapping.error?.message) {
-      toast('Mapping updated failed: ' + data.setAnkiConfigMapping.error.message, {
-        type: 'error',
+  const updateFields = useCallback(
+    async (fields: MappingField[], missingFields: MappingField[]) => {
+      const newFields = fields
+        .map((field) => {
+          if (!field.value) {
+            return null;
+          } else {
+            return {
+              key: field.name,
+              value: field.value,
+            };
+          }
+        })
+        .filter(<T,>(item: T | null): item is T => item !== null);
+      newFields.push(
+        ...missingFields.map((field) => ({
+          key: field.name,
+          value: field.value ?? '',
+        })),
+      );
+      const { data, errors } = await setAnkiConfigMapping({
+        variables: {
+          fields: newFields,
+        },
       });
-      return;
-    }
-    toast('New mapping saved.');
-  }, []);
 
-  const canBeUpdated = useMemo(() => {
-    // safe check, actually should not be important
-    if (initalFields.length != fields.length) {
-      return false;
-    }
-    if (missingFields.length !== initialMissingFields.length) {
+      if (errors) {
+        apolloErrorToast(errors, 'Mapping update failed.', { toast: toast });
+        return false;
+      } else if (data?.setAnkiConfigMapping.error?.message) {
+        toast('Mapping updated failed: ' + data.setAnkiConfigMapping.error.message, {
+          type: 'error',
+        });
+        return false;
+      }
+      toast('New mapping saved.');
       return true;
-    }
-    return !initalFields.every((field, i) => field.value === fields[i].value);
-  }, [initalFields, fields, initialMissingFields, missingFields]);
-  const hasError = missingFields.length !== 0;
+    },
+    [setAnkiConfigMapping, toast],
+  );
 
   return (
     <>
@@ -203,16 +198,17 @@ function Mapping({
             {fields.map((e, index) => (
               <Field
                 key={e.name}
-                className={clsx(updatedFieldId == index && 'animate-reversePing')}
+                className={clsx(updatedFieldName == e.name && 'animate-reversePing')}
               >
                 <FieldColumn>
                   <div className="flex">
                     <FieldButton
                       tooltip="Edit"
                       aria-label="Edit"
+                      disabled={updateInProccess}
                       onClick={() => {
-                        setEditingFieldId(index);
-                        setUpdatedFieldId(undefined);
+                        setEditingField(e);
+                        setUpdatedFieldName(undefined);
                       }}
                     >
                       <Pencil2Icon className="inline" color={COLORS.blue} />
@@ -242,8 +238,12 @@ function Mapping({
                       <FieldButton
                         tooltip="Delete"
                         aria-label="Delete"
-                        onClick={() => {
-                          setMissingFields((fields) => fields?.filter((value) => value != e));
+                        disabled={updateInProccess}
+                        onClick={async () => {
+                          await updateFields(
+                            fields,
+                            missingFields.filter((field) => field.name != e.name),
+                          );
                         }}
                       >
                         <Cross2Icon className="inline" color={COLORS.red} />
@@ -256,76 +256,63 @@ function Mapping({
             })}
           </ul>
         </div>
-        <div className="flex flex-row max-w-md gap-5">
-          <Button
-            className="flex-1"
-            disabled={hasError || updateInProccess || !canBeUpdated}
-            onClick={() => updateFields(fields)}
-          >
-            Update mapping
-          </Button>
-          <Button
-            className="flex-1"
-            variant={ButtonVariant.Dangerous}
-            disabled={updateInProccess}
-            onClick={() => {
-              setFields(initalFields);
-              setMissingFields(initialMissingFields);
-              setEditingFieldId(undefined);
-              setUpdatedFieldId(undefined);
-            }}
-          >
-            Reset
-          </Button>
-        </div>
       </div>
       <DialogModal
         widthVariant={DialogWidth.Large}
-        open={editingFieldId !== undefined}
-        onOpenChange={(open) => open || setEditingFieldId(undefined)}
+        open={editingField !== undefined}
+        onOpenChange={(open) => open || setEditingField(undefined)}
       >
-        <EditFieldForm
-          key={editingFieldId}
-          fieldId={editingFieldId}
-          fields={fields}
-          setFields={(...args) => {
-            setFields(...args);
-            setUpdatedFieldId(editingFieldId);
-            setEditingFieldId(undefined);
-          }}
-        />
+        {editingField && (
+          <EditFieldForm
+            key={editingField.name}
+            field={editingField}
+            updateField={async (field: MappingField, fieldName: string) => {
+              const success = await updateFields(
+                fields.map((e) => {
+                  if (e.name === fieldName) {
+                    return field;
+                  } else {
+                    return e;
+                  }
+                }),
+                missingFields,
+              );
+              if (success) {
+                setUpdatedFieldName(fieldName);
+                setEditingField(undefined);
+              }
+            }}
+          />
+        )}
       </DialogModal>
     </>
   );
 }
 
 function EditFieldForm({
-  fieldId,
-  fields,
-  setFields,
+  field,
+  updateField,
 }: {
-  fieldId?: number;
-  fields: Array<MappingField>;
-  setFields: Dispatch<SetStateAction<Array<MappingField>>>;
+  field: MappingField;
+  updateField: (field: MappingField, fieldName: string) => Promise<void>;
 }) {
+  console.log('FieldName:', field);
   const templateEditorId = useId();
-  const field = fieldId !== undefined ? fields[fieldId] : { name: '' };
-  const updateField = useCallback(
-    (newTemplate: string, example?: string) =>
-      setFields((fields) =>
-        fields.map((item, i) => {
-          if (i === fieldId) {
-            return {
-              name: field.name,
-              value: newTemplate == '' ? undefined : newTemplate,
-              example: example,
-            };
-          } else {
-            return item;
-          }
-        }),
-      ),
-    [fieldId, fields, setFields],
+  const [fieldUpdating, setFieldUpdating] = useState(false);
+  const update = useCallback(
+    async (newTemplate: string, example?: string) => {
+      setFieldUpdating(true);
+      await updateField(
+        {
+          name: field.name,
+          value: newTemplate == '' ? undefined : newTemplate,
+          example: example,
+        },
+        field.name,
+      );
+      setFieldUpdating(false);
+    },
+    [field, updateField],
   );
   const [template, setTemplate] = useState(field.value ?? '');
   const [debouncedTemplate, debouncedTemplateState] = useDebounce(template, 250);
@@ -339,8 +326,8 @@ function EditFieldForm({
     },
   });
   const renderedField = (currentRenderedFields ?? previousRenderedFields)?.RenderFields.fields[0];
-  const updating = debouncedTemplateState.isPending() || renderLoading;
-  const isError = updating || !!renderedField?.error;
+  const renderUpdating = debouncedTemplateState.isPending() || renderLoading;
+  const isError = renderUpdating || !!renderedField?.error;
   return (
     <div className="flex flex-col gap-8">
       <Dialog.Title className="text-2xl font-bold text-blue">
@@ -358,7 +345,7 @@ function EditFieldForm({
         <Label.Root className="text-2xl">
           <div className="flex gap-2 justify-between place-items-center">
             <div>Result:</div>
-            <div>{updating && <LoadingIcon size="1.25rem" />}</div>
+            <div>{renderUpdating && <LoadingIcon size="1.25rem" />}</div>
           </div>
         </Label.Root>
         <div className="h-40 bg-mid-gray overflow-y-auto whitespace-pre-wrap p-2">
@@ -371,13 +358,14 @@ function EditFieldForm({
 
       <div className="flex gap-5 max-w-md">
         <Button
-          disabled={updating || isError}
-          onClick={() => updateField(template, renderedField?.result)}
+          disabled={fieldUpdating || renderUpdating || isError}
+          onClick={() => update(template, renderedField?.result)}
           className="flex-1"
         >
           Update field
         </Button>
         <Button
+          disabled={fieldUpdating}
           className="flex-1"
           variant={ButtonVariant.Dangerous}
           onClick={() => setTemplate(field.value ?? '')}
