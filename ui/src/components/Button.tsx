@@ -1,16 +1,16 @@
 import { clsx } from 'clsx';
-import { ComponentPropsWithoutRef } from 'react';
+import { ComponentPropsWithoutRef, forwardRef } from 'react';
 
 export enum ButtonVariant {
   Primary = 'PRIMARY',
   Dangerous = 'DANGEROUS',
 }
 
-interface ButtonProps extends ComponentPropsWithoutRef<'button'> {
+type ButtonProps = {
   variant?: ButtonVariant;
-}
+} & ComponentPropsWithoutRef<'button'>;
 
-export default function Button(props: ButtonProps) {
+export default forwardRef<HTMLButtonElement, ButtonProps>(function Button(props: ButtonProps, ref) {
   const { variant = ButtonVariant.Primary, className, ...rest } = props;
 
   let variantClasses = '';
@@ -34,9 +34,10 @@ export default function Button(props: ButtonProps) {
         'text-white rounded-md transition-colors duration-200',
         className,
       )}
+      ref={ref}
       {...rest}
     >
       {props.children}
     </button>
   );
-}
+});
