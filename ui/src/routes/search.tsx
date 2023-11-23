@@ -11,6 +11,7 @@ import {
 import { gql } from '../api/__generated__/gql';
 import { Lemma } from '../api/__generated__/graphql';
 import apolloClient from '../apollo-client';
+import LensIcon from '../components/Icons/LensIcon';
 import LemmaList from '../components/LemmaList';
 import { LoaderData } from '../loader-type';
 
@@ -115,19 +116,7 @@ export default function Search() {
   return (
     <div className="flex flex-col flex-1">
       <Form className="group relative" onSubmit={handleSubmit}>
-        <svg
-          width="20"
-          height="20"
-          fill="currentColor"
-          className="absolute left-3 top-1/2 -mt-2.5 text-slate-400 pointer-events-none group-focus-within:text-blue-500"
-          aria-hidden="true"
-        >
-          <path
-            fillRule="evenodd"
-            clipRule="evenodd"
-            d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
-          />
-        </svg>
+        <LensIcon className="absolute left-3 top-1/2 w-5 h-5 -mt-2.5 text-slate-400 pointer-events-none group-focus-within:text-blue-500" />
         <input
           id="query"
           className="focus:ring-2 focus:outline-none appearance-none w-full text-lg leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 pl-10 ring-1 ring-blue shadow-sm"
