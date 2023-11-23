@@ -3,7 +3,7 @@ import { clsx } from 'clsx';
 import { useContext } from 'react';
 import { Link } from 'react-router-dom';
 
-import StatusIcon, { StatusIconKind } from '../../../components/StatusIcon';
+import StatusIcon, { StatusIconKind } from '../../../components/Icons/StatusIcon';
 import SuspenseLoading from '../../../components/SuspenseLoading';
 import { HealthStatusContext } from '../../../contexts/health-status';
 import { AnkiStateOk, throwErrorHealthStatus } from '../../../model/health-status';
@@ -160,7 +160,7 @@ function StatusBox({ ankiState }: { ankiState: AnkiStateOk }) {
   }
   return (
     <div className="flex flex-row justify-start items-start gap-2 basis-16">
-      <StatusIcon size="2.5rem" kind={errors.length == 0 ? 'OK' : 'Error'} />
+      <StatusIcon className="w-10 h-10" kind={errors.length == 0 ? 'OK' : 'Error'} />
       <div className="text-2xl">
         <h1
           className={clsx(

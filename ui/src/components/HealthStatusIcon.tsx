@@ -3,7 +3,8 @@ import { Link } from 'react-router-dom';
 
 import { HealthStatusContext } from '../contexts/health-status';
 import { HealthStatus } from '../model/health-status';
-import StatusIcon, { StatusIconKind } from './StatusIcon';
+import { IconProps } from './Icons/IconProps';
+import StatusIcon, { StatusIconKind } from './Icons/StatusIcon';
 
 function GetIconKind(status: HealthStatus): StatusIconKind {
   switch (status.kind) {
@@ -16,26 +17,30 @@ function GetIconKind(status: HealthStatus): StatusIconKind {
         case 'ConnectionError':
         case 'ForbiddenOrigin':
           return 'Warning';
+        default: {
+          const _exhaustiveCheck: never = status.anki;
+          return _exhaustiveCheck;
+        }
       }
-      // linter false positive, but safer anyway
-      break;
     }
     case 'Error':
     case 'Disconnected':
       return 'Error';
     case 'Loading':
       return 'Loading';
-    default:
-      throw 'unreachable';
+    default: {
+      const _exhaustiveCheck: never = status;
+      return _exhaustiveCheck;
+    }
   }
 }
 
-export default function HealthStatusIcon({ size }: { size?: number | string }) {
+export default function HealthStatusIcon(props: IconProps) {
   const healthStatus = useContext(HealthStatusContext);
   const iconKind = GetIconKind(healthStatus);
   return (
     <Link to="/health-dashboard">
-      <StatusIcon kind={iconKind} size={size} />
+      <StatusIcon kind={iconKind} {...props} />
     </Link>
   );
 }

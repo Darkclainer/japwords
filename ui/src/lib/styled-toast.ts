@@ -3,7 +3,7 @@ import { GraphQLError } from 'graphql';
 import { ReactNode } from 'react';
 import { IconProps, toast, ToastContent, ToastOptions } from 'react-toastify';
 
-import { ErrorIcon, OKIcon, WarningIcon } from '../components/StatusIcon';
+import { ErrorIcon, OKIcon, WarningIcon } from '../components/Icons/StatusIcon';
 
 type FunctionType<T> = T extends (...a: infer U) => infer R ? (...a: U) => R : never;
 export type ToastFunction<T = unknown> = FunctionType<typeof toast<T>>;
@@ -19,8 +19,7 @@ export function styledToast<T = unknown>(content: ToastContent<T>, opts: ToastOp
 }
 
 function getToastIcon({ type }: IconProps): ReactNode {
-  const size = 20;
-  const props = { size: size };
+  const props = { className: 'w-5 h-5' };
   switch (type) {
     case 'success':
       return OKIcon(props);

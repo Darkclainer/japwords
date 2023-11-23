@@ -14,4 +14,5 @@ export const COLORS = {
   lightRed: Colors.lightRed,
   darkRed: Colors.darkRed,
   errorRed: Colors.errorRed,
+  warningYellow: Colors.warningYellow,
 };

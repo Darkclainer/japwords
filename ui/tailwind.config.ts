@@ -34,6 +34,7 @@ export default {
       'light-red': 'rgb(var(--light-red) / <alpha-value>)',
       'dark-red': 'rgb(var(--dark-red) / <alpha-value>)',
       'error-red': 'rgb(var(--error-red) / <alpha-value>)',
+      'warning-yellow': 'rgb(var(--warning-yellow) / <alpha-value>)',
     },
     extend: {
       boxShadow: {

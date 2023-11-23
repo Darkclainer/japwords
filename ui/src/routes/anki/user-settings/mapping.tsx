@@ -21,7 +21,7 @@ import { COLORS } from '../../../colors';
 import Button, { ButtonVariant } from '../../../components/Button';
 import CodeEditor from '../../../components/CodeEditor';
 import { DialogModal, DialogWidth } from '../../../components/DialogModal';
-import { LoadingIcon } from '../../../components/StatusIcon';
+import { LoadingIcon } from '../../../components/Icons/StatusIcon';
 import SuspenseLoading from '../../../components/SuspenseLoading';
 import Tooltip from '../../../components/Tooltip';
 import { useToastify } from '../../../hooks/toastify';
@@ -192,7 +192,9 @@ function Mapping({
               <FieldColumn className="font-bold">Mapping</FieldColumn>
               <FieldColumn className="flex flex-row gap-3 font-bold">
                 <div>Rendered Value</div>
-                <div className="self-center">{renderLoading && <LoadingIcon size="1.25rem" />}</div>
+                <div className="self-center">
+                  {renderLoading && <LoadingIcon className="w-5 h-5" />}
+                </div>
               </FieldColumn>
             </Field>
             {fields.map((e, index) => (
@@ -351,7 +353,7 @@ function EditFieldForm({
         <Label.Root className="text-2xl">
           <div className="flex gap-2 justify-between place-items-center">
             <div>Result:</div>
-            <div>{renderUpdating && <LoadingIcon size="1.25rem" />}</div>
+            <div>{renderUpdating && <LoadingIcon className="w-5 h-5" />}</div>
           </div>
         </Label.Root>
         <div className="h-40 bg-mid-gray overflow-y-auto whitespace-pre-wrap p-2">

@@ -11,6 +11,7 @@ $red: #b66661;
 $light-red: #f48a83;
 $dark-red: #57312f;
 $error-red: #d9542f;
+$warning-yellow: #f4ce83;
 
 :export {
   gray: $gray;
@@ -26,4 +27,5 @@ $error-red: #d9542f;
   lightRed: $light-red;
   darkRed: $dark-red;
   errorRed: $error-red;
+  warningYellow: $warning-yellow;
 }

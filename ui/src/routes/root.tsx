@@ -31,7 +31,7 @@ export default function Root() {
                 Anki Settings
               </NavLink>
             </div>
-            <HealthStatusIcon size="2.5rem" />
+            <HealthStatusIcon className="w-10 h-10" />
           </div>
         </nav>
       </header>
