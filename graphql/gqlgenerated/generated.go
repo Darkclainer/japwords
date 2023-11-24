@@ -14,6 +14,7 @@ import (
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/99designs/gqlgen/graphql/introspection"
 	"github.com/Darkclainer/japwords/graphql/gqlmodel"
+	"github.com/Darkclainer/japwords/pkg/lemma"
 	gqlparser "github.com/vektah/gqlparser/v2"
 	"github.com/vektah/gqlparser/v2/ast"
 )
@@ -37,8 +38,11 @@ type Config struct {
 
 type ResolverRoot interface {
 	Anki() AnkiResolver
+	Lemma() LemmaResolver
 	Mutation() MutationResolver
+	Pitch() PitchResolver
 	Query() QueryResolver
+	Word() WordResolver
 }
 
 type DirectiveRoot struct {
@@ -230,6 +234,9 @@ type AnkiResolver interface {
 	Notes(ctx context.Context, obj *gqlmodel.Anki) (*gqlmodel.AnkiNotesResult, error)
 	NoteFields(ctx context.Context, obj *gqlmodel.Anki, name string) (*gqlmodel.AnkiNoteFieldsResult, error)
 }
+type LemmaResolver interface {
+	Audio(ctx context.Context, obj *lemma.Lemma) ([]*gqlmodel.Audio, error)
+}
 type MutationResolver interface {
 	SetAnkiConfigConnection(ctx context.Context, input gqlmodel.SetAnkiConfigConnectionInput) (*gqlmodel.SetAnkiConfigConnectionResult, error)
 	SetAnkiConfigDeck(ctx context.Context, input gqlmodel.SetAnkiConfigDeckInput) (*gqlmodel.SetAnkiConfigDeckResult, error)
@@ -238,12 +245,19 @@ type MutationResolver interface {
 	CreateAnkiDeck(ctx context.Context, input *gqlmodel.CreateAnkiDeckInput) (*gqlmodel.CreateAnkiDeckResult, error)
 	CreateDefaultAnkiNote(ctx context.Context, input *gqlmodel.CreateDefaultAnkiNoteInput) (*gqlmodel.CreateDefaultAnkiNoteResult, error)
 }
+type PitchResolver interface {
+	Pitch(ctx context.Context, obj *lemma.PitchShape) ([]lemma.AccentDirection, error)
+}
 type QueryResolver interface {
 	Anki(ctx context.Context) (*gqlmodel.Anki, error)
 	AnkiConfigState(ctx context.Context) (*gqlmodel.AnkiConfigStateResult, error)
 	AnkiConfig(ctx context.Context) (*gqlmodel.AnkiConfig, error)
 	RenderFields(ctx context.Context, fields []string, template *string) (*gqlmodel.RenderedFields, error)
 	Lemmas(ctx context.Context, query string) (*gqlmodel.Lemmas, error)
+}
+type WordResolver interface {
+	Furigana(ctx context.Context, obj *lemma.Word) ([]*lemma.FuriganaChar, error)
+	Pitch(ctx context.Context, obj *lemma.Word) ([]*lemma.PitchShape, error)
 }
 
 type executableSchema struct {
@@ -1205,8 +1219,8 @@ type ValidationError implements Error{
 	{Name: "../schema/japanese.graphqls", Input: `extend type Query {
   Lemmas(query: String!): Lemmas
 }
-
-type Lemmas {
+`, BuiltIn: false},
+	{Name: "../schema/lemmas.graphqls", Input: `type Lemmas {
   lemmas: [Lemma!]!
 }
 
@@ -3233,7 +3247,7 @@ func (ec *executionContext) fieldContext_CreateDefaultAnkiNoteResult_error(ctx c
 	return fc, nil
 }
 
-func (ec *executionContext) _Furigana_kanji(ctx context.Context, field graphql.CollectedField, obj *gqlmodel.Furigana) (ret graphql.Marshaler) {
+func (ec *executionContext) _Furigana_kanji(ctx context.Context, field graphql.CollectedField, obj *lemma.FuriganaChar) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Furigana_kanji(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -3277,7 +3291,7 @@ func (ec *executionContext) fieldContext_Furigana_kanji(ctx context.Context, fie
 	return fc, nil
 }
 
-func (ec *executionContext) _Furigana_hiragana(ctx context.Context, field graphql.CollectedField, obj *gqlmodel.Furigana) (ret graphql.Marshaler) {
+func (ec *executionContext) _Furigana_hiragana(ctx context.Context, field graphql.CollectedField, obj *lemma.FuriganaChar) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Furigana_hiragana(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -3321,7 +3335,7 @@ func (ec *executionContext) fieldContext_Furigana_hiragana(ctx context.Context, 
 	return fc, nil
 }
 
-func (ec *executionContext) _Lemma_slug(ctx context.Context, field graphql.CollectedField, obj *gqlmodel.Lemma) (ret graphql.Marshaler) {
+func (ec *executionContext) _Lemma_slug(ctx context.Context, field graphql.CollectedField, obj *lemma.Lemma) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Lemma_slug(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -3347,9 +3361,9 @@ func (ec *executionContext) _Lemma_slug(ctx context.Context, field graphql.Colle
 		}
 		return graphql.Null
 	}
-	res := resTmp.(*gqlmodel.Word)
+	res := resTmp.(lemma.Word)
 	fc.Result = res
-	return ec.marshalNWord2ᚖgithubᚗcomᚋDarkclainerᚋjapwordsᚋgraphqlᚋgqlmodelᚐWord(ctx, field.Selections, res)
+	return ec.marshalNWord2githubᚗcomᚋDarkclainerᚋjapwordsᚋpkgᚋlemmaᚐWord(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Lemma_slug(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -3375,7 +3389,7 @@ func (ec *executionContext) fieldContext_Lemma_slug(ctx context.Context, field g
 	return fc, nil
 }
 
-func (ec *executionContext) _Lemma_tags(ctx context.Context, field graphql.CollectedField, obj *gqlmodel.Lemma) (ret graphql.Marshaler) {
+func (ec *executionContext) _Lemma_tags(ctx context.Context, field graphql.CollectedField, obj *lemma.Lemma) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Lemma_tags(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -3419,7 +3433,7 @@ func (ec *executionContext) fieldContext_Lemma_tags(ctx context.Context, field g
 	return fc, nil
 }
 
-func (ec *executionContext) _Lemma_forms(ctx context.Context, field graphql.CollectedField, obj *gqlmodel.Lemma) (ret graphql.Marshaler) {
+func (ec *executionContext) _Lemma_forms(ctx context.Context, field graphql.CollectedField, obj *lemma.Lemma) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Lemma_forms(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -3445,9 +3459,9 @@ func (ec *executionContext) _Lemma_forms(ctx context.Context, field graphql.Coll
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]*gqlmodel.Word)
+	res := resTmp.([]lemma.Word)
 	fc.Result = res
-	return ec.marshalNWord2ᚕᚖgithubᚗcomᚋDarkclainerᚋjapwordsᚋgraphqlᚋgqlmodelᚐWordᚄ(ctx, field.Selections, res)
+	return ec.marshalNWord2ᚕgithubᚗcomᚋDarkclainerᚋjapwordsᚋpkgᚋlemmaᚐWordᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Lemma_forms(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -3473,7 +3487,7 @@ func (ec *executionContext) fieldContext_Lemma_forms(ctx context.Context, field 
 	return fc, nil
 }
 
-func (ec *executionContext) _Lemma_senses(ctx context.Context, field graphql.CollectedField, obj *gqlmodel.Lemma) (ret graphql.Marshaler) {
+func (ec *executionContext) _Lemma_senses(ctx context.Context, field graphql.CollectedField, obj *lemma.Lemma) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Lemma_senses(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -3499,9 +3513,9 @@ func (ec *executionContext) _Lemma_senses(ctx context.Context, field graphql.Col
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]*gqlmodel.Sense)
+	res := resTmp.([]lemma.WordSense)
 	fc.Result = res
-	return ec.marshalNSense2ᚕᚖgithubᚗcomᚋDarkclainerᚋjapwordsᚋgraphqlᚋgqlmodelᚐSenseᚄ(ctx, field.Selections, res)
+	return ec.marshalNSense2ᚕgithubᚗcomᚋDarkclainerᚋjapwordsᚋpkgᚋlemmaᚐWordSenseᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Lemma_senses(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -3525,7 +3539,7 @@ func (ec *executionContext) fieldContext_Lemma_senses(ctx context.Context, field
 	return fc, nil
 }
 
-func (ec *executionContext) _Lemma_audio(ctx context.Context, field graphql.CollectedField, obj *gqlmodel.Lemma) (ret graphql.Marshaler) {
+func (ec *executionContext) _Lemma_audio(ctx context.Context, field graphql.CollectedField, obj *lemma.Lemma) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Lemma_audio(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -3539,7 +3553,7 @@ func (ec *executionContext) _Lemma_audio(ctx context.Context, field graphql.Coll
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Audio, nil
+		return ec.resolvers.Lemma().Audio(rctx, obj)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -3560,8 +3574,8 @@ func (ec *executionContext) fieldContext_Lemma_audio(ctx context.Context, field 
 	fc = &graphql.FieldContext{
 		Object:     "Lemma",
 		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
+		IsMethod:   true,
+		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
 			case "type":
@@ -3601,9 +3615,9 @@ func (ec *executionContext) _Lemmas_lemmas(ctx context.Context, field graphql.Co
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]*gqlmodel.Lemma)
+	res := resTmp.([]*lemma.Lemma)
 	fc.Result = res
-	return ec.marshalNLemma2ᚕᚖgithubᚗcomᚋDarkclainerᚋjapwordsᚋgraphqlᚋgqlmodelᚐLemmaᚄ(ctx, field.Selections, res)
+	return ec.marshalNLemma2ᚕᚖgithubᚗcomᚋDarkclainerᚋjapwordsᚋpkgᚋlemmaᚐLemmaᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Lemmas_lemmas(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -3989,7 +4003,7 @@ func (ec *executionContext) fieldContext_Mutation_createDefaultAnkiNote(ctx cont
 	return fc, nil
 }
 
-func (ec *executionContext) _Pitch_hiragana(ctx context.Context, field graphql.CollectedField, obj *gqlmodel.Pitch) (ret graphql.Marshaler) {
+func (ec *executionContext) _Pitch_hiragana(ctx context.Context, field graphql.CollectedField, obj *lemma.PitchShape) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Pitch_hiragana(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -4033,7 +4047,7 @@ func (ec *executionContext) fieldContext_Pitch_hiragana(ctx context.Context, fie
 	return fc, nil
 }
 
-func (ec *executionContext) _Pitch_pitch(ctx context.Context, field graphql.CollectedField, obj *gqlmodel.Pitch) (ret graphql.Marshaler) {
+func (ec *executionContext) _Pitch_pitch(ctx context.Context, field graphql.CollectedField, obj *lemma.PitchShape) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Pitch_pitch(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -4047,7 +4061,7 @@ func (ec *executionContext) _Pitch_pitch(ctx context.Context, field graphql.Coll
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Pitch, nil
+		return ec.resolvers.Pitch().Pitch(rctx, obj)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -4059,17 +4073,17 @@ func (ec *executionContext) _Pitch_pitch(ctx context.Context, field graphql.Coll
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]gqlmodel.PitchType)
+	res := resTmp.([]lemma.AccentDirection)
 	fc.Result = res
-	return ec.marshalNPitchType2ᚕgithubᚗcomᚋDarkclainerᚋjapwordsᚋgraphqlᚋgqlmodelᚐPitchTypeᚄ(ctx, field.Selections, res)
+	return ec.marshalNPitchType2ᚕgithubᚗcomᚋDarkclainerᚋjapwordsᚋpkgᚋlemmaᚐAccentDirectionᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Pitch_pitch(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Pitch",
 		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
+		IsMethod:   true,
+		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type PitchType does not have child fields")
 		},
@@ -4749,7 +4763,7 @@ func (ec *executionContext) fieldContext_RenderedFields_fields(ctx context.Conte
 	return fc, nil
 }
 
-func (ec *executionContext) _Sense_definition(ctx context.Context, field graphql.CollectedField, obj *gqlmodel.Sense) (ret graphql.Marshaler) {
+func (ec *executionContext) _Sense_definition(ctx context.Context, field graphql.CollectedField, obj *lemma.WordSense) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Sense_definition(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -4793,7 +4807,7 @@ func (ec *executionContext) fieldContext_Sense_definition(ctx context.Context, f
 	return fc, nil
 }
 
-func (ec *executionContext) _Sense_partOfSpeech(ctx context.Context, field graphql.CollectedField, obj *gqlmodel.Sense) (ret graphql.Marshaler) {
+func (ec *executionContext) _Sense_partOfSpeech(ctx context.Context, field graphql.CollectedField, obj *lemma.WordSense) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Sense_partOfSpeech(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -4837,7 +4851,7 @@ func (ec *executionContext) fieldContext_Sense_partOfSpeech(ctx context.Context,
 	return fc, nil
 }
 
-func (ec *executionContext) _Sense_tags(ctx context.Context, field graphql.CollectedField, obj *gqlmodel.Sense) (ret graphql.Marshaler) {
+func (ec *executionContext) _Sense_tags(ctx context.Context, field graphql.CollectedField, obj *lemma.WordSense) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Sense_tags(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -5159,7 +5173,7 @@ func (ec *executionContext) fieldContext_ValidationError_message(ctx context.Con
 	return fc, nil
 }
 
-func (ec *executionContext) _Word_word(ctx context.Context, field graphql.CollectedField, obj *gqlmodel.Word) (ret graphql.Marshaler) {
+func (ec *executionContext) _Word_word(ctx context.Context, field graphql.CollectedField, obj *lemma.Word) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Word_word(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -5203,7 +5217,7 @@ func (ec *executionContext) fieldContext_Word_word(ctx context.Context, field gr
 	return fc, nil
 }
 
-func (ec *executionContext) _Word_hiragana(ctx context.Context, field graphql.CollectedField, obj *gqlmodel.Word) (ret graphql.Marshaler) {
+func (ec *executionContext) _Word_hiragana(ctx context.Context, field graphql.CollectedField, obj *lemma.Word) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Word_hiragana(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -5247,7 +5261,7 @@ func (ec *executionContext) fieldContext_Word_hiragana(ctx context.Context, fiel
 	return fc, nil
 }
 
-func (ec *executionContext) _Word_furigana(ctx context.Context, field graphql.CollectedField, obj *gqlmodel.Word) (ret graphql.Marshaler) {
+func (ec *executionContext) _Word_furigana(ctx context.Context, field graphql.CollectedField, obj *lemma.Word) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Word_furigana(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -5261,7 +5275,7 @@ func (ec *executionContext) _Word_furigana(ctx context.Context, field graphql.Co
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Furigana, nil
+		return ec.resolvers.Word().Furigana(rctx, obj)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -5273,17 +5287,17 @@ func (ec *executionContext) _Word_furigana(ctx context.Context, field graphql.Co
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]*gqlmodel.Furigana)
+	res := resTmp.([]*lemma.FuriganaChar)
 	fc.Result = res
-	return ec.marshalNFurigana2ᚕᚖgithubᚗcomᚋDarkclainerᚋjapwordsᚋgraphqlᚋgqlmodelᚐFuriganaᚄ(ctx, field.Selections, res)
+	return ec.marshalNFurigana2ᚕᚖgithubᚗcomᚋDarkclainerᚋjapwordsᚋpkgᚋlemmaᚐFuriganaCharᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Word_furigana(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Word",
 		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
+		IsMethod:   true,
+		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
 			case "kanji":
@@ -5297,7 +5311,7 @@ func (ec *executionContext) fieldContext_Word_furigana(ctx context.Context, fiel
 	return fc, nil
 }
 
-func (ec *executionContext) _Word_pitch(ctx context.Context, field graphql.CollectedField, obj *gqlmodel.Word) (ret graphql.Marshaler) {
+func (ec *executionContext) _Word_pitch(ctx context.Context, field graphql.CollectedField, obj *lemma.Word) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Word_pitch(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -5311,7 +5325,7 @@ func (ec *executionContext) _Word_pitch(ctx context.Context, field graphql.Colle
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Pitch, nil
+		return ec.resolvers.Word().Pitch(rctx, obj)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -5323,17 +5337,17 @@ func (ec *executionContext) _Word_pitch(ctx context.Context, field graphql.Colle
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]*gqlmodel.Pitch)
+	res := resTmp.([]*lemma.PitchShape)
 	fc.Result = res
-	return ec.marshalNPitch2ᚕᚖgithubᚗcomᚋDarkclainerᚋjapwordsᚋgraphqlᚋgqlmodelᚐPitchᚄ(ctx, field.Selections, res)
+	return ec.marshalNPitch2ᚕᚖgithubᚗcomᚋDarkclainerᚋjapwordsᚋpkgᚋlemmaᚐPitchShapeᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Word_pitch(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Word",
 		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
+		IsMethod:   true,
+		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
 			case "hiragana":
@@ -8348,7 +8362,7 @@ func (ec *executionContext) _CreateDefaultAnkiNoteResult(ctx context.Context, se
 
 var furiganaImplementors = []string{"Furigana"}
 
-func (ec *executionContext) _Furigana(ctx context.Context, sel ast.SelectionSet, obj *gqlmodel.Furigana) graphql.Marshaler {
+func (ec *executionContext) _Furigana(ctx context.Context, sel ast.SelectionSet, obj *lemma.FuriganaChar) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.OperationContext, sel, furiganaImplementors)
 
 	out := graphql.NewFieldSet(fields)
@@ -8392,7 +8406,7 @@ func (ec *executionContext) _Furigana(ctx context.Context, sel ast.SelectionSet,
 
 var lemmaImplementors = []string{"Lemma"}
 
-func (ec *executionContext) _Lemma(ctx context.Context, sel ast.SelectionSet, obj *gqlmodel.Lemma) graphql.Marshaler {
+func (ec *executionContext) _Lemma(ctx context.Context, sel ast.SelectionSet, obj *lemma.Lemma) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.OperationContext, sel, lemmaImplementors)
 
 	out := graphql.NewFieldSet(fields)
@@ -8404,28 +8418,59 @@ func (ec *executionContext) _Lemma(ctx context.Context, sel ast.SelectionSet, ob
 		case "slug":
 			out.Values[i] = ec._Lemma_slug(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				out.Invalids++
+				atomic.AddUint32(&out.Invalids, 1)
 			}
 		case "tags":
 			out.Values[i] = ec._Lemma_tags(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				out.Invalids++
+				atomic.AddUint32(&out.Invalids, 1)
 			}
 		case "forms":
 			out.Values[i] = ec._Lemma_forms(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				out.Invalids++
+				atomic.AddUint32(&out.Invalids, 1)
 			}
 		case "senses":
 			out.Values[i] = ec._Lemma_senses(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				out.Invalids++
+				atomic.AddUint32(&out.Invalids, 1)
 			}
 		case "audio":
-			out.Values[i] = ec._Lemma_audio(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				out.Invalids++
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Lemma_audio(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
 			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -8574,7 +8619,7 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 
 var pitchImplementors = []string{"Pitch"}
 
-func (ec *executionContext) _Pitch(ctx context.Context, sel ast.SelectionSet, obj *gqlmodel.Pitch) graphql.Marshaler {
+func (ec *executionContext) _Pitch(ctx context.Context, sel ast.SelectionSet, obj *lemma.PitchShape) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.OperationContext, sel, pitchImplementors)
 
 	out := graphql.NewFieldSet(fields)
@@ -8586,13 +8631,44 @@ func (ec *executionContext) _Pitch(ctx context.Context, sel ast.SelectionSet, ob
 		case "hiragana":
 			out.Values[i] = ec._Pitch_hiragana(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				out.Invalids++
+				atomic.AddUint32(&out.Invalids, 1)
 			}
 		case "pitch":
-			out.Values[i] = ec._Pitch_pitch(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				out.Invalids++
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Pitch_pitch(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
 			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -8867,7 +8943,7 @@ func (ec *executionContext) _RenderedFields(ctx context.Context, sel ast.Selecti
 
 var senseImplementors = []string{"Sense"}
 
-func (ec *executionContext) _Sense(ctx context.Context, sel ast.SelectionSet, obj *gqlmodel.Sense) graphql.Marshaler {
+func (ec *executionContext) _Sense(ctx context.Context, sel ast.SelectionSet, obj *lemma.WordSense) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.OperationContext, sel, senseImplementors)
 
 	out := graphql.NewFieldSet(fields)
@@ -9104,7 +9180,7 @@ func (ec *executionContext) _ValidationError(ctx context.Context, sel ast.Select
 
 var wordImplementors = []string{"Word"}
 
-func (ec *executionContext) _Word(ctx context.Context, sel ast.SelectionSet, obj *gqlmodel.Word) graphql.Marshaler {
+func (ec *executionContext) _Word(ctx context.Context, sel ast.SelectionSet, obj *lemma.Word) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.OperationContext, sel, wordImplementors)
 
 	out := graphql.NewFieldSet(fields)
@@ -9116,23 +9192,85 @@ func (ec *executionContext) _Word(ctx context.Context, sel ast.SelectionSet, obj
 		case "word":
 			out.Values[i] = ec._Word_word(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				out.Invalids++
+				atomic.AddUint32(&out.Invalids, 1)
 			}
 		case "hiragana":
 			out.Values[i] = ec._Word_hiragana(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				out.Invalids++
+				atomic.AddUint32(&out.Invalids, 1)
 			}
 		case "furigana":
-			out.Values[i] = ec._Word_furigana(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				out.Invalids++
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Word_furigana(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
 			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		case "pitch":
-			out.Values[i] = ec._Word_pitch(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				out.Invalids++
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Word_pitch(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
 			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -9749,7 +9887,7 @@ func (ec *executionContext) marshalNCreateDefaultAnkiNoteResult2ᚖgithubᚗcom�
 	return ec._CreateDefaultAnkiNoteResult(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalNFurigana2ᚕᚖgithubᚗcomᚋDarkclainerᚋjapwordsᚋgraphqlᚋgqlmodelᚐFuriganaᚄ(ctx context.Context, sel ast.SelectionSet, v []*gqlmodel.Furigana) graphql.Marshaler {
+func (ec *executionContext) marshalNFurigana2ᚕᚖgithubᚗcomᚋDarkclainerᚋjapwordsᚋpkgᚋlemmaᚐFuriganaCharᚄ(ctx context.Context, sel ast.SelectionSet, v []*lemma.FuriganaChar) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -9773,7 +9911,7 @@ func (ec *executionContext) marshalNFurigana2ᚕᚖgithubᚗcomᚋDarkclainerᚋ
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNFurigana2ᚖgithubᚗcomᚋDarkclainerᚋjapwordsᚋgraphqlᚋgqlmodelᚐFurigana(ctx, sel, v[i])
+			ret[i] = ec.marshalNFurigana2ᚖgithubᚗcomᚋDarkclainerᚋjapwordsᚋpkgᚋlemmaᚐFuriganaChar(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -9793,7 +9931,7 @@ func (ec *executionContext) marshalNFurigana2ᚕᚖgithubᚗcomᚋDarkclainerᚋ
 	return ret
 }
 
-func (ec *executionContext) marshalNFurigana2ᚖgithubᚗcomᚋDarkclainerᚋjapwordsᚋgraphqlᚋgqlmodelᚐFurigana(ctx context.Context, sel ast.SelectionSet, v *gqlmodel.Furigana) graphql.Marshaler {
+func (ec *executionContext) marshalNFurigana2ᚖgithubᚗcomᚋDarkclainerᚋjapwordsᚋpkgᚋlemmaᚐFuriganaChar(ctx context.Context, sel ast.SelectionSet, v *lemma.FuriganaChar) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
@@ -9818,7 +9956,7 @@ func (ec *executionContext) marshalNInt2int(ctx context.Context, sel ast.Selecti
 	return res
 }
 
-func (ec *executionContext) marshalNLemma2ᚕᚖgithubᚗcomᚋDarkclainerᚋjapwordsᚋgraphqlᚋgqlmodelᚐLemmaᚄ(ctx context.Context, sel ast.SelectionSet, v []*gqlmodel.Lemma) graphql.Marshaler {
+func (ec *executionContext) marshalNLemma2ᚕᚖgithubᚗcomᚋDarkclainerᚋjapwordsᚋpkgᚋlemmaᚐLemmaᚄ(ctx context.Context, sel ast.SelectionSet, v []*lemma.Lemma) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -9842,7 +9980,7 @@ func (ec *executionContext) marshalNLemma2ᚕᚖgithubᚗcomᚋDarkclainerᚋjap
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNLemma2ᚖgithubᚗcomᚋDarkclainerᚋjapwordsᚋgraphqlᚋgqlmodelᚐLemma(ctx, sel, v[i])
+			ret[i] = ec.marshalNLemma2ᚖgithubᚗcomᚋDarkclainerᚋjapwordsᚋpkgᚋlemmaᚐLemma(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -9862,7 +10000,7 @@ func (ec *executionContext) marshalNLemma2ᚕᚖgithubᚗcomᚋDarkclainerᚋjap
 	return ret
 }
 
-func (ec *executionContext) marshalNLemma2ᚖgithubᚗcomᚋDarkclainerᚋjapwordsᚋgraphqlᚋgqlmodelᚐLemma(ctx context.Context, sel ast.SelectionSet, v *gqlmodel.Lemma) graphql.Marshaler {
+func (ec *executionContext) marshalNLemma2ᚖgithubᚗcomᚋDarkclainerᚋjapwordsᚋpkgᚋlemmaᚐLemma(ctx context.Context, sel ast.SelectionSet, v *lemma.Lemma) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
@@ -9872,7 +10010,7 @@ func (ec *executionContext) marshalNLemma2ᚖgithubᚗcomᚋDarkclainerᚋjapwor
 	return ec._Lemma(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalNPitch2ᚕᚖgithubᚗcomᚋDarkclainerᚋjapwordsᚋgraphqlᚋgqlmodelᚐPitchᚄ(ctx context.Context, sel ast.SelectionSet, v []*gqlmodel.Pitch) graphql.Marshaler {
+func (ec *executionContext) marshalNPitch2ᚕᚖgithubᚗcomᚋDarkclainerᚋjapwordsᚋpkgᚋlemmaᚐPitchShapeᚄ(ctx context.Context, sel ast.SelectionSet, v []*lemma.PitchShape) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -9896,7 +10034,7 @@ func (ec *executionContext) marshalNPitch2ᚕᚖgithubᚗcomᚋDarkclainerᚋjap
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNPitch2ᚖgithubᚗcomᚋDarkclainerᚋjapwordsᚋgraphqlᚋgqlmodelᚐPitch(ctx, sel, v[i])
+			ret[i] = ec.marshalNPitch2ᚖgithubᚗcomᚋDarkclainerᚋjapwordsᚋpkgᚋlemmaᚐPitchShape(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -9916,7 +10054,7 @@ func (ec *executionContext) marshalNPitch2ᚕᚖgithubᚗcomᚋDarkclainerᚋjap
 	return ret
 }
 
-func (ec *executionContext) marshalNPitch2ᚖgithubᚗcomᚋDarkclainerᚋjapwordsᚋgraphqlᚋgqlmodelᚐPitch(ctx context.Context, sel ast.SelectionSet, v *gqlmodel.Pitch) graphql.Marshaler {
+func (ec *executionContext) marshalNPitch2ᚖgithubᚗcomᚋDarkclainerᚋjapwordsᚋpkgᚋlemmaᚐPitchShape(ctx context.Context, sel ast.SelectionSet, v *lemma.PitchShape) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
@@ -9926,26 +10064,26 @@ func (ec *executionContext) marshalNPitch2ᚖgithubᚗcomᚋDarkclainerᚋjapwor
 	return ec._Pitch(ctx, sel, v)
 }
 
-func (ec *executionContext) unmarshalNPitchType2githubᚗcomᚋDarkclainerᚋjapwordsᚋgraphqlᚋgqlmodelᚐPitchType(ctx context.Context, v interface{}) (gqlmodel.PitchType, error) {
-	var res gqlmodel.PitchType
+func (ec *executionContext) unmarshalNPitchType2githubᚗcomᚋDarkclainerᚋjapwordsᚋpkgᚋlemmaᚐAccentDirection(ctx context.Context, v interface{}) (lemma.AccentDirection, error) {
+	var res lemma.AccentDirection
 	err := res.UnmarshalGQL(v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNPitchType2githubᚗcomᚋDarkclainerᚋjapwordsᚋgraphqlᚋgqlmodelᚐPitchType(ctx context.Context, sel ast.SelectionSet, v gqlmodel.PitchType) graphql.Marshaler {
+func (ec *executionContext) marshalNPitchType2githubᚗcomᚋDarkclainerᚋjapwordsᚋpkgᚋlemmaᚐAccentDirection(ctx context.Context, sel ast.SelectionSet, v lemma.AccentDirection) graphql.Marshaler {
 	return v
 }
 
-func (ec *executionContext) unmarshalNPitchType2ᚕgithubᚗcomᚋDarkclainerᚋjapwordsᚋgraphqlᚋgqlmodelᚐPitchTypeᚄ(ctx context.Context, v interface{}) ([]gqlmodel.PitchType, error) {
+func (ec *executionContext) unmarshalNPitchType2ᚕgithubᚗcomᚋDarkclainerᚋjapwordsᚋpkgᚋlemmaᚐAccentDirectionᚄ(ctx context.Context, v interface{}) ([]lemma.AccentDirection, error) {
 	var vSlice []interface{}
 	if v != nil {
 		vSlice = graphql.CoerceList(v)
 	}
 	var err error
-	res := make([]gqlmodel.PitchType, len(vSlice))
+	res := make([]lemma.AccentDirection, len(vSlice))
 	for i := range vSlice {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
-		res[i], err = ec.unmarshalNPitchType2githubᚗcomᚋDarkclainerᚋjapwordsᚋgraphqlᚋgqlmodelᚐPitchType(ctx, vSlice[i])
+		res[i], err = ec.unmarshalNPitchType2githubᚗcomᚋDarkclainerᚋjapwordsᚋpkgᚋlemmaᚐAccentDirection(ctx, vSlice[i])
 		if err != nil {
 			return nil, err
 		}
@@ -9953,7 +10091,7 @@ func (ec *executionContext) unmarshalNPitchType2ᚕgithubᚗcomᚋDarkclainerᚋ
 	return res, nil
 }
 
-func (ec *executionContext) marshalNPitchType2ᚕgithubᚗcomᚋDarkclainerᚋjapwordsᚋgraphqlᚋgqlmodelᚐPitchTypeᚄ(ctx context.Context, sel ast.SelectionSet, v []gqlmodel.PitchType) graphql.Marshaler {
+func (ec *executionContext) marshalNPitchType2ᚕgithubᚗcomᚋDarkclainerᚋjapwordsᚋpkgᚋlemmaᚐAccentDirectionᚄ(ctx context.Context, sel ast.SelectionSet, v []lemma.AccentDirection) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -9977,7 +10115,7 @@ func (ec *executionContext) marshalNPitchType2ᚕgithubᚗcomᚋDarkclainerᚋja
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNPitchType2githubᚗcomᚋDarkclainerᚋjapwordsᚋgraphqlᚋgqlmodelᚐPitchType(ctx, sel, v[i])
+			ret[i] = ec.marshalNPitchType2githubᚗcomᚋDarkclainerᚋjapwordsᚋpkgᚋlemmaᚐAccentDirection(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -10065,7 +10203,11 @@ func (ec *executionContext) marshalNRenderedFields2ᚖgithubᚗcomᚋDarkclainer
 	return ec._RenderedFields(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalNSense2ᚕᚖgithubᚗcomᚋDarkclainerᚋjapwordsᚋgraphqlᚋgqlmodelᚐSenseᚄ(ctx context.Context, sel ast.SelectionSet, v []*gqlmodel.Sense) graphql.Marshaler {
+func (ec *executionContext) marshalNSense2githubᚗcomᚋDarkclainerᚋjapwordsᚋpkgᚋlemmaᚐWordSense(ctx context.Context, sel ast.SelectionSet, v lemma.WordSense) graphql.Marshaler {
+	return ec._Sense(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNSense2ᚕgithubᚗcomᚋDarkclainerᚋjapwordsᚋpkgᚋlemmaᚐWordSenseᚄ(ctx context.Context, sel ast.SelectionSet, v []lemma.WordSense) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -10089,7 +10231,7 @@ func (ec *executionContext) marshalNSense2ᚕᚖgithubᚗcomᚋDarkclainerᚋjap
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNSense2ᚖgithubᚗcomᚋDarkclainerᚋjapwordsᚋgraphqlᚋgqlmodelᚐSense(ctx, sel, v[i])
+			ret[i] = ec.marshalNSense2githubᚗcomᚋDarkclainerᚋjapwordsᚋpkgᚋlemmaᚐWordSense(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -10107,16 +10249,6 @@ func (ec *executionContext) marshalNSense2ᚕᚖgithubᚗcomᚋDarkclainerᚋjap
 	}
 
 	return ret
-}
-
-func (ec *executionContext) marshalNSense2ᚖgithubᚗcomᚋDarkclainerᚋjapwordsᚋgraphqlᚋgqlmodelᚐSense(ctx context.Context, sel ast.SelectionSet, v *gqlmodel.Sense) graphql.Marshaler {
-	if v == nil {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
-		}
-		return graphql.Null
-	}
-	return ec._Sense(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalNSetAnkiConfigConnectionInput2githubᚗcomᚋDarkclainerᚋjapwordsᚋgraphqlᚋgqlmodelᚐSetAnkiConfigConnectionInput(ctx context.Context, v interface{}) (gqlmodel.SetAnkiConfigConnectionInput, error) {
@@ -10242,7 +10374,11 @@ func (ec *executionContext) marshalNString2ᚕstringᚄ(ctx context.Context, sel
 	return ret
 }
 
-func (ec *executionContext) marshalNWord2ᚕᚖgithubᚗcomᚋDarkclainerᚋjapwordsᚋgraphqlᚋgqlmodelᚐWordᚄ(ctx context.Context, sel ast.SelectionSet, v []*gqlmodel.Word) graphql.Marshaler {
+func (ec *executionContext) marshalNWord2githubᚗcomᚋDarkclainerᚋjapwordsᚋpkgᚋlemmaᚐWord(ctx context.Context, sel ast.SelectionSet, v lemma.Word) graphql.Marshaler {
+	return ec._Word(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNWord2ᚕgithubᚗcomᚋDarkclainerᚋjapwordsᚋpkgᚋlemmaᚐWordᚄ(ctx context.Context, sel ast.SelectionSet, v []lemma.Word) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -10266,7 +10402,7 @@ func (ec *executionContext) marshalNWord2ᚕᚖgithubᚗcomᚋDarkclainerᚋjapw
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNWord2ᚖgithubᚗcomᚋDarkclainerᚋjapwordsᚋgraphqlᚋgqlmodelᚐWord(ctx, sel, v[i])
+			ret[i] = ec.marshalNWord2githubᚗcomᚋDarkclainerᚋjapwordsᚋpkgᚋlemmaᚐWord(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -10284,16 +10420,6 @@ func (ec *executionContext) marshalNWord2ᚕᚖgithubᚗcomᚋDarkclainerᚋjapw
 	}
 
 	return ret
-}
-
-func (ec *executionContext) marshalNWord2ᚖgithubᚗcomᚋDarkclainerᚋjapwordsᚋgraphqlᚋgqlmodelᚐWord(ctx context.Context, sel ast.SelectionSet, v *gqlmodel.Word) graphql.Marshaler {
-	if v == nil {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
-		}
-		return graphql.Null
-	}
-	return ec._Word(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalN__Directive2githubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐDirective(ctx context.Context, sel ast.SelectionSet, v introspection.Directive) graphql.Marshaler {

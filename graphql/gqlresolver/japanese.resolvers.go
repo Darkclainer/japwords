@@ -16,11 +16,7 @@ func (r *queryResolver) Lemmas(ctx context.Context, query string) (*gqlmodel.Lem
 	if err != nil {
 		return nil, err
 	}
-	var gqlLemmas []*gqlmodel.Lemma
-	for _, lemma := range lemmas {
-		gqlLemmas = append(gqlLemmas, convertLemma(lemma))
-	}
 	return &gqlmodel.Lemmas{
-		Lemmas: gqlLemmas,
+		Lemmas: lemmas,
 	}, nil
 }

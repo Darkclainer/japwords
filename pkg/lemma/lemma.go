@@ -99,7 +99,7 @@ type WordSense struct {
 	Tags         []string `json:"Tags,omitempty"`
 }
 
-//go:generate $ENUMER_TOOL -type=AccentDirection -trimprefix=AccentDirection -transform=snake -text
+//go:generate $ENUMER_TOOL -type=AccentDirection -trimprefix=AccentDirection -transform=upper -text -gqlgen
 type AccentDirection int
 
 const (

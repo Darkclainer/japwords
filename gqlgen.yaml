@@ -24,7 +24,7 @@ resolver:
   package: gqlresolver
 
 # Optional: turn on use ` + "`" + `gqlgen:"fieldName"` + "`" + ` tags in your models
-# struct_tag: json
+struct_tag: gqlgen
 
 # Optional: turn on to use []Thing instead of []*Thing
 # omit_slice_element_pointers: false
@@ -53,3 +53,22 @@ models:
       - github.com/99designs/gqlgen/graphql.Uint
       - github.com/99designs/gqlgen/graphql.Uint64
       - github.com/99designs/gqlgen/graphql.Uint32
+
+  PitchType:
+    model:
+      - github.com/Darkclainer/japwords/pkg/lemma.AccentDirection
+  Pitch:
+    model:
+      - github.com/Darkclainer/japwords/pkg/lemma.PitchShape
+  Furigana:
+    model:
+      - github.com/Darkclainer/japwords/pkg/lemma.FuriganaChar
+  Word:
+    model:
+      - github.com/Darkclainer/japwords/pkg/lemma.Word
+  Sense:
+    model:
+      - github.com/Darkclainer/japwords/pkg/lemma.WordSense
+  Lemma:
+    model:
+      - github.com/Darkclainer/japwords/pkg/lemma.Lemma

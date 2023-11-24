@@ -1,0 +1,47 @@
+type Lemmas {
+  lemmas: [Lemma!]!
+}
+
+type Lemma {
+  slug: Word!
+  tags: [String!]!
+  forms: [Word!]!
+  senses: [Sense!]!
+  # Links to audio files
+  audio: [Audio!]!
+}
+
+type Word {
+  word: String!
+  hiragana: String!
+  furigana: [Furigana!]!
+  pitch: [Pitch!]!
+}
+
+type Furigana {
+  kanji: String!
+  hiragana: String!
+}
+
+enum PitchType {
+  UP
+  DOWN
+  LEFT
+  RIGHT
+}
+
+type Pitch {
+  hiragana: String!
+  pitch: [PitchType!]!
+}
+
+type Audio {
+  type: String!
+  source: String!
+}
+
+type Sense {
+  definition: [String!]!
+  partOfSpeech: [String!]!
+  tags: [String!]!
+}
