@@ -7,31 +7,8 @@ import (
 	"github.com/Darkclainer/japwords/pkg/lemma"
 )
 
-// TODO: Need different pitch representation?
-// Lemma is more specific variant of lemma.Lemma.
-// This structure include only one meaning.
-type Lemma struct {
-	Slug          Word              `json:"Slug,omitempty"`
-	SenseIndex    int               `json:"SenseIndex,omitempty"`
-	Tags          []string          `json:"Tags,omitempty"`
-	Forms         []Word            `json:"Forms,omitempty"`
-	Definitions   []string          `json:"Definitions,omitempty"`
-	PartsOfSpeech []string          `json:"PartsOfSpeech,omitempty"`
-	SenseTags     []string          `json:"SenseTags,omitempty"`
-	Audio         map[string]string `json:"Audio,omitempty"`
-}
-
-// Word is simplified version of lemma.Word,
-// difference is in Pitch representation.
-type Word struct {
-	Word     string             `json:"Word,omitempty"`
-	Hiragana string             `json:"Hiragana,omitempty"`
-	Furigana lemma.Furigana     `json:"Furigana,omitempty"`
-	Pitches  []lemma.PitchShape `json:"Pitches,omitempty"`
-}
-
-var DefaultExampleLemma = Lemma{
-	Slug: Word{
+var DefaultExampleLemma = lemma.ProjectedLemma{
+	Slug: lemma.ProjectedWord{
 		Word:     "一二わ三はい",
 		Hiragana: "いちにわさんはい",
 		Furigana: []lemma.FuriganaChar{
@@ -95,7 +72,7 @@ var DefaultExampleLemma = Lemma{
 		"Wanikani level 2",
 		"Test database",
 	},
-	Forms: []Word{},
+	Forms: []lemma.ProjectedWord{},
 	Definitions: []string{
 		"this is test lemma, it means nothing, just useful for tests",
 		"use it only for tests",

@@ -34,7 +34,7 @@ func (tm TemplateMapping) Equal(otm TemplateMapping) bool {
 }
 
 // RenderRawTemplate renders template with specified lemma, intended to use for API.
-func RenderRawTemplate(templateSrc string, lemma *Lemma) (string, error) {
+func RenderRawTemplate(templateSrc string, lemma *lemma.ProjectedLemma) (string, error) {
 	tmpl := template.New("")
 	err := initTemplate(tmpl, templateSrc)
 	if err != nil {
@@ -100,13 +100,13 @@ func initTemplate(tmpl *template.Template, src string) error {
 }
 
 func checkTemplate(tmpl *template.Template) error {
-	lemma := &Lemma{}
+	lemma := &lemma.ProjectedLemma{}
 	return tmpl.Execute(io.Discard, lemma)
 }
 
 // renderFuriganaTemplate is template functions that return string representation of
 // furigana that can be understood by Anki.
-func renderFuriganaTemplate(word *Word) string {
+func renderFuriganaTemplate(word *lemma.ProjectedWord) string {
 	furigana := word.Furigana
 	var buffer strings.Builder
 	// previousPlain need to correctly delimit character with furigana and without:
@@ -135,7 +135,7 @@ func renderFuriganaTemplate(word *Word) string {
 	return buffer.String()
 }
 
-func renderPitchTemplate(word *Word, tag string, up string, right string, down string, left string) (string, error) {
+func renderPitchTemplate(word *lemma.ProjectedWord, tag string, up string, right string, down string, left string) (string, error) {
 	return renderPitch(word, tag, []string{
 		up,
 		right,
@@ -144,7 +144,7 @@ func renderPitchTemplate(word *Word, tag string, up string, right string, down s
 	})
 }
 
-func renderPitch(word *Word, tag string, directionClasses []string) (string, error) {
+func renderPitch(word *lemma.ProjectedWord, tag string, directionClasses []string) (string, error) {
 	if tag == "" {
 		return "", errors.New("tag should be non empty string")
 	}

@@ -23,13 +23,13 @@ func Test_DefaultUserConfig_AnkiFieldMapping(t *testing.T) {
 	mapping := config.DefaultUserConfig().Anki.FieldMapping
 	testCases := []struct {
 		Name     string
-		Lemma    anki.Lemma
+		Lemma    lemma.ProjectedLemma
 		Expected map[string]string
 	}{
 		{
 			Name: "Sort full",
-			Lemma: anki.Lemma{
-				Slug: anki.Word{
+			Lemma: lemma.ProjectedLemma{
+				Slug: lemma.ProjectedWord{
 					Word: "Hello",
 				},
 				SenseIndex:  5,
@@ -41,8 +41,8 @@ func Test_DefaultUserConfig_AnkiFieldMapping(t *testing.T) {
 		},
 		{
 			Name: "Sort min len",
-			Lemma: anki.Lemma{
-				Slug: anki.Word{
+			Lemma: lemma.ProjectedLemma{
+				Slug: lemma.ProjectedWord{
 					Word: "Hello",
 				},
 				Definitions: []string{"world"},
@@ -53,8 +53,8 @@ func Test_DefaultUserConfig_AnkiFieldMapping(t *testing.T) {
 		},
 		{
 			Name: "Sort no definitions",
-			Lemma: anki.Lemma{
-				Slug: anki.Word{
+			Lemma: lemma.ProjectedLemma{
+				Slug: lemma.ProjectedWord{
 					Word: "Hello",
 				},
 			},
@@ -64,8 +64,8 @@ func Test_DefaultUserConfig_AnkiFieldMapping(t *testing.T) {
 		},
 		{
 			Name: "Kanji",
-			Lemma: anki.Lemma{
-				Slug: anki.Word{
+			Lemma: lemma.ProjectedLemma{
+				Slug: lemma.ProjectedWord{
 					Word: "Hello",
 				},
 			},
@@ -75,8 +75,8 @@ func Test_DefaultUserConfig_AnkiFieldMapping(t *testing.T) {
 		},
 		{
 			Name: "Furigana",
-			Lemma: anki.Lemma{
-				Slug: anki.Word{
+			Lemma: lemma.ProjectedLemma{
+				Slug: lemma.ProjectedWord{
 					Furigana: lemma.Furigana{
 						{
 							Kanji:    "he",
@@ -98,8 +98,8 @@ func Test_DefaultUserConfig_AnkiFieldMapping(t *testing.T) {
 		},
 		{
 			Name: "Kana",
-			Lemma: anki.Lemma{
-				Slug: anki.Word{
+			Lemma: lemma.ProjectedLemma{
+				Slug: lemma.ProjectedWord{
 					Pitches: []lemma.PitchShape{
 						{
 							Hiragana: "he",
@@ -124,7 +124,7 @@ func Test_DefaultUserConfig_AnkiFieldMapping(t *testing.T) {
 		},
 		{
 			Name: "PoS one",
-			Lemma: anki.Lemma{
+			Lemma: lemma.ProjectedLemma{
 				PartsOfSpeech: []string{
 					"first",
 				},
@@ -135,7 +135,7 @@ func Test_DefaultUserConfig_AnkiFieldMapping(t *testing.T) {
 		},
 		{
 			Name: "PoS two",
-			Lemma: anki.Lemma{
+			Lemma: lemma.ProjectedLemma{
 				PartsOfSpeech: []string{
 					"first", "second, something",
 				},
@@ -146,7 +146,7 @@ func Test_DefaultUserConfig_AnkiFieldMapping(t *testing.T) {
 		},
 		{
 			Name: "English",
-			Lemma: anki.Lemma{
+			Lemma: lemma.ProjectedLemma{
 				Definitions: []string{
 					"one", "two", "three",
 				},
@@ -157,7 +157,7 @@ func Test_DefaultUserConfig_AnkiFieldMapping(t *testing.T) {
 		},
 		{
 			Name: "SenseTags",
-			Lemma: anki.Lemma{
+			Lemma: lemma.ProjectedLemma{
 				SenseTags: []string{
 					"one", "two", "three",
 				},

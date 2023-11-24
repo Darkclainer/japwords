@@ -114,7 +114,7 @@ func Test_queryResolver_RenderFields(t *testing.T) {
 					{
 						Field:  "{{.NotAField}}",
 						Result: "",
-						Error:  valuePointer("template: :1:2: executing \"\" at <.NotAField>: can't evaluate field NotAField in type *anki.Lemma"),
+						Error:  valuePointer("template: :1:2: executing \"\" at <.NotAField>: can't evaluate field NotAField in type *lemma.ProjectedLemma"),
 					},
 				},
 			},

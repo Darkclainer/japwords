@@ -99,6 +99,28 @@ type WordSense struct {
 	Tags         []string `json:"Tags,omitempty"`
 }
 
+// ProjectedLemma is more specific variant of Lemma.
+// This structure include only one meaning.
+type ProjectedLemma struct {
+	Slug          ProjectedWord     `json:"Slug,omitempty"`
+	SenseIndex    int               `json:"SenseIndex,omitempty"`
+	Tags          []string          `json:"Tags,omitempty"`
+	Forms         []ProjectedWord   `json:"Forms,omitempty"`
+	Definitions   []string          `json:"Definitions,omitempty"`
+	PartsOfSpeech []string          `json:"PartsOfSpeech,omitempty"`
+	SenseTags     []string          `json:"SenseTags,omitempty"`
+	Audio         map[string]string `json:"Audio,omitempty"`
+}
+
+// ProjectedWord is simplified version of Word,
+// difference is in Pitch representation.
+type ProjectedWord struct {
+	Word     string       `json:"Word,omitempty"`
+	Hiragana string       `json:"Hiragana,omitempty"`
+	Furigana Furigana     `json:"Furigana,omitempty"`
+	Pitches  []PitchShape `json:"Pitches,omitempty"`
+}
+
 //go:generate $ENUMER_TOOL -type=AccentDirection -trimprefix=AccentDirection -transform=upper -text -gqlgen
 type AccentDirection int
 

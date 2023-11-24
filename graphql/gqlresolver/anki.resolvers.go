@@ -14,6 +14,7 @@ import (
 	"github.com/Darkclainer/japwords/graphql/gqlgenerated"
 	"github.com/Darkclainer/japwords/graphql/gqlmodel"
 	"github.com/Darkclainer/japwords/pkg/anki"
+	"github.com/Darkclainer/japwords/pkg/lemma"
 )
 
 // Decks is the resolver for the decks field.
@@ -232,11 +233,11 @@ func (r *queryResolver) AnkiConfig(ctx context.Context) (*gqlmodel.AnkiConfig, e
 // RenderFields is the resolver for the RenderFields field.
 func (r *queryResolver) RenderFields(ctx context.Context, fields []string, template *string) (*gqlmodel.RenderedFields, error) {
 	var (
-		lemma    = anki.DefaultExampleLemma
-		lemmaSrc = anki.GetDefaultExampleLemmaJSON()
+		currentLemma = anki.DefaultExampleLemma
+		lemmaSrc     = anki.GetDefaultExampleLemmaJSON()
 	)
 	if template != nil {
-		var newLemma anki.Lemma
+		var newLemma lemma.ProjectedLemma
 		err := json.Unmarshal([]byte(*template), &newLemma)
 		if err != nil {
 			errString := err.Error()
@@ -245,8 +246,8 @@ func (r *queryResolver) RenderFields(ctx context.Context, fields []string, templ
 				TemplateError: &errString,
 			}, nil
 		}
-		lemma = newLemma
-		src, err := json.MarshalIndent(&lemma, "", "  ")
+		currentLemma = newLemma
+		src, err := json.MarshalIndent(&currentLemma, "", "  ")
 		if err != nil {
 			errString := err.Error()
 			return &gqlmodel.RenderedFields{
@@ -261,7 +262,7 @@ func (r *queryResolver) RenderFields(ctx context.Context, fields []string, templ
 		renderedField := &gqlmodel.RenderedField{
 			Field: field,
 		}
-		result, err := anki.RenderRawTemplate(field, &lemma)
+		result, err := anki.RenderRawTemplate(field, &currentLemma)
 		if err != nil {
 			errString := err.Error()
 			renderedField.Error = &errString
