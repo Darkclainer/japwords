@@ -1,6 +1,6 @@
 import { ApolloError } from '@apollo/client';
 import { GraphQLError } from 'graphql';
-import { ReactNode } from 'react';
+import { createElement, ReactNode } from 'react';
 import { IconProps, toast, ToastContent, ToastOptions } from 'react-toastify';
 
 import { ErrorIcon, OKIcon, WarningIcon } from '../components/Icons/StatusIcon';
@@ -22,12 +22,12 @@ function getToastIcon({ type }: IconProps): ReactNode {
   const props = { className: 'w-5 h-5' };
   switch (type) {
     case 'success':
-      return OKIcon(props);
+      return createElement(OKIcon, props);
     case 'warning':
-      return WarningIcon(props);
+      return createElement(WarningIcon, props);
     case 'error':
     case 'default':
-      return ErrorIcon(props);
+      return createElement(ErrorIcon, props);
   }
   return null;
 }
