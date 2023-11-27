@@ -2,17 +2,25 @@ type AnkiConnectionError implements Error {
   message: String!
 }
 
-type AnkiPermissionError implements Error {
+type AnkiInvalidAPIKey implements Error {
   message: String!
   version: Int!
 }
 
-type AnkiUnauthorizedError implements Error {
+type AnkiCollectionUnavailable implements Error {
   message: String!
   version: Int!
 }
 
-union AnkiError =  AnkiConnectionError | AnkiPermissionError | AnkiUnauthorizedError 
+type AnkiForbiddenOrigin implements Error {
+  message: String!
+}
+
+type AnkiUnknownError implements Error {
+  message: String!
+}
+
+union AnkiError =  AnkiConnectionError | AnkiInvalidAPIKey | AnkiCollectionUnavailable | AnkiForbiddenOrigin | AnkiUnknownError 
 
 extend type Query {
   # Anki represents data available in Anki by AnkiConnect

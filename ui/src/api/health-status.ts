@@ -15,12 +15,15 @@ export const GET_HEALTH_STATUS = gql(`
         ... on AnkiConnectionError {
           message
         }
-        ... on AnkiPermissionError {
+        ... on AnkiInvalidAPIKey {
           version
           message
         }
-        ... on AnkiUnauthorizedError {
+        ... on AnkiCollectionUnavailable {
           version
+          message
+        }
+        ... on AnkiForbiddenOrigin {
           message
         }
         ... on Error {

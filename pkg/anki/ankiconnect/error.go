@@ -5,9 +5,19 @@ import (
 	"fmt"
 )
 
-const AnkiMessagePermissionDenied = "valid api key must be provided"
+// invalid api key for anki-connect
+const ankiErrorInvalidAPIKey = "valid api key must be provided"
 
-var ErrPermissionDenied = errors.New("permsission denied")
+// user didn't choose profile, so collections is unavailable
+const ankiErrorCollectionUnavailable = "collection is not available"
+
+// ErrInvalidAPIKey error indicating that Anki-Connect protected by api key,
+// and nor or invalid api key was provided
+var ErrInvalidAPIKey = errors.New("invalid API Key was provided")
+
+// ErrCollectionUnavailable error indicating that action can not be processed,
+// because anki is partially loaded (particular example is when user didn't login in profile).
+var ErrCollectionUnavailable = errors.New("collection is not available")
 
 // ServerError represent errors that we quite sure related to anki.
 // Eiher it's message from field "error" from response or can be wrapper
@@ -59,17 +69,26 @@ func (e *ConnectionError) Unwrap() error {
 }
 
 func newServerError(message string) error {
-	if message == AnkiMessagePermissionDenied {
-		return newPermissionDeniedError()
+	switch message {
+	case ankiErrorInvalidAPIKey:
+		return newInvalidAPIKey()
+	case ankiErrorCollectionUnavailable:
+		return newCollectionUnavailable()
 	}
 	return &ServerError{
 		Message: message,
 	}
 }
 
-func newPermissionDeniedError() error {
+func newInvalidAPIKey() error {
 	return &ServerError{
-		Err: ErrPermissionDenied,
+		Err: ErrInvalidAPIKey,
+	}
+}
+
+func newCollectionUnavailable() error {
+	return &ServerError{
+		Err: ErrCollectionUnavailable,
 	}
 }
 

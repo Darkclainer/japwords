@@ -66,8 +66,10 @@ export function throwErrorHealthStatus(
 
 export type AnkiState =
   | AnkiStateConnectionError
+  | AnkiStateUnknownError
   | AnkiStateForbiddenOrigin
-  | AnkiStateUnauthorized
+  | AnkiStateCollectionUnavailable
+  | AnkiStateInvalidAPIKey
   | AnkiStateOk;
 
 // AnkiStateConnectionError means that backend tried to connect to anki-connect but failed
@@ -76,22 +78,24 @@ export interface AnkiStateConnectionError {
   message?: string;
 }
 
-export interface AnkiStateForbiddenOrigin {
-  kind: 'ForbiddenOrigin';
-  version: number;
+export interface AnkiStateUnknownError {
+  kind: 'UnknownError';
+  message?: string;
 }
 
-export interface AnkiStateUnauthorized {
-  kind: 'Unauthorized';
+export interface AnkiStateForbiddenOrigin {
+  kind: 'ForbiddenOrigin';
+}
+
+export interface AnkiStateCollectionUnavailable {
+  kind: 'CollectionUnavailable';
   version: number;
 }
 
 // AnkiStatePermissionError
-export interface AnkiStatePermissionError {
-  kind: 'PermissionError';
+export interface AnkiStateInvalidAPIKey {
+  kind: 'InvalidAPIKey';
   version: number;
-  apiKeyRequired: boolean;
-  permissionGranted: boolean;
 }
 
 export interface AnkiStateOk {
@@ -134,18 +138,30 @@ function ankiStateFromGql(state: AnkiConfigStateResult): AnkiState {
           kind: 'ConnectionError',
           message: state.error.message,
         };
-      case 'AnkiPermissionError':
+      case 'AnkiForbiddenOrigin':
         return {
           kind: 'ForbiddenOrigin',
-          version: state.error.version,
         };
-      case 'AnkiUnauthorizedError':
+      case 'AnkiInvalidAPIKey':
         return {
-          kind: 'Unauthorized',
+          kind: 'InvalidAPIKey',
           version: state.error.version,
         };
-      default:
+      case 'AnkiCollectionUnavailable':
+        return {
+          kind: 'CollectionUnavailable',
+          version: state.error.version,
+        };
+      case 'AnkiUnknownError':
+        return {
+          kind: 'UnknownError',
+        };
+      case undefined:
         throw 'unreachable';
+      default: {
+        const _exhaustiveCheck: never = state.error;
+        return _exhaustiveCheck;
+      }
     }
   }
   if (state.ankiConfigState) {

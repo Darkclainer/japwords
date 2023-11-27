@@ -10,11 +10,10 @@ import (
 )
 
 var (
-	ErrPermissionDenied = errors.New("anki-connect forbid request from client origin")
-
-	// ErrUnauthorized actually more complicated than "unauthorized".
-	// Either the anki is not properly initialized (user didn't select profile) or api-key wrong.
-	ErrUnauthorized = errors.New("anki-connect rejected request")
+	// redefine this errors from client, because we probably want to expose them as API
+	ErrForbiddenOrigin       = errors.New("anki-connect forbid request from client origin")
+	ErrInvalidAPIKey         = errors.New("anki-connect rejected request because api key is invalid")
+	ErrCollectionUnavailable = errors.New("anki-connect is not ready for specified action")
 
 	ErrDeckAlreadyExists = errors.New("deck with the same name already exists")
 )
@@ -81,28 +80,28 @@ func (a *Anki) FullStateCheck(ctx context.Context) (*StateResult, error) {
 	result := &StateResult{}
 	permissions, err := client.RequestPermission(ctx)
 	if err != nil {
-		return result, err
+		return result, redefineClientError(err)
 	}
 	result.Version = permissions.Version
 	if permissions.Permission != ankiconnect.PermissionGranted {
-		return result, ErrPermissionDenied
+		return result, ErrForbiddenOrigin
 	}
 	decks, err := client.DeckNames(ctx)
 	if err != nil {
-		return result, err
+		return result, redefineClientError(err)
 	}
 	deckExists := slices.ContainsFunc(decks, func(e string) bool { return e == config.Deck })
 	result.DeckExists = deckExists
 	noteTypes, err := client.ModelNames(ctx)
 	if err != nil {
-		return result, err
+		return result, redefineClientError(err)
 	}
 	noteTypeExists := slices.ContainsFunc(noteTypes, func(e string) bool { return e == config.NoteType })
 	result.NoteTypeExists = noteTypeExists
 	if noteTypeExists {
 		noteFields, err := client.ModelFieldNames(ctx, config.NoteType)
 		if err != nil {
-			return result, err
+			return result, redefineClientError(err)
 		}
 		setFields := map[string]struct{}{}
 		for _, field := range noteFields {
@@ -180,4 +179,19 @@ func (a *Anki) getClient() (AnkiClient, *Config) {
 	a.mu.Lock()
 	defer a.mu.Unlock()
 	return a.client, a.config
+}
+
+func redefineClientError(err error) error {
+	var serverError *ankiconnect.ServerError
+	if !errors.As(err, &serverError) {
+		return err
+	}
+	switch serverError.Err {
+	case ankiconnect.ErrCollectionUnavailable:
+		return ErrCollectionUnavailable
+	case ankiconnect.ErrInvalidAPIKey:
+		return ErrInvalidAPIKey
+	default:
+		return err
+	}
 }

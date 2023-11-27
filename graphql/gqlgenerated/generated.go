@@ -55,6 +55,11 @@ type ComplexityRoot struct {
 		Notes      func(childComplexity int) int
 	}
 
+	AnkiCollectionUnavailable struct {
+		Message func(childComplexity int) int
+		Version func(childComplexity int) int
+	}
+
 	AnkiConfig struct {
 		APIKey   func(childComplexity int) int
 		Addr     func(childComplexity int) int
@@ -95,6 +100,15 @@ type ComplexityRoot struct {
 		Error func(childComplexity int) int
 	}
 
+	AnkiForbiddenOrigin struct {
+		Message func(childComplexity int) int
+	}
+
+	AnkiInvalidAPIKey struct {
+		Message func(childComplexity int) int
+		Version func(childComplexity int) int
+	}
+
 	AnkiMappingElement struct {
 		Key   func(childComplexity int) int
 		Value func(childComplexity int) int
@@ -110,14 +124,8 @@ type ComplexityRoot struct {
 		Notes func(childComplexity int) int
 	}
 
-	AnkiPermissionError struct {
+	AnkiUnknownError struct {
 		Message func(childComplexity int) int
-		Version func(childComplexity int) int
-	}
-
-	AnkiUnauthorizedError struct {
-		Message func(childComplexity int) int
-		Version func(childComplexity int) int
 	}
 
 	Audio struct {
@@ -301,6 +309,20 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Anki.Notes(childComplexity), true
 
+	case "AnkiCollectionUnavailable.message":
+		if e.complexity.AnkiCollectionUnavailable.Message == nil {
+			break
+		}
+
+		return e.complexity.AnkiCollectionUnavailable.Message(childComplexity), true
+
+	case "AnkiCollectionUnavailable.version":
+		if e.complexity.AnkiCollectionUnavailable.Version == nil {
+			break
+		}
+
+		return e.complexity.AnkiCollectionUnavailable.Version(childComplexity), true
+
 	case "AnkiConfig.apiKey":
 		if e.complexity.AnkiConfig.APIKey == nil {
 			break
@@ -434,6 +456,27 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.AnkiDecksResult.Error(childComplexity), true
 
+	case "AnkiForbiddenOrigin.message":
+		if e.complexity.AnkiForbiddenOrigin.Message == nil {
+			break
+		}
+
+		return e.complexity.AnkiForbiddenOrigin.Message(childComplexity), true
+
+	case "AnkiInvalidAPIKey.message":
+		if e.complexity.AnkiInvalidAPIKey.Message == nil {
+			break
+		}
+
+		return e.complexity.AnkiInvalidAPIKey.Message(childComplexity), true
+
+	case "AnkiInvalidAPIKey.version":
+		if e.complexity.AnkiInvalidAPIKey.Version == nil {
+			break
+		}
+
+		return e.complexity.AnkiInvalidAPIKey.Version(childComplexity), true
+
 	case "AnkiMappingElement.key":
 		if e.complexity.AnkiMappingElement.Key == nil {
 			break
@@ -476,33 +519,12 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.AnkiNotesResult.Notes(childComplexity), true
 
-	case "AnkiPermissionError.message":
-		if e.complexity.AnkiPermissionError.Message == nil {
+	case "AnkiUnknownError.message":
+		if e.complexity.AnkiUnknownError.Message == nil {
 			break
 		}
 
-		return e.complexity.AnkiPermissionError.Message(childComplexity), true
-
-	case "AnkiPermissionError.version":
-		if e.complexity.AnkiPermissionError.Version == nil {
-			break
-		}
-
-		return e.complexity.AnkiPermissionError.Version(childComplexity), true
-
-	case "AnkiUnauthorizedError.message":
-		if e.complexity.AnkiUnauthorizedError.Message == nil {
-			break
-		}
-
-		return e.complexity.AnkiUnauthorizedError.Message(childComplexity), true
-
-	case "AnkiUnauthorizedError.version":
-		if e.complexity.AnkiUnauthorizedError.Version == nil {
-			break
-		}
-
-		return e.complexity.AnkiUnauthorizedError.Version(childComplexity), true
+		return e.complexity.AnkiUnknownError.Message(childComplexity), true
 
 	case "Audio.source":
 		if e.complexity.Audio.Source == nil {
@@ -996,17 +1018,25 @@ var sources = []*ast.Source{
   message: String!
 }
 
-type AnkiPermissionError implements Error {
+type AnkiInvalidAPIKey implements Error {
   message: String!
   version: Int!
 }
 
-type AnkiUnauthorizedError implements Error {
+type AnkiCollectionUnavailable implements Error {
   message: String!
   version: Int!
 }
 
-union AnkiError =  AnkiConnectionError | AnkiPermissionError | AnkiUnauthorizedError 
+type AnkiForbiddenOrigin implements Error {
+  message: String!
+}
+
+type AnkiUnknownError implements Error {
+  message: String!
+}
+
+union AnkiError =  AnkiConnectionError | AnkiInvalidAPIKey | AnkiCollectionUnavailable | AnkiForbiddenOrigin | AnkiUnknownError 
 
 extend type Query {
   # Anki represents data available in Anki by AnkiConnect
@@ -1629,6 +1659,94 @@ func (ec *executionContext) fieldContext_Anki_noteFields(ctx context.Context, fi
 	if fc.Args, err = ec.field_Anki_noteFields_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _AnkiCollectionUnavailable_message(ctx context.Context, field graphql.CollectedField, obj *gqlmodel.AnkiCollectionUnavailable) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_AnkiCollectionUnavailable_message(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Message, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_AnkiCollectionUnavailable_message(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "AnkiCollectionUnavailable",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _AnkiCollectionUnavailable_version(ctx context.Context, field graphql.CollectedField, obj *gqlmodel.AnkiCollectionUnavailable) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_AnkiCollectionUnavailable_version(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Version, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_AnkiCollectionUnavailable_version(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "AnkiCollectionUnavailable",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
 	}
 	return fc, nil
 }
@@ -2479,6 +2597,138 @@ func (ec *executionContext) fieldContext_AnkiDecksResult_error(ctx context.Conte
 	return fc, nil
 }
 
+func (ec *executionContext) _AnkiForbiddenOrigin_message(ctx context.Context, field graphql.CollectedField, obj *gqlmodel.AnkiForbiddenOrigin) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_AnkiForbiddenOrigin_message(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Message, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_AnkiForbiddenOrigin_message(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "AnkiForbiddenOrigin",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _AnkiInvalidAPIKey_message(ctx context.Context, field graphql.CollectedField, obj *gqlmodel.AnkiInvalidAPIKey) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_AnkiInvalidAPIKey_message(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Message, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_AnkiInvalidAPIKey_message(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "AnkiInvalidAPIKey",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _AnkiInvalidAPIKey_version(ctx context.Context, field graphql.CollectedField, obj *gqlmodel.AnkiInvalidAPIKey) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_AnkiInvalidAPIKey_version(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Version, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_AnkiInvalidAPIKey_version(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "AnkiInvalidAPIKey",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _AnkiMappingElement_key(ctx context.Context, field graphql.CollectedField, obj *gqlmodel.AnkiMappingElement) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_AnkiMappingElement_key(ctx, field)
 	if err != nil {
@@ -2731,8 +2981,8 @@ func (ec *executionContext) fieldContext_AnkiNotesResult_error(ctx context.Conte
 	return fc, nil
 }
 
-func (ec *executionContext) _AnkiPermissionError_message(ctx context.Context, field graphql.CollectedField, obj *gqlmodel.AnkiPermissionError) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_AnkiPermissionError_message(ctx, field)
+func (ec *executionContext) _AnkiUnknownError_message(ctx context.Context, field graphql.CollectedField, obj *gqlmodel.AnkiUnknownError) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_AnkiUnknownError_message(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -2762,146 +3012,14 @@ func (ec *executionContext) _AnkiPermissionError_message(ctx context.Context, fi
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_AnkiPermissionError_message(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_AnkiUnknownError_message(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
-		Object:     "AnkiPermissionError",
+		Object:     "AnkiUnknownError",
 		Field:      field,
 		IsMethod:   false,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type String does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _AnkiPermissionError_version(ctx context.Context, field graphql.CollectedField, obj *gqlmodel.AnkiPermissionError) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_AnkiPermissionError_version(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Version, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(int)
-	fc.Result = res
-	return ec.marshalNInt2int(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_AnkiPermissionError_version(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "AnkiPermissionError",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Int does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _AnkiUnauthorizedError_message(ctx context.Context, field graphql.CollectedField, obj *gqlmodel.AnkiUnauthorizedError) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_AnkiUnauthorizedError_message(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Message, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(string)
-	fc.Result = res
-	return ec.marshalNString2string(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_AnkiUnauthorizedError_message(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "AnkiUnauthorizedError",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _AnkiUnauthorizedError_version(ctx context.Context, field graphql.CollectedField, obj *gqlmodel.AnkiUnauthorizedError) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_AnkiUnauthorizedError_version(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Version, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(int)
-	fc.Result = res
-	return ec.marshalNInt2int(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_AnkiUnauthorizedError_version(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "AnkiUnauthorizedError",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Int does not have child fields")
 		},
 	}
 	return fc, nil
@@ -7370,20 +7488,34 @@ func (ec *executionContext) _AnkiError(ctx context.Context, sel ast.SelectionSet
 			return graphql.Null
 		}
 		return ec._AnkiConnectionError(ctx, sel, obj)
-	case gqlmodel.AnkiPermissionError:
-		return ec._AnkiPermissionError(ctx, sel, &obj)
-	case *gqlmodel.AnkiPermissionError:
+	case gqlmodel.AnkiInvalidAPIKey:
+		return ec._AnkiInvalidAPIKey(ctx, sel, &obj)
+	case *gqlmodel.AnkiInvalidAPIKey:
 		if obj == nil {
 			return graphql.Null
 		}
-		return ec._AnkiPermissionError(ctx, sel, obj)
-	case gqlmodel.AnkiUnauthorizedError:
-		return ec._AnkiUnauthorizedError(ctx, sel, &obj)
-	case *gqlmodel.AnkiUnauthorizedError:
+		return ec._AnkiInvalidAPIKey(ctx, sel, obj)
+	case gqlmodel.AnkiCollectionUnavailable:
+		return ec._AnkiCollectionUnavailable(ctx, sel, &obj)
+	case *gqlmodel.AnkiCollectionUnavailable:
 		if obj == nil {
 			return graphql.Null
 		}
-		return ec._AnkiUnauthorizedError(ctx, sel, obj)
+		return ec._AnkiCollectionUnavailable(ctx, sel, obj)
+	case gqlmodel.AnkiForbiddenOrigin:
+		return ec._AnkiForbiddenOrigin(ctx, sel, &obj)
+	case *gqlmodel.AnkiForbiddenOrigin:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._AnkiForbiddenOrigin(ctx, sel, obj)
+	case gqlmodel.AnkiUnknownError:
+		return ec._AnkiUnknownError(ctx, sel, &obj)
+	case *gqlmodel.AnkiUnknownError:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._AnkiUnknownError(ctx, sel, obj)
 	default:
 		panic(fmt.Errorf("unexpected type %T", obj))
 	}
@@ -7446,20 +7578,34 @@ func (ec *executionContext) _Error(ctx context.Context, sel ast.SelectionSet, ob
 			return graphql.Null
 		}
 		return ec._AnkiConnectionError(ctx, sel, obj)
-	case gqlmodel.AnkiPermissionError:
-		return ec._AnkiPermissionError(ctx, sel, &obj)
-	case *gqlmodel.AnkiPermissionError:
+	case gqlmodel.AnkiInvalidAPIKey:
+		return ec._AnkiInvalidAPIKey(ctx, sel, &obj)
+	case *gqlmodel.AnkiInvalidAPIKey:
 		if obj == nil {
 			return graphql.Null
 		}
-		return ec._AnkiPermissionError(ctx, sel, obj)
-	case gqlmodel.AnkiUnauthorizedError:
-		return ec._AnkiUnauthorizedError(ctx, sel, &obj)
-	case *gqlmodel.AnkiUnauthorizedError:
+		return ec._AnkiInvalidAPIKey(ctx, sel, obj)
+	case gqlmodel.AnkiCollectionUnavailable:
+		return ec._AnkiCollectionUnavailable(ctx, sel, &obj)
+	case *gqlmodel.AnkiCollectionUnavailable:
 		if obj == nil {
 			return graphql.Null
 		}
-		return ec._AnkiUnauthorizedError(ctx, sel, obj)
+		return ec._AnkiCollectionUnavailable(ctx, sel, obj)
+	case gqlmodel.AnkiForbiddenOrigin:
+		return ec._AnkiForbiddenOrigin(ctx, sel, &obj)
+	case *gqlmodel.AnkiForbiddenOrigin:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._AnkiForbiddenOrigin(ctx, sel, obj)
+	case gqlmodel.AnkiUnknownError:
+		return ec._AnkiUnknownError(ctx, sel, &obj)
+	case *gqlmodel.AnkiUnknownError:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._AnkiUnknownError(ctx, sel, obj)
 	case gqlmodel.AnkiConfigMappingError:
 		return ec._AnkiConfigMappingError(ctx, sel, &obj)
 	case *gqlmodel.AnkiConfigMappingError:
@@ -7616,6 +7762,50 @@ func (ec *executionContext) _Anki(ctx context.Context, sel ast.SelectionSet, obj
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var ankiCollectionUnavailableImplementors = []string{"AnkiCollectionUnavailable", "Error", "AnkiError"}
+
+func (ec *executionContext) _AnkiCollectionUnavailable(ctx context.Context, sel ast.SelectionSet, obj *gqlmodel.AnkiCollectionUnavailable) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, ankiCollectionUnavailableImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("AnkiCollectionUnavailable")
+		case "message":
+			out.Values[i] = ec._AnkiCollectionUnavailable_message(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "version":
+			out.Values[i] = ec._AnkiCollectionUnavailable_version(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -7954,6 +8144,89 @@ func (ec *executionContext) _AnkiDecksResult(ctx context.Context, sel ast.Select
 	return out
 }
 
+var ankiForbiddenOriginImplementors = []string{"AnkiForbiddenOrigin", "Error", "AnkiError"}
+
+func (ec *executionContext) _AnkiForbiddenOrigin(ctx context.Context, sel ast.SelectionSet, obj *gqlmodel.AnkiForbiddenOrigin) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, ankiForbiddenOriginImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("AnkiForbiddenOrigin")
+		case "message":
+			out.Values[i] = ec._AnkiForbiddenOrigin_message(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var ankiInvalidAPIKeyImplementors = []string{"AnkiInvalidAPIKey", "Error", "AnkiError"}
+
+func (ec *executionContext) _AnkiInvalidAPIKey(ctx context.Context, sel ast.SelectionSet, obj *gqlmodel.AnkiInvalidAPIKey) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, ankiInvalidAPIKeyImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("AnkiInvalidAPIKey")
+		case "message":
+			out.Values[i] = ec._AnkiInvalidAPIKey_message(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "version":
+			out.Values[i] = ec._AnkiInvalidAPIKey_version(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
 var ankiMappingElementImplementors = []string{"AnkiMappingElement"}
 
 func (ec *executionContext) _AnkiMappingElement(ctx context.Context, sel ast.SelectionSet, obj *gqlmodel.AnkiMappingElement) graphql.Marshaler {
@@ -8074,68 +8347,19 @@ func (ec *executionContext) _AnkiNotesResult(ctx context.Context, sel ast.Select
 	return out
 }
 
-var ankiPermissionErrorImplementors = []string{"AnkiPermissionError", "Error", "AnkiError"}
+var ankiUnknownErrorImplementors = []string{"AnkiUnknownError", "Error", "AnkiError"}
 
-func (ec *executionContext) _AnkiPermissionError(ctx context.Context, sel ast.SelectionSet, obj *gqlmodel.AnkiPermissionError) graphql.Marshaler {
-	fields := graphql.CollectFields(ec.OperationContext, sel, ankiPermissionErrorImplementors)
-
-	out := graphql.NewFieldSet(fields)
-	deferred := make(map[string]*graphql.FieldSet)
-	for i, field := range fields {
-		switch field.Name {
-		case "__typename":
-			out.Values[i] = graphql.MarshalString("AnkiPermissionError")
-		case "message":
-			out.Values[i] = ec._AnkiPermissionError_message(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				out.Invalids++
-			}
-		case "version":
-			out.Values[i] = ec._AnkiPermissionError_version(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				out.Invalids++
-			}
-		default:
-			panic("unknown field " + strconv.Quote(field.Name))
-		}
-	}
-	out.Dispatch(ctx)
-	if out.Invalids > 0 {
-		return graphql.Null
-	}
-
-	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
-
-	for label, dfs := range deferred {
-		ec.processDeferredGroup(graphql.DeferredGroup{
-			Label:    label,
-			Path:     graphql.GetPath(ctx),
-			FieldSet: dfs,
-			Context:  ctx,
-		})
-	}
-
-	return out
-}
-
-var ankiUnauthorizedErrorImplementors = []string{"AnkiUnauthorizedError", "Error", "AnkiError"}
-
-func (ec *executionContext) _AnkiUnauthorizedError(ctx context.Context, sel ast.SelectionSet, obj *gqlmodel.AnkiUnauthorizedError) graphql.Marshaler {
-	fields := graphql.CollectFields(ec.OperationContext, sel, ankiUnauthorizedErrorImplementors)
+func (ec *executionContext) _AnkiUnknownError(ctx context.Context, sel ast.SelectionSet, obj *gqlmodel.AnkiUnknownError) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, ankiUnknownErrorImplementors)
 
 	out := graphql.NewFieldSet(fields)
 	deferred := make(map[string]*graphql.FieldSet)
 	for i, field := range fields {
 		switch field.Name {
 		case "__typename":
-			out.Values[i] = graphql.MarshalString("AnkiUnauthorizedError")
+			out.Values[i] = graphql.MarshalString("AnkiUnknownError")
 		case "message":
-			out.Values[i] = ec._AnkiUnauthorizedError_message(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				out.Invalids++
-			}
-		case "version":
-			out.Values[i] = ec._AnkiUnauthorizedError_version(ctx, field, obj)
+			out.Values[i] = ec._AnkiUnknownError_message(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}

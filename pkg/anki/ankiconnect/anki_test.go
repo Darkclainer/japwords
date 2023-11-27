@@ -153,7 +153,7 @@ func Test_Anki_request_Errors(t *testing.T) {
 		{
 			Name:           "bad status/permission denied",
 			ResponseStatus: http.StatusBadRequest,
-			ResponseBody:   `{"error": "` + AnkiMessagePermissionDenied + `"}`,
+			ResponseBody:   `{"error": "` + ankiErrorInvalidAPIKey + `"}`,
 			ErrorAssert: func(t assert.TestingT, err error, _ ...any) bool {
 				var expectedError *ServerError
 				if !assert.ErrorAs(t, err, &expectedError) {
@@ -162,7 +162,7 @@ func Test_Anki_request_Errors(t *testing.T) {
 				if !assert.Equal(t, "", expectedError.Message) {
 					return false
 				}
-				return assert.ErrorIs(t, err, ErrPermissionDenied)
+				return assert.ErrorIs(t, err, ErrInvalidAPIKey)
 			},
 		},
 		{
@@ -198,7 +198,7 @@ func Test_Anki_request_Errors(t *testing.T) {
 		{ // this is how anki-connect actually responds in my version
 			Name:           "ok status/permission denied",
 			ResponseStatus: http.StatusOK,
-			ResponseBody:   `{"error": "` + AnkiMessagePermissionDenied + `"}`,
+			ResponseBody:   `{"error": "` + ankiErrorInvalidAPIKey + `"}`,
 			ErrorAssert: func(t assert.TestingT, err error, _ ...any) bool {
 				var expectedError *ServerError
 				if !assert.ErrorAs(t, err, &expectedError) {
@@ -207,7 +207,22 @@ func Test_Anki_request_Errors(t *testing.T) {
 				if !assert.Equal(t, "", expectedError.Message) {
 					return false
 				}
-				return assert.ErrorIs(t, err, ErrPermissionDenied)
+				return assert.ErrorIs(t, err, ErrInvalidAPIKey)
+			},
+		},
+		{ // this is how anki respond if profile is not choosen
+			Name:           "ok status/permission denied",
+			ResponseStatus: http.StatusOK,
+			ResponseBody:   `{"error": "` + ankiErrorCollectionUnavailable + `"}`,
+			ErrorAssert: func(t assert.TestingT, err error, _ ...any) bool {
+				var expectedError *ServerError
+				if !assert.ErrorAs(t, err, &expectedError) {
+					return false
+				}
+				if !assert.Equal(t, "", expectedError.Message) {
+					return false
+				}
+				return assert.ErrorIs(t, err, ErrCollectionUnavailable)
 			},
 		},
 	}

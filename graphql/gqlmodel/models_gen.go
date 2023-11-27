@@ -29,6 +29,16 @@ type Anki struct {
 	NoteFields *AnkiNoteFieldsResult `json:"noteFields"`
 }
 
+type AnkiCollectionUnavailable struct {
+	Message string `json:"message"`
+	Version int    `json:"version"`
+}
+
+func (AnkiCollectionUnavailable) IsError()                {}
+func (this AnkiCollectionUnavailable) GetMessage() string { return this.Message }
+
+func (AnkiCollectionUnavailable) IsAnkiError() {}
+
 type AnkiConfig struct {
 	Addr     string                `json:"addr"`
 	APIKey   string                `json:"apiKey"`
@@ -82,6 +92,25 @@ type AnkiDecksResult struct {
 	Error AnkiError `json:"error,omitempty"`
 }
 
+type AnkiForbiddenOrigin struct {
+	Message string `json:"message"`
+}
+
+func (AnkiForbiddenOrigin) IsError()                {}
+func (this AnkiForbiddenOrigin) GetMessage() string { return this.Message }
+
+func (AnkiForbiddenOrigin) IsAnkiError() {}
+
+type AnkiInvalidAPIKey struct {
+	Message string `json:"message"`
+	Version int    `json:"version"`
+}
+
+func (AnkiInvalidAPIKey) IsError()                {}
+func (this AnkiInvalidAPIKey) GetMessage() string { return this.Message }
+
+func (AnkiInvalidAPIKey) IsAnkiError() {}
+
 type AnkiMappingElement struct {
 	Key   string `json:"key"`
 	Value string `json:"value"`
@@ -97,25 +126,14 @@ type AnkiNotesResult struct {
 	Error AnkiError `json:"error,omitempty"`
 }
 
-type AnkiPermissionError struct {
+type AnkiUnknownError struct {
 	Message string `json:"message"`
-	Version int    `json:"version"`
 }
 
-func (AnkiPermissionError) IsError()                {}
-func (this AnkiPermissionError) GetMessage() string { return this.Message }
+func (AnkiUnknownError) IsError()                {}
+func (this AnkiUnknownError) GetMessage() string { return this.Message }
 
-func (AnkiPermissionError) IsAnkiError() {}
-
-type AnkiUnauthorizedError struct {
-	Message string `json:"message"`
-	Version int    `json:"version"`
-}
-
-func (AnkiUnauthorizedError) IsError()                {}
-func (this AnkiUnauthorizedError) GetMessage() string { return this.Message }
-
-func (AnkiUnauthorizedError) IsAnkiError() {}
+func (AnkiUnknownError) IsAnkiError() {}
 
 type Audio struct {
 	Type   string `json:"type"`

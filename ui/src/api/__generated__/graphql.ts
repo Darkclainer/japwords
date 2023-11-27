@@ -28,6 +28,12 @@ export type AnkiNoteFieldsArgs = {
   name: Scalars['String']['input'];
 };
 
+export type AnkiCollectionUnavailable = Error & {
+  __typename?: 'AnkiCollectionUnavailable';
+  message: Scalars['String']['output'];
+  version: Scalars['Int']['output'];
+};
+
 export type AnkiConfig = {
   __typename?: 'AnkiConfig';
   addr: Scalars['String']['output'];
@@ -80,7 +86,18 @@ export type AnkiDecksResult = {
   error?: Maybe<AnkiError>;
 };
 
-export type AnkiError = AnkiConnectionError | AnkiPermissionError | AnkiUnauthorizedError;
+export type AnkiError = AnkiCollectionUnavailable | AnkiConnectionError | AnkiForbiddenOrigin | AnkiInvalidApiKey | AnkiUnknownError;
+
+export type AnkiForbiddenOrigin = Error & {
+  __typename?: 'AnkiForbiddenOrigin';
+  message: Scalars['String']['output'];
+};
+
+export type AnkiInvalidApiKey = Error & {
+  __typename?: 'AnkiInvalidAPIKey';
+  message: Scalars['String']['output'];
+  version: Scalars['Int']['output'];
+};
 
 export type AnkiMappingElement = {
   __typename?: 'AnkiMappingElement';
@@ -100,16 +117,9 @@ export type AnkiNotesResult = {
   notes?: Maybe<Array<Scalars['String']['output']>>;
 };
 
-export type AnkiPermissionError = Error & {
-  __typename?: 'AnkiPermissionError';
+export type AnkiUnknownError = Error & {
+  __typename?: 'AnkiUnknownError';
   message: Scalars['String']['output'];
-  version: Scalars['Int']['output'];
-};
-
-export type AnkiUnauthorizedError = Error & {
-  __typename?: 'AnkiUnauthorizedError';
-  message: Scalars['String']['output'];
-  version: Scalars['Int']['output'];
 };
 
 export type Audio = {
@@ -324,7 +334,7 @@ export type Word = {
 export type GetHealthStatusQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type GetHealthStatusQuery = { __typename?: 'Query', AnkiConfigState: { __typename?: 'AnkiConfigStateResult', ankiConfigState?: { __typename?: 'AnkiConfigState', version: number, deckExists: boolean, noteTypeExists: boolean, noteHasAllFields: boolean } | null, error?: { __typename?: 'AnkiConnectionError', message: string } | { __typename?: 'AnkiPermissionError', version: number, message: string } | { __typename?: 'AnkiUnauthorizedError', version: number, message: string } | null } };
+export type GetHealthStatusQuery = { __typename?: 'Query', AnkiConfigState: { __typename?: 'AnkiConfigStateResult', ankiConfigState?: { __typename?: 'AnkiConfigState', version: number, deckExists: boolean, noteTypeExists: boolean, noteHasAllFields: boolean } | null, error?: { __typename?: 'AnkiCollectionUnavailable', version: number, message: string } | { __typename?: 'AnkiConnectionError', message: string } | { __typename?: 'AnkiForbiddenOrigin', message: string } | { __typename?: 'AnkiInvalidAPIKey', version: number, message: string } | { __typename?: 'AnkiUnknownError', message: string } | null } };
 
 export type GetConnectionConfigQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -352,7 +362,7 @@ export type GetAnkiConfigCurrentDeckQuery = { __typename?: 'Query', AnkiConfig: 
 export type GetAnkiDecksQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type GetAnkiDecksQuery = { __typename?: 'Query', Anki: { __typename?: 'Anki', decks: { __typename?: 'AnkiDecksResult', decks?: Array<string> | null, error?: { __typename: 'AnkiConnectionError' } | { __typename: 'AnkiPermissionError' } | { __typename: 'AnkiUnauthorizedError' } | null } } };
+export type GetAnkiDecksQuery = { __typename?: 'Query', Anki: { __typename?: 'Anki', decks: { __typename?: 'AnkiDecksResult', decks?: Array<string> | null, error?: { __typename: 'AnkiCollectionUnavailable' } | { __typename: 'AnkiConnectionError' } | { __typename: 'AnkiForbiddenOrigin' } | { __typename: 'AnkiInvalidAPIKey' } | { __typename: 'AnkiUnknownError' } | null } } };
 
 export type SetAnkiConfigCurrentDeckMutationVariables = Exact<{
   name: Scalars['String']['input'];
@@ -366,14 +376,14 @@ export type CreateAnkiDeckMutationVariables = Exact<{
 }>;
 
 
-export type CreateAnkiDeckMutation = { __typename?: 'Mutation', createAnkiDeck: { __typename?: 'CreateAnkiDeckResult', ankiError?: { __typename?: 'AnkiConnectionError', message: string } | { __typename?: 'AnkiPermissionError', message: string } | { __typename?: 'AnkiUnauthorizedError', message: string } | null, error?: { __typename?: 'CreateAnkiDeckAlreadyExists', message: string } | { __typename?: 'ValidationError', message: string } | null } };
+export type CreateAnkiDeckMutation = { __typename?: 'Mutation', createAnkiDeck: { __typename?: 'CreateAnkiDeckResult', ankiError?: { __typename?: 'AnkiCollectionUnavailable', message: string } | { __typename?: 'AnkiConnectionError', message: string } | { __typename?: 'AnkiForbiddenOrigin', message: string } | { __typename?: 'AnkiInvalidAPIKey', message: string } | { __typename?: 'AnkiUnknownError', message: string } | null, error?: { __typename?: 'CreateAnkiDeckAlreadyExists', message: string } | { __typename?: 'ValidationError', message: string } | null } };
 
 export type GetAnkiNoteFieldsAndMappingQueryVariables = Exact<{
   noteName: Scalars['String']['input'];
 }>;
 
 
-export type GetAnkiNoteFieldsAndMappingQuery = { __typename?: 'Query', AnkiConfig: { __typename?: 'AnkiConfig', mapping: Array<{ __typename?: 'AnkiMappingElement', key: string, value: string }> }, Anki: { __typename?: 'Anki', noteFields: { __typename?: 'AnkiNoteFieldsResult', noteFields?: Array<string> | null, error?: { __typename?: 'AnkiConnectionError', message: string } | { __typename?: 'AnkiPermissionError', message: string } | { __typename?: 'AnkiUnauthorizedError', message: string } | null } } };
+export type GetAnkiNoteFieldsAndMappingQuery = { __typename?: 'Query', AnkiConfig: { __typename?: 'AnkiConfig', mapping: Array<{ __typename?: 'AnkiMappingElement', key: string, value: string }> }, Anki: { __typename?: 'Anki', noteFields: { __typename?: 'AnkiNoteFieldsResult', noteFields?: Array<string> | null, error?: { __typename?: 'AnkiCollectionUnavailable', message: string } | { __typename?: 'AnkiConnectionError', message: string } | { __typename?: 'AnkiForbiddenOrigin', message: string } | { __typename?: 'AnkiInvalidAPIKey', message: string } | { __typename?: 'AnkiUnknownError', message: string } | null } } };
 
 export type RenderFieldsQueryVariables = Exact<{
   fields: Array<Scalars['String']['input']> | Scalars['String']['input'];
@@ -392,7 +402,7 @@ export type UpdateMappingMutation = { __typename?: 'Mutation', setAnkiConfigMapp
 export type GetAnkiNotesQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type GetAnkiNotesQuery = { __typename?: 'Query', Anki: { __typename?: 'Anki', notes: { __typename?: 'AnkiNotesResult', notes?: Array<string> | null, error?: { __typename: 'AnkiConnectionError' } | { __typename: 'AnkiPermissionError' } | { __typename: 'AnkiUnauthorizedError' } | null } } };
+export type GetAnkiNotesQuery = { __typename?: 'Query', Anki: { __typename?: 'Anki', notes: { __typename?: 'AnkiNotesResult', notes?: Array<string> | null, error?: { __typename: 'AnkiCollectionUnavailable' } | { __typename: 'AnkiConnectionError' } | { __typename: 'AnkiForbiddenOrigin' } | { __typename: 'AnkiInvalidAPIKey' } | { __typename: 'AnkiUnknownError' } | null } } };
 
 export type SetAnkiConfigCurrentNoteMutationVariables = Exact<{
   name: Scalars['String']['input'];
@@ -406,7 +416,7 @@ export type CreateDefaultAnkiNoteMutationVariables = Exact<{
 }>;
 
 
-export type CreateDefaultAnkiNoteMutation = { __typename?: 'Mutation', createDefaultAnkiNote: { __typename?: 'CreateDefaultAnkiNoteResult', ankiError?: { __typename?: 'AnkiConnectionError', message: string } | { __typename?: 'AnkiPermissionError', message: string } | { __typename?: 'AnkiUnauthorizedError', message: string } | null, error?: { __typename?: 'CreateDefaultAnkiNoteAlreadyExists', message: string } | { __typename?: 'ValidationError', message: string } | null } };
+export type CreateDefaultAnkiNoteMutation = { __typename?: 'Mutation', createDefaultAnkiNote: { __typename?: 'CreateDefaultAnkiNoteResult', ankiError?: { __typename?: 'AnkiCollectionUnavailable', message: string } | { __typename?: 'AnkiConnectionError', message: string } | { __typename?: 'AnkiForbiddenOrigin', message: string } | { __typename?: 'AnkiInvalidAPIKey', message: string } | { __typename?: 'AnkiUnknownError', message: string } | null, error?: { __typename?: 'CreateDefaultAnkiNoteAlreadyExists', message: string } | { __typename?: 'ValidationError', message: string } | null } };
 
 export type GetLemmasQueryVariables = Exact<{
   query: Scalars['String']['input'];
@@ -416,7 +426,7 @@ export type GetLemmasQueryVariables = Exact<{
 export type GetLemmasQuery = { __typename?: 'Query', Lemmas?: { __typename?: 'Lemmas', lemmas: Array<{ __typename?: 'Lemma', tags: Array<string>, slug: { __typename?: 'Word', word: string, hiragana: string, furigana: Array<{ __typename?: 'Furigana', kanji: string, hiragana: string }>, pitch: Array<{ __typename?: 'Pitch', hiragana: string, pitch: Array<PitchType> }> }, forms: Array<{ __typename?: 'Word', word: string, hiragana: string, furigana: Array<{ __typename?: 'Furigana', kanji: string, hiragana: string }>, pitch: Array<{ __typename?: 'Pitch', hiragana: string, pitch: Array<PitchType> }> }>, senses: Array<{ __typename?: 'Sense', definition: Array<string>, partOfSpeech: Array<string>, tags: Array<string> }>, audio: Array<{ __typename?: 'Audio', type: string, source: string }> }> } | null };
 
 
-export const GetHealthStatusDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetHealthStatus"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"AnkiConfigState"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"ankiConfigState"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"version"}},{"kind":"Field","name":{"kind":"Name","value":"deckExists"}},{"kind":"Field","name":{"kind":"Name","value":"noteTypeExists"}},{"kind":"Field","name":{"kind":"Name","value":"noteHasAllFields"}}]}},{"kind":"Field","name":{"kind":"Name","value":"error"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"InlineFragment","typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"AnkiConnectionError"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"message"}}]}},{"kind":"InlineFragment","typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"AnkiPermissionError"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"version"}},{"kind":"Field","name":{"kind":"Name","value":"message"}}]}},{"kind":"InlineFragment","typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"AnkiUnauthorizedError"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"version"}},{"kind":"Field","name":{"kind":"Name","value":"message"}}]}},{"kind":"InlineFragment","typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Error"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"message"}}]}}]}}]}}]}}]} as unknown as DocumentNode<GetHealthStatusQuery, GetHealthStatusQueryVariables>;
+export const GetHealthStatusDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetHealthStatus"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"AnkiConfigState"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"ankiConfigState"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"version"}},{"kind":"Field","name":{"kind":"Name","value":"deckExists"}},{"kind":"Field","name":{"kind":"Name","value":"noteTypeExists"}},{"kind":"Field","name":{"kind":"Name","value":"noteHasAllFields"}}]}},{"kind":"Field","name":{"kind":"Name","value":"error"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"InlineFragment","typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"AnkiConnectionError"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"message"}}]}},{"kind":"InlineFragment","typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"AnkiInvalidAPIKey"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"version"}},{"kind":"Field","name":{"kind":"Name","value":"message"}}]}},{"kind":"InlineFragment","typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"AnkiCollectionUnavailable"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"version"}},{"kind":"Field","name":{"kind":"Name","value":"message"}}]}},{"kind":"InlineFragment","typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"AnkiForbiddenOrigin"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"message"}}]}},{"kind":"InlineFragment","typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Error"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"message"}}]}}]}}]}}]}}]} as unknown as DocumentNode<GetHealthStatusQuery, GetHealthStatusQueryVariables>;
 export const GetConnectionConfigDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetConnectionConfig"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"AnkiConfig"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"addr"}},{"kind":"Field","name":{"kind":"Name","value":"apiKey"}}]}}]}}]} as unknown as DocumentNode<GetConnectionConfigQuery, GetConnectionConfigQueryVariables>;
 export const UpdateConnectionConfigDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"UpdateConnectionConfig"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"addr"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"apiKey"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"setAnkiConfigConnection"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"addr"},"value":{"kind":"Variable","name":{"kind":"Name","value":"addr"}}},{"kind":"ObjectField","name":{"kind":"Name","value":"apiKey"},"value":{"kind":"Variable","name":{"kind":"Name","value":"apiKey"}}}]}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"error"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"InlineFragment","typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"ValidationError"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"paths"}},{"kind":"Field","name":{"kind":"Name","value":"message"}}]}}]}}]}}]}}]} as unknown as DocumentNode<UpdateConnectionConfigMutation, UpdateConnectionConfigMutationVariables>;
 export const GetAnkiConfigCurrentNoteDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetAnkiConfigCurrentNote"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"AnkiConfig"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"noteType"}}]}}]}}]} as unknown as DocumentNode<GetAnkiConfigCurrentNoteQuery, GetAnkiConfigCurrentNoteQueryVariables>;

@@ -107,7 +107,7 @@ func Test_Anki_FullStateCheck_OK(t *testing.T) {
 				Version: 5,
 			},
 			AssertError: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorIs(tt, err, ErrPermissionDenied)
+				return assert.ErrorIs(tt, err, ErrForbiddenOrigin)
 			},
 		},
 		{

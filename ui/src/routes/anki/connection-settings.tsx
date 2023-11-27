@@ -273,11 +273,23 @@ const kindToStatusBoxContent: Record<AnkiState['kind'], StatusBoxContent> = {
     titleClassName: 'text-light-red',
     body: <p>Origin is unknown</p>,
   },
-  Unauthorized: {
+  InvalidAPIKey: {
     iconKind: 'Error',
     title: 'Error',
     titleClassName: 'text-light-red',
     body: <p>Invalid API Key</p>,
+  },
+  CollectionUnavailable: {
+    iconKind: 'Error',
+    title: 'Error',
+    titleClassName: 'text-light-red',
+    body: <p>Anki collection is unavailbe, probably Anki profile was not choosen yet</p>,
+  },
+  UnknownError: {
+    iconKind: 'Error',
+    title: 'Error',
+    titleClassName: 'text-light-red',
+    body: <p>Anki responded with uknown error, probably it is a bug</p>,
   },
 };
 
@@ -293,7 +305,7 @@ function userErrorsFromHealthStatus(status: HealthStatus): FormikErrors<Connecti
           return {
             addr: 'add client origin to anki-connect whitelist',
           };
-        case 'Unauthorized':
+        case 'InvalidAPIKey':
           return {
             apiKey: 'API Key is incorrect',
           };

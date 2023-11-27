@@ -13,10 +13,13 @@ function GetIconKind(status: HealthStatus): StatusIconKind {
         case 'Ok':
           return 'OK';
         case 'UserError':
-        case 'Unauthorized':
+        case 'InvalidAPIKey':
+        case 'CollectionUnavailable':
         case 'ConnectionError':
         case 'ForbiddenOrigin':
           return 'Warning';
+        case 'UnknownError':
+          return 'Error';
         default: {
           const _exhaustiveCheck: never = status.anki;
           return _exhaustiveCheck;

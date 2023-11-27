@@ -24,23 +24,27 @@ func convertAnkiValidationError(ctx context.Context, err error) (*gqlmodel.Valid
 }
 
 func convertAnkiError(err error) (gqlmodel.AnkiError, error) {
-	if errors.Is(err, anki.ErrPermissionDenied) {
-		return &gqlmodel.AnkiPermissionError{
+	switch {
+	case errors.Is(err, anki.ErrForbiddenOrigin):
+		return &gqlmodel.AnkiForbiddenOrigin{
 			Message: err.Error(),
 		}, nil
-	}
-	if errors.Is(err, anki.ErrUnauthorized) {
-		return &gqlmodel.AnkiUnauthorizedError{
+	case errors.Is(err, anki.ErrCollectionUnavailable):
+		return &gqlmodel.AnkiCollectionUnavailable{
+			Message: err.Error(),
+		}, nil
+	case errors.Is(err, anki.ErrInvalidAPIKey):
+		return &gqlmodel.AnkiInvalidAPIKey{
 			Message: err.Error(),
 		}, nil
 	}
 	var connErr *ankiconnect.ConnectionError
-	if !errors.As(err, &connErr) {
-		return &gqlmodel.AnkiUnauthorizedError{
+	if errors.As(err, &connErr) {
+		return &gqlmodel.AnkiConnectionError{
 			Message: err.Error(),
 		}, nil
 	}
-	return &gqlmodel.AnkiConnectionError{
+	return &gqlmodel.AnkiUnknownError{
 		Message: err.Error(),
 	}, nil
 }
