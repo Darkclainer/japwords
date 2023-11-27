@@ -8,48 +8,35 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
-
-	"github.com/Darkclainer/japwords/pkg/anki/ankiconnect"
 )
 
 func Test_Anki_New(t *testing.T) {
 	t.Run("DefaultOK", func(t *testing.T) {
-		anki := NewAnki(DefaultClientConstructor)
+		anki := NewAnki(DefaultStatefullClientConstructor)
 		assert.Nil(t, anki.client)
 	})
 }
 
-func TestAnki_ReloadConfig(t *testing.T) {
-	t.Run("Options", func(t *testing.T) {
-		config := &Config{
-			Addr:   "myaddr",
-			APIKey: "mykey",
-		}
-		constructor := func(opts *ankiconnect.Options) (AnkiClient, error) {
-			assert.Equal(t, "http://myaddr", opts.URL)
-			assert.Equal(t, "mykey", opts.APIKey)
-			return nil, nil
-		}
-		anki := NewAnki(constructor)
-		err := anki.ReloadConfig(config)
-		require.NoError(t, err)
-		assert.Equal(t, config, anki.config)
-	})
+func Test_Anki_ReloadConfig(t *testing.T) {
 	t.Run("OK", func(t *testing.T) {
 		config := Config{
 			Addr:   "myaddr",
 			APIKey: "myfirst",
 		}
 		counter := 0
-		constructor := func(opts *ankiconnect.Options) (AnkiClient, error) {
+		var clients []*MockStatefullClient
+		constructor := func(config *Config) (StatefullClient, error) {
 			counter++
-			assert.Equal(t, "http://myaddr", opts.URL)
+			assert.Equal(t, "myaddr", config.Addr)
 			if counter == 1 {
-				assert.Equal(t, "myfirst", opts.APIKey)
+				assert.Equal(t, "myfirst", config.APIKey)
 			} else {
-				assert.Equal(t, "mysecond", opts.APIKey)
+				assert.Equal(t, "mysecond", config.APIKey)
 			}
-			return nil, nil
+			client := NewMockStatefullClient(t)
+			client.On("Stop").Return().Maybe()
+			clients = append(clients, client)
+			return client, nil
 		}
 		anki := NewAnki(constructor)
 		configCopy := config
@@ -59,6 +46,8 @@ func TestAnki_ReloadConfig(t *testing.T) {
 		err = anki.ReloadConfig(&config)
 		assert.NoError(t, err)
 		assert.Equal(t, 2, counter)
+		clients[0].AssertCalled(t, "Stop")
+		clients[1].AssertNotCalled(t, "Stop")
 	})
 	t.Run("Error", func(t *testing.T) {
 		config := Config{
@@ -66,10 +55,12 @@ func TestAnki_ReloadConfig(t *testing.T) {
 			APIKey: "myfirst",
 		}
 		counter := 0
-		constructor := func(opts *ankiconnect.Options) (AnkiClient, error) {
+		constructor := func(_ *Config) (StatefullClient, error) {
 			counter++
 			if counter == 1 {
-				return DefaultClientConstructor(opts)
+				// do not define Stop, so we now if it's called for some reason
+				client := NewMockStatefullClient(t)
+				return client, nil
 			} else {
 				return nil, errors.New("testerr")
 			}
@@ -84,109 +75,60 @@ func TestAnki_ReloadConfig(t *testing.T) {
 	})
 }
 
-func Test_Anki_FullStateCheck_OK(t *testing.T) {
+func Test_Anki_FullStateCheck(t *testing.T) {
 	testCases := []struct {
-		Name            string
-		Config          *Config
-		Permissions     *ankiconnect.RequestPermissionResponse
-		DeckNames       []string
-		ModelNames      []string
-		ModelFieldNames []string
-		Expected        *StateResult
-		AssertError     assert.ErrorAssertionFunc
+		Name        string
+		State       *State
+		Error       error
+		Expected    *StateResult
+		AssertError assert.ErrorAssertionFunc
 	}{
 		{
-			Name:   "permission denied",
-			Config: &Config{},
-			Permissions: &ankiconnect.RequestPermissionResponse{
-				Permission:    ankiconnect.PermissionDenied,
-				RequireAPIKey: true,
-				Version:       5,
-			},
-			Expected: &StateResult{
-				Version: 5,
-			},
-			AssertError: func(tt assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorIs(tt, err, ErrForbiddenOrigin)
+			Name:  "Error",
+			State: nil,
+			Error: errors.New("myerror"),
+			AssertError: func(t assert.TestingT, err error, _ ...interface{}) bool {
+				return assert.ErrorContains(t, err, "myerror")
 			},
 		},
 		{
-			Name: "deck not exists",
-			Config: &Config{
-				Deck: "testdeck",
+			Name: "Version",
+			State: &State{
+				AnkiState: AnkiState{
+					Version: 99,
+				},
 			},
-			Permissions: &ankiconnect.RequestPermissionResponse{
-				Permission: ankiconnect.PermissionGranted,
+			Expected: &StateResult{
+				Version: 99,
 			},
-			Expected:    &StateResult{},
 			AssertError: assert.NoError,
 		},
 		{
-			Name: "deck exists",
-			Config: &Config{
-				Deck: "testdeck",
+			Name: "DeckExists",
+			State: &State{
+				DeckExists: true,
 			},
-			Permissions: &ankiconnect.RequestPermissionResponse{
-				Permission: ankiconnect.PermissionGranted,
-			},
-			DeckNames: []string{"mydeck", "testdeck"},
 			Expected: &StateResult{
 				DeckExists: true,
 			},
 			AssertError: assert.NoError,
 		},
 		{
-			Name: "note type exists",
-			Config: &Config{
-				NoteType: "testnote",
+			Name: "NoteTypeExists",
+			State: &State{
+				NoteTypeExists: true,
 			},
-			Permissions: &ankiconnect.RequestPermissionResponse{
-				Permission: ankiconnect.PermissionGranted,
-			},
-			ModelNames: []string{"mynote", "testnote"},
-			Expected: &StateResult{
-				NoteTypeExists:   true,
-				NoteHasAllFields: true,
-			},
-			AssertError: assert.NoError,
-		},
-		{
-			Name: "missing fields",
-			Config: &Config{
-				NoteType: "testnote",
-				Mapping: TemplateMapping{
-					"key1": nil,
-					"key2": nil,
-					"key3": nil,
-				},
-			},
-			Permissions: &ankiconnect.RequestPermissionResponse{
-				Permission: ankiconnect.PermissionGranted,
-			},
-			ModelNames:      []string{"testnote"},
-			ModelFieldNames: []string{"key2"},
 			Expected: &StateResult{
 				NoteTypeExists: true,
 			},
 			AssertError: assert.NoError,
 		},
 		{
-			Name: "no missing fields",
-			Config: &Config{
-				NoteType: "testnote",
-				Mapping: TemplateMapping{
-					"key1": nil,
-					"key2": nil,
-					"key3": nil,
-				},
+			Name: "NoteHasAllFields",
+			State: &State{
+				NoteHasAllFields: true,
 			},
-			Permissions: &ankiconnect.RequestPermissionResponse{
-				Permission: ankiconnect.PermissionGranted,
-			},
-			ModelNames:      []string{"testnote"},
-			ModelFieldNames: []string{"key1", "key2", "key3", "key4"},
 			Expected: &StateResult{
-				NoteTypeExists:   true,
 				NoteHasAllFields: true,
 			},
 			AssertError: assert.NoError,
@@ -195,29 +137,209 @@ func Test_Anki_FullStateCheck_OK(t *testing.T) {
 	for i := range testCases {
 		tc := testCases[i]
 		t.Run(tc.Name, func(t *testing.T) {
-			var client *MockAnkiClient
-			anki := NewAnki(func(_ *ankiconnect.Options) (AnkiClient, error) {
-				client = NewMockAnkiClient(t)
-				client.On("RequestPermission", mock.Anything).
-					Return(tc.Permissions, nil).
+			var client *MockStatefullClient
+			anki := NewAnki(func(_ *Config) (StatefullClient, error) {
+				client = NewMockStatefullClient(t)
+				client.On("GetState", mock.Anything).
+					Return(tc.State, tc.Error).
 					Once()
-				client.On("DeckNames", mock.Anything).
-					Return(tc.DeckNames, nil).
-					Maybe()
-				client.On("ModelNames", mock.Anything).
-					Return(tc.ModelNames, nil).
-					Maybe()
-				client.On("ModelFieldNames", mock.Anything, tc.Config.NoteType).
-					Return(tc.ModelFieldNames, nil).
-					Maybe()
 				return client, nil
 			})
-			err := anki.ReloadConfig(tc.Config)
+			err := anki.ReloadConfig(&Config{})
 			require.NoError(t, err)
 			actual, err := anki.FullStateCheck(context.Background())
 			tc.AssertError(t, err)
 			assert.Equal(t, tc.Expected, actual)
-			client.AssertExpectations(t)
 		})
 	}
+}
+
+func Test_Anki_Decks(t *testing.T) {
+	testCases := []struct {
+		Name        string
+		State       *State
+		Error       error
+		Expected    []string
+		AssertError assert.ErrorAssertionFunc
+	}{
+		{
+			Name:  "Error",
+			State: nil,
+			Error: errors.New("myerror"),
+			AssertError: func(t assert.TestingT, err error, _ ...interface{}) bool {
+				return assert.ErrorContains(t, err, "myerror")
+			},
+		},
+		{
+			Name: "OK",
+			State: &State{
+				AnkiState: AnkiState{
+					Decks: []string{"a", "b"},
+				},
+			},
+			Expected:    []string{"a", "b"},
+			AssertError: assert.NoError,
+		},
+	}
+	for i := range testCases {
+		tc := testCases[i]
+		t.Run(tc.Name, func(t *testing.T) {
+			var client *MockStatefullClient
+			anki := NewAnki(func(_ *Config) (StatefullClient, error) {
+				client = NewMockStatefullClient(t)
+				client.On("GetState", mock.Anything).
+					Return(tc.State, tc.Error).
+					Once()
+				return client, nil
+			})
+			err := anki.ReloadConfig(&Config{})
+			require.NoError(t, err)
+			actual, err := anki.Decks(context.Background())
+			tc.AssertError(t, err)
+			assert.Equal(t, tc.Expected, actual)
+		})
+	}
+}
+
+func Test_Anki_NoteTypes(t *testing.T) {
+	testCases := []struct {
+		Name        string
+		State       *State
+		Error       error
+		Expected    []string
+		AssertError assert.ErrorAssertionFunc
+	}{
+		{
+			Name:  "Error",
+			State: nil,
+			Error: errors.New("myerror"),
+			AssertError: func(t assert.TestingT, err error, _ ...interface{}) bool {
+				return assert.ErrorContains(t, err, "myerror")
+			},
+		},
+		{
+			Name: "OK",
+			State: &State{
+				AnkiState: AnkiState{
+					NoteTypes: []string{"a", "b"},
+				},
+			},
+			Expected:    []string{"a", "b"},
+			AssertError: assert.NoError,
+		},
+	}
+	for i := range testCases {
+		tc := testCases[i]
+		t.Run(tc.Name, func(t *testing.T) {
+			var client *MockStatefullClient
+			anki := NewAnki(func(_ *Config) (StatefullClient, error) {
+				client = NewMockStatefullClient(t)
+				client.On("GetState", mock.Anything).
+					Return(tc.State, tc.Error).
+					Once()
+				return client, nil
+			})
+			err := anki.ReloadConfig(&Config{})
+			require.NoError(t, err)
+			actual, err := anki.NoteTypes(context.Background())
+			tc.AssertError(t, err)
+			assert.Equal(t, tc.Expected, actual)
+		})
+	}
+}
+
+func Test_Anki_NoteTypeFields(t *testing.T) {
+	testCases := []struct {
+		Name        string
+		State       *State
+		Error       error
+		Expected    []string
+		AssertError assert.ErrorAssertionFunc
+	}{
+		{
+			Name:  "Error",
+			State: nil,
+			Error: errors.New("myerror"),
+			AssertError: func(t assert.TestingT, err error, _ ...interface{}) bool {
+				return assert.ErrorContains(t, err, "myerror")
+			},
+		},
+		{
+			Name: "OK",
+			State: &State{
+				NoteTypeExists: true,
+				CurrentFields:  []string{"a", "b"},
+			},
+			Expected:    []string{"a", "b"},
+			AssertError: assert.NoError,
+		},
+		{
+			Name: "NoteType not exists",
+			State: &State{
+				CurrentFields: []string{"a", "b"},
+			},
+			Expected: nil,
+			AssertError: func(t assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorIs(t, err, ErrNoteTypeNotExists)
+			},
+		},
+	}
+	for i := range testCases {
+		tc := testCases[i]
+		t.Run(tc.Name, func(t *testing.T) {
+			var client *MockStatefullClient
+			anki := NewAnki(func(_ *Config) (StatefullClient, error) {
+				client = NewMockStatefullClient(t)
+				client.On("GetState", mock.Anything).
+					Return(tc.State, tc.Error).
+					Once()
+				return client, nil
+			})
+			err := anki.ReloadConfig(&Config{})
+			require.NoError(t, err)
+			actual, err := anki.NoteTypeFields(context.Background())
+			tc.AssertError(t, err)
+			assert.Equal(t, tc.Expected, actual)
+		})
+	}
+}
+
+func Test_Anki_CreateDeck(t *testing.T) {
+	var client *MockStatefullClient
+	expectedErr := errors.New("myerror")
+	anki := NewAnki(func(_ *Config) (StatefullClient, error) {
+		client = NewMockStatefullClient(t)
+		client.On("CreateDeck", mock.Anything, "newdeck").Return(expectedErr).Once()
+		return client, nil
+	})
+	err := anki.ReloadConfig(&Config{})
+	require.NoError(t, err)
+	actualErr := anki.CreateDeck(context.Background(), "newdeck")
+	assert.ErrorIs(t, actualErr, expectedErr)
+}
+
+func Test_Anki_CreateDefaultNote(t *testing.T) {
+	var client *MockStatefullClient
+	expectedErr := errors.New("myerror")
+	anki := NewAnki(func(_ *Config) (StatefullClient, error) {
+		client = NewMockStatefullClient(t)
+		client.On("CreateDefaultNoteType", mock.Anything, "newnotetype").Return(expectedErr).Once()
+		return client, nil
+	})
+	err := anki.ReloadConfig(&Config{})
+	require.NoError(t, err)
+	actualErr := anki.CreateDefaultNote(context.Background(), "newnotetype")
+	assert.ErrorIs(t, actualErr, expectedErr)
+}
+
+func Test_Anki_Stop(t *testing.T) {
+	var client *MockStatefullClient
+	anki := NewAnki(func(_ *Config) (StatefullClient, error) {
+		client = NewMockStatefullClient(t)
+		client.On("Stop").Return().Once()
+		return client, nil
+	})
+	err := anki.ReloadConfig(&Config{})
+	require.NoError(t, err)
+	anki.Stop()
 }

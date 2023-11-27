@@ -8,7 +8,6 @@ import (
 
 	"github.com/Darkclainer/japwords/graphql/gqlmodel"
 	"github.com/Darkclainer/japwords/pkg/anki"
-	"github.com/Darkclainer/japwords/pkg/anki/ankiconnect"
 )
 
 func convertAnkiValidationError(ctx context.Context, err error) (*gqlmodel.ValidationError, error) {
@@ -38,7 +37,7 @@ func convertAnkiError(err error) (gqlmodel.AnkiError, error) {
 			Message: err.Error(),
 		}, nil
 	}
-	var connErr *ankiconnect.ConnectionError
+	var connErr *anki.ConnectionError
 	if errors.As(err, &connErr) {
 		return &gqlmodel.AnkiConnectionError{
 			Message: err.Error(),

@@ -2,52 +2,43 @@ package anki
 
 import (
 	"context"
-	"errors"
-	"slices"
 	"sync"
 
 	"github.com/Darkclainer/japwords/pkg/anki/ankiconnect"
 )
 
-var (
-	// redefine this errors from client, because we probably want to expose them as API
-	ErrForbiddenOrigin       = errors.New("anki-connect forbid request from client origin")
-	ErrInvalidAPIKey         = errors.New("anki-connect rejected request because api key is invalid")
-	ErrCollectionUnavailable = errors.New("anki-connect is not ready for specified action")
+//go:generate $MOCKERY_TOOL --name StatefullClient --testonly=true --inpackage=true
+type StatefullClient interface {
+	Stop()
+	Config() *Config
+	GetState(ctx context.Context) (*State, error)
+	CreateDeck(ctx context.Context, name string) error
+	CreateDefaultNoteType(ctx context.Context, name string) error
+}
 
-	ErrDeckAlreadyExists = errors.New("deck with the same name already exists")
-)
+type StatefullClientConstructorFn func(*Config) (StatefullClient, error)
 
+func DefaultStatefullClientConstructor(conf *Config) (StatefullClient, error) {
+	statelessClient, err := ankiconnect.New(conf.options())
+	if err != nil {
+		return nil, err
+	}
+	client := newStatefullClient(statelessClient, conf)
+	return client, nil
+}
+
+// Anki is wrapper the main purpose is to support config reloading
 type Anki struct {
-	constructor ClientConstructorFn
+	constructor StatefullClientConstructorFn
 
 	mu     sync.Mutex
-	client AnkiClient
-	config *Config
-}
-
-//go:generate $MOCKERY_TOOL --name AnkiClient --testonly=true --inpackage=true
-type AnkiClient interface {
-	RequestPermission(ctx context.Context) (*ankiconnect.RequestPermissionResponse, error)
-	DeckNames(ctx context.Context) ([]string, error)
-	ModelNames(ctx context.Context) ([]string, error)
-	ModelFieldNames(ctx context.Context, modelName string) ([]string, error)
-
-	CreateDeck(ctx context.Context, name string) (int64, error)
-	CreateModel(ctx context.Context, parameters *ankiconnect.CreateModelRequest) (int64, error)
-	AddNote(ctx context.Context, params *ankiconnect.AddNoteParams, opts *ankiconnect.AddNoteOptions) (int64, error)
-}
-
-type ClientConstructorFn func(*ankiconnect.Options) (AnkiClient, error)
-
-func DefaultClientConstructor(o *ankiconnect.Options) (AnkiClient, error) {
-	return ankiconnect.New(o)
+	client StatefullClient
 }
 
 // NewAnki return uninitialized Anki instance.
 // It should be inited before use with ReloadConfig.
 // It is intended to be used with ConfigReloader.
-func NewAnki(constuctor ClientConstructorFn) *Anki {
+func NewAnki(constuctor StatefullClientConstructorFn) *Anki {
 	return &Anki{
 		constructor: constuctor,
 	}
@@ -55,14 +46,17 @@ func NewAnki(constuctor ClientConstructorFn) *Anki {
 
 // ReloadConfig intialize internal client with config.
 func (a *Anki) ReloadConfig(config *Config) error {
-	client, err := a.constructor(config.options())
+	statefullClient, err := a.constructor(config)
 	if err != nil {
 		return err
 	}
 	a.mu.Lock()
 	defer a.mu.Unlock()
-	a.client = client
-	a.config = config
+	if a.client != nil {
+		// Stop here doesn't invalidate client, it is fine if someone use it right now
+		a.client.Stop()
+	}
+	a.client = statefullClient
 	return nil
 }
 
@@ -76,122 +70,62 @@ type StateResult struct {
 
 // FullStateCheck checks that anki is available, decks and note types exists, also FieldMapping is possible
 func (a *Anki) FullStateCheck(ctx context.Context) (*StateResult, error) {
-	client, config := a.getClient()
-	result := &StateResult{}
-	permissions, err := client.RequestPermission(ctx)
+	state, err := a.getClient().GetState(ctx)
 	if err != nil {
-		return result, redefineClientError(err)
+		return nil, err
 	}
-	result.Version = permissions.Version
-	if permissions.Permission != ankiconnect.PermissionGranted {
-		return result, ErrForbiddenOrigin
-	}
-	decks, err := client.DeckNames(ctx)
-	if err != nil {
-		return result, redefineClientError(err)
-	}
-	deckExists := slices.ContainsFunc(decks, func(e string) bool { return e == config.Deck })
-	result.DeckExists = deckExists
-	noteTypes, err := client.ModelNames(ctx)
-	if err != nil {
-		return result, redefineClientError(err)
-	}
-	noteTypeExists := slices.ContainsFunc(noteTypes, func(e string) bool { return e == config.NoteType })
-	result.NoteTypeExists = noteTypeExists
-	if noteTypeExists {
-		noteFields, err := client.ModelFieldNames(ctx, config.NoteType)
-		if err != nil {
-			return result, redefineClientError(err)
-		}
-		setFields := map[string]struct{}{}
-		for _, field := range noteFields {
-			setFields[field] = struct{}{}
-		}
-		hasAllFieds := true
-		for field := range config.Mapping {
-			_, ok := setFields[field]
-			if !ok {
-				hasAllFieds = false
-				break
-			}
-		}
-		result.NoteHasAllFields = hasAllFieds
-	}
-	return result, nil
+	return &StateResult{
+		Version:          state.Version,
+		DeckExists:       state.DeckExists,
+		NoteTypeExists:   state.NoteTypeExists,
+		NoteHasAllFields: state.NoteHasAllFields,
+	}, nil
 }
 
 func (a *Anki) Decks(ctx context.Context) ([]string, error) {
-	client, _ := a.getClient()
-	decks, err := client.DeckNames(ctx)
+	state, err := a.getClient().GetState(ctx)
 	if err != nil {
 		return nil, err
 	}
-	return decks, nil
+	return state.Decks, nil
 }
 
 func (a *Anki) NoteTypes(ctx context.Context) ([]string, error) {
-	client, _ := a.getClient()
-	noteTypes, err := client.ModelNames(ctx)
+	state, err := a.getClient().GetState(ctx)
 	if err != nil {
 		return nil, err
 	}
-	return noteTypes, nil
+	return state.NoteTypes, nil
 }
 
-func (a *Anki) NoteTypeFields(ctx context.Context, name string) ([]string, error) {
-	client, _ := a.getClient()
-	fields, err := client.ModelFieldNames(ctx, name)
+// TODO: remove name parameter
+func (a *Anki) NoteTypeFields(ctx context.Context) ([]string, error) {
+	state, err := a.getClient().GetState(ctx)
 	if err != nil {
 		return nil, err
 	}
-	return fields, nil
+	if !state.NoteTypeExists {
+		return nil, ErrNoteTypeNotExists
+	}
+	return state.CurrentFields, nil
 }
 
 func (a *Anki) CreateDeck(ctx context.Context, name string) error {
-	if err := validateDeckName(name); err != nil {
-		return &ValidationError{Msg: err.Error()}
-	}
-	client, _ := a.getClient()
-	decks, err := client.DeckNames(ctx)
-	if err != nil {
-		return err
-	}
-	if slices.Contains(decks, name) {
-		// actually Anki-Connect doesn't care if there already is deck with the same name, it just do nothing
-		return ErrDeckAlreadyExists
-	}
-	_, err = client.CreateDeck(ctx, name)
-	return err
+	return a.getClient().CreateDeck(ctx, name)
 }
 
 func (a *Anki) CreateDefaultNote(ctx context.Context, name string) error {
-	if err := validateNoteType(name); err != nil {
-		return &ValidationError{Msg: err.Error()}
-	}
-	client, _ := a.getClient()
-	modelRequest := defaultCreateModelRequest()
-	modelRequest.ModelName = name
-	_, err := client.CreateModel(ctx, modelRequest)
-	return err
+	return a.getClient().CreateDefaultNoteType(ctx, name)
 }
 
-func (a *Anki) getClient() (AnkiClient, *Config) {
+func (a *Anki) Stop() {
+	a.mu.Lock()
+	a.client.Stop()
+	a.mu.Unlock()
+}
+
+func (a *Anki) getClient() StatefullClient {
 	a.mu.Lock()
 	defer a.mu.Unlock()
-	return a.client, a.config
-}
-
-func redefineClientError(err error) error {
-	var serverError *ankiconnect.ServerError
-	if !errors.As(err, &serverError) {
-		return err
-	}
-	switch serverError.Err {
-	case ankiconnect.ErrCollectionUnavailable:
-		return ErrCollectionUnavailable
-	case ankiconnect.ErrInvalidAPIKey:
-		return ErrInvalidAPIKey
-	default:
-		return err
-	}
+	return a.client
 }

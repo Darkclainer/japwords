@@ -51,7 +51,7 @@ func (r *ankiResolver) Notes(ctx context.Context, obj *gqlmodel.Anki) (*gqlmodel
 
 // NoteFields is the resolver for the noteFields field.
 func (r *ankiResolver) NoteFields(ctx context.Context, obj *gqlmodel.Anki, name string) (*gqlmodel.AnkiNoteFieldsResult, error) {
-	fields, err := r.ankiClient.NoteTypeFields(ctx, name)
+	fields, err := r.ankiClient.NoteTypeFields(ctx)
 	if err != nil {
 		if ankiErr, _ := convertAnkiError(err); ankiErr != nil {
 			return &gqlmodel.AnkiNoteFieldsResult{
@@ -286,6 +286,8 @@ func (r *Resolver) Mutation() gqlgenerated.MutationResolver { return &mutationRe
 // Query returns gqlgenerated.QueryResolver implementation.
 func (r *Resolver) Query() gqlgenerated.QueryResolver { return &queryResolver{r} }
 
-type ankiResolver struct{ *Resolver }
-type mutationResolver struct{ *Resolver }
-type queryResolver struct{ *Resolver }
+type (
+	ankiResolver     struct{ *Resolver }
+	mutationResolver struct{ *Resolver }
+	queryResolver    struct{ *Resolver }
+)

@@ -8,7 +8,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/Darkclainer/japwords/pkg/anki/ankiconnect"
 	"github.com/Darkclainer/japwords/pkg/config"
 	"github.com/Darkclainer/japwords/pkg/config/configtest"
 )
@@ -175,6 +174,10 @@ func Test_Config_Equal(t *testing.T) {
 	}
 }
 
+// TODO!
+func Test_Config_options(t *testing.T) {
+}
+
 func Test_ConfigReloader_New(t *testing.T) {
 	ankiConfig := config.Anki{
 		Addr:     "testaddr:3030",
@@ -187,10 +190,12 @@ func Test_ConfigReloader_New(t *testing.T) {
 			Anki: ankiConfig,
 		})
 		var factoryCalled bool
-		anki := NewAnki(func(o *ankiconnect.Options) (AnkiClient, error) {
-			assert.Equal(t, ankiAddrToURL(ankiConfig.Addr), o.URL)
-			assert.Equal(t, ankiConfig.APIKey, o.APIKey)
+		anki := NewAnki(func(conf *Config) (StatefullClient, error) {
 			factoryCalled = true
+			assert.Equal(t, ankiConfig.APIKey, conf.APIKey)
+			assert.Equal(t, ankiConfig.Addr, conf.Addr)
+			assert.Equal(t, ankiConfig.Deck, conf.Deck)
+			assert.Equal(t, ankiConfig.NoteType, conf.NoteType)
 			return nil, nil
 		})
 		configReloader, err := NewConfigReloader(anki, configManager)
@@ -204,9 +209,7 @@ func Test_ConfigReloader_New(t *testing.T) {
 		configManager := configtest.New(t, &config.UserConfig{
 			Anki: ankiConfig,
 		})
-		anki := NewAnki(func(o *ankiconnect.Options) (AnkiClient, error) {
-			assert.Equal(t, ankiAddrToURL(ankiConfig.Addr), o.URL)
-			assert.Equal(t, ankiConfig.APIKey, o.APIKey)
+		anki := NewAnki(func(conf *Config) (StatefullClient, error) {
 			return nil, errors.New("myerror")
 		})
 		configReloader, err := NewConfigReloader(anki, configManager)
@@ -346,9 +349,12 @@ func Test_ConfigReloader_Reload(t *testing.T) {
 		Anki: ankiConfig,
 	})
 	var factoryCalled int
-	anki := NewAnki(func(_ *ankiconnect.Options) (AnkiClient, error) {
+	anki := NewAnki(func(conf *Config) (StatefullClient, error) {
 		factoryCalled++
-		return nil, nil
+		client := NewMockStatefullClient(t)
+		client.On("Stop").Return().Maybe()
+		client.On("Config").Return(conf).Maybe()
+		return client, nil
 	})
 	configReloader, err := NewConfigReloader(anki, configManager)
 	require.NoError(t, err)
@@ -362,7 +368,7 @@ func Test_ConfigReloader_Reload(t *testing.T) {
 	err = configReloader.Reload(conf)
 	require.NoError(t, err)
 	assert.Equal(t, 2, factoryCalled)
-	assert.Equal(t, conf, anki.config)
+	assert.Equal(t, conf, anki.client.Config())
 }
 
 func NewTestReloader(tb testing.TB) (*ConfigReloader, *Anki, *Config) {
@@ -375,8 +381,11 @@ func NewTestReloader(tb testing.TB) (*ConfigReloader, *Anki, *Config) {
 		},
 	}
 	configManager := configtest.New(tb, userConfig)
-	anki := NewAnki(func(_ *ankiconnect.Options) (AnkiClient, error) {
-		return nil, nil
+	anki := NewAnki(func(conf *Config) (StatefullClient, error) {
+		client := NewMockStatefullClient(tb)
+		client.On("Stop").Return().Maybe()
+		client.On("Config").Return(conf).Maybe()
+		return client, nil
 	})
 	configReloader, err := NewConfigReloader(anki, configManager)
 	require.NoError(tb, err)
@@ -424,7 +433,7 @@ func Test_ConfigReloader_UpdateConnection(t *testing.T) {
 			}
 			initialConfig.Addr = tc.Addr
 			initialConfig.APIKey = tc.APIKey
-			assert.Equal(t, initialConfig, anki.config)
+			assert.Equal(t, initialConfig, anki.client.Config())
 		})
 	}
 }
@@ -462,7 +471,7 @@ func Test_ConfigReloader_UpdateDeck(t *testing.T) {
 				return
 			}
 			initialConfig.Deck = tc.Deck
-			assert.Equal(t, initialConfig, anki.config)
+			assert.Equal(t, initialConfig, anki.client.Config())
 		})
 	}
 }
@@ -500,7 +509,7 @@ func Test_ConfigReloader_UpdateNoteType(t *testing.T) {
 				return
 			}
 			initialConfig.NoteType = tc.NoteType
-			assert.Equal(t, initialConfig, anki.config)
+			assert.Equal(t, initialConfig, anki.client.Config())
 		})
 	}
 }
@@ -559,9 +568,9 @@ func Test_ConfigReloader_UpdateMapping(t *testing.T) {
 			expectedMapping, mappingErrs := convertMapping(tc.Mapping)
 			require.Len(t, mappingErrs, 0, "expected zero errors in mapping but got %v", mappingErrs)
 			// we will check it seperately
-			initialConfig.Mapping = anki.config.Mapping
-			assert.Equal(t, initialConfig, anki.config)
-			assert.True(t, expectedMapping.Equal(anki.config.Mapping))
+			initialConfig.Mapping = anki.client.Config().Mapping
+			assert.Equal(t, initialConfig, anki.client.Config())
+			assert.True(t, expectedMapping.Equal(anki.client.Config().Mapping))
 		})
 	}
 }
