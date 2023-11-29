@@ -26,9 +26,9 @@ const GET_LEMMAS = gql(`
             kanji
             hiragana
           }
-          pitch {
+          pitchShapes {
             hiragana
-            pitch
+            directions
           } 
         }
         tags
@@ -39,9 +39,9 @@ const GET_LEMMAS = gql(`
             kanji
             hiragana
           }
-          pitch {
+          pitchShapes {
             hiragana
-            pitch
+            directions
           } 
         }
         senses {

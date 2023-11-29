@@ -40,7 +40,6 @@ type ResolverRoot interface {
 	Anki() AnkiResolver
 	Lemma() LemmaResolver
 	Mutation() MutationResolver
-	Pitch() PitchResolver
 	Query() QueryResolver
 	Word() WordResolver
 }
@@ -177,9 +176,9 @@ type ComplexityRoot struct {
 		SetAnkiConfigNote       func(childComplexity int, input gqlmodel.SetAnkiConfigNote) int
 	}
 
-	Pitch struct {
-		Hiragana func(childComplexity int) int
-		Pitch    func(childComplexity int) int
+	PitchShape struct {
+		Directions func(childComplexity int) int
+		Hiragana   func(childComplexity int) int
 	}
 
 	Query struct {
@@ -230,10 +229,10 @@ type ComplexityRoot struct {
 	}
 
 	Word struct {
-		Furigana func(childComplexity int) int
-		Hiragana func(childComplexity int) int
-		Pitch    func(childComplexity int) int
-		Word     func(childComplexity int) int
+		Furigana    func(childComplexity int) int
+		Hiragana    func(childComplexity int) int
+		PitchShapes func(childComplexity int) int
+		Word        func(childComplexity int) int
 	}
 }
 
@@ -253,9 +252,6 @@ type MutationResolver interface {
 	CreateAnkiDeck(ctx context.Context, input *gqlmodel.CreateAnkiDeckInput) (*gqlmodel.CreateAnkiDeckResult, error)
 	CreateDefaultAnkiNote(ctx context.Context, input *gqlmodel.CreateDefaultAnkiNoteInput) (*gqlmodel.CreateDefaultAnkiNoteResult, error)
 }
-type PitchResolver interface {
-	Pitch(ctx context.Context, obj *lemma.PitchShape) ([]lemma.AccentDirection, error)
-}
 type QueryResolver interface {
 	Anki(ctx context.Context) (*gqlmodel.Anki, error)
 	AnkiConfigState(ctx context.Context) (*gqlmodel.AnkiConfigStateResult, error)
@@ -265,7 +261,6 @@ type QueryResolver interface {
 }
 type WordResolver interface {
 	Furigana(ctx context.Context, obj *lemma.Word) ([]*lemma.FuriganaChar, error)
-	Pitch(ctx context.Context, obj *lemma.Word) ([]*lemma.PitchShape, error)
 }
 
 type executableSchema struct {
@@ -710,19 +705,19 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.SetAnkiConfigNote(childComplexity, args["input"].(gqlmodel.SetAnkiConfigNote)), true
 
-	case "Pitch.hiragana":
-		if e.complexity.Pitch.Hiragana == nil {
+	case "PitchShape.directions":
+		if e.complexity.PitchShape.Directions == nil {
 			break
 		}
 
-		return e.complexity.Pitch.Hiragana(childComplexity), true
+		return e.complexity.PitchShape.Directions(childComplexity), true
 
-	case "Pitch.pitch":
-		if e.complexity.Pitch.Pitch == nil {
+	case "PitchShape.hiragana":
+		if e.complexity.PitchShape.Hiragana == nil {
 			break
 		}
 
-		return e.complexity.Pitch.Pitch(childComplexity), true
+		return e.complexity.PitchShape.Hiragana(childComplexity), true
 
 	case "Query.Anki":
 		if e.complexity.Query.Anki == nil {
@@ -888,12 +883,12 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Word.Hiragana(childComplexity), true
 
-	case "Word.pitch":
-		if e.complexity.Word.Pitch == nil {
+	case "Word.pitchShapes":
+		if e.complexity.Word.PitchShapes == nil {
 			break
 		}
 
-		return e.complexity.Word.Pitch(childComplexity), true
+		return e.complexity.Word.PitchShapes(childComplexity), true
 
 	case "Word.word":
 		if e.complexity.Word.Word == nil {
@@ -1267,7 +1262,7 @@ type Word {
   word: String!
   hiragana: String!
   furigana: [Furigana!]!
-  pitch: [Pitch!]!
+  pitchShapes: [PitchShape!]!
 }
 
 type Furigana {
@@ -1275,16 +1270,16 @@ type Furigana {
   hiragana: String!
 }
 
-enum PitchType {
+enum AccentDirection {
   UP
   DOWN
   LEFT
   RIGHT
 }
 
-type Pitch {
+type PitchShape {
   hiragana: String!
-  pitch: [PitchType!]!
+  directions: [AccentDirection!]!
 }
 
 type Audio {
@@ -3498,8 +3493,8 @@ func (ec *executionContext) fieldContext_Lemma_slug(ctx context.Context, field g
 				return ec.fieldContext_Word_hiragana(ctx, field)
 			case "furigana":
 				return ec.fieldContext_Word_furigana(ctx, field)
-			case "pitch":
-				return ec.fieldContext_Word_pitch(ctx, field)
+			case "pitchShapes":
+				return ec.fieldContext_Word_pitchShapes(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Word", field.Name)
 		},
@@ -3596,8 +3591,8 @@ func (ec *executionContext) fieldContext_Lemma_forms(ctx context.Context, field 
 				return ec.fieldContext_Word_hiragana(ctx, field)
 			case "furigana":
 				return ec.fieldContext_Word_furigana(ctx, field)
-			case "pitch":
-				return ec.fieldContext_Word_pitch(ctx, field)
+			case "pitchShapes":
+				return ec.fieldContext_Word_pitchShapes(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Word", field.Name)
 		},
@@ -4121,8 +4116,8 @@ func (ec *executionContext) fieldContext_Mutation_createDefaultAnkiNote(ctx cont
 	return fc, nil
 }
 
-func (ec *executionContext) _Pitch_hiragana(ctx context.Context, field graphql.CollectedField, obj *lemma.PitchShape) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Pitch_hiragana(ctx, field)
+func (ec *executionContext) _PitchShape_hiragana(ctx context.Context, field graphql.CollectedField, obj *lemma.PitchShape) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_PitchShape_hiragana(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -4152,9 +4147,9 @@ func (ec *executionContext) _Pitch_hiragana(ctx context.Context, field graphql.C
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Pitch_hiragana(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_PitchShape_hiragana(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
-		Object:     "Pitch",
+		Object:     "PitchShape",
 		Field:      field,
 		IsMethod:   false,
 		IsResolver: false,
@@ -4165,8 +4160,8 @@ func (ec *executionContext) fieldContext_Pitch_hiragana(ctx context.Context, fie
 	return fc, nil
 }
 
-func (ec *executionContext) _Pitch_pitch(ctx context.Context, field graphql.CollectedField, obj *lemma.PitchShape) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Pitch_pitch(ctx, field)
+func (ec *executionContext) _PitchShape_directions(ctx context.Context, field graphql.CollectedField, obj *lemma.PitchShape) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_PitchShape_directions(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -4179,7 +4174,7 @@ func (ec *executionContext) _Pitch_pitch(ctx context.Context, field graphql.Coll
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Pitch().Pitch(rctx, obj)
+		return obj.Directions, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -4193,17 +4188,17 @@ func (ec *executionContext) _Pitch_pitch(ctx context.Context, field graphql.Coll
 	}
 	res := resTmp.([]lemma.AccentDirection)
 	fc.Result = res
-	return ec.marshalNPitchType2ᚕgithubᚗcomᚋDarkclainerᚋjapwordsᚋpkgᚋlemmaᚐAccentDirectionᚄ(ctx, field.Selections, res)
+	return ec.marshalNAccentDirection2ᚕgithubᚗcomᚋDarkclainerᚋjapwordsᚋpkgᚋlemmaᚐAccentDirectionᚄ(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Pitch_pitch(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_PitchShape_directions(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
-		Object:     "Pitch",
+		Object:     "PitchShape",
 		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
+		IsMethod:   false,
+		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type PitchType does not have child fields")
+			return nil, errors.New("field of type AccentDirection does not have child fields")
 		},
 	}
 	return fc, nil
@@ -5429,8 +5424,8 @@ func (ec *executionContext) fieldContext_Word_furigana(ctx context.Context, fiel
 	return fc, nil
 }
 
-func (ec *executionContext) _Word_pitch(ctx context.Context, field graphql.CollectedField, obj *lemma.Word) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Word_pitch(ctx, field)
+func (ec *executionContext) _Word_pitchShapes(ctx context.Context, field graphql.CollectedField, obj *lemma.Word) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Word_pitchShapes(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -5443,7 +5438,7 @@ func (ec *executionContext) _Word_pitch(ctx context.Context, field graphql.Colle
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Word().Pitch(rctx, obj)
+		return obj.PitchShapes(), nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -5455,25 +5450,25 @@ func (ec *executionContext) _Word_pitch(ctx context.Context, field graphql.Colle
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]*lemma.PitchShape)
+	res := resTmp.([]lemma.PitchShape)
 	fc.Result = res
-	return ec.marshalNPitch2ᚕᚖgithubᚗcomᚋDarkclainerᚋjapwordsᚋpkgᚋlemmaᚐPitchShapeᚄ(ctx, field.Selections, res)
+	return ec.marshalNPitchShape2ᚕgithubᚗcomᚋDarkclainerᚋjapwordsᚋpkgᚋlemmaᚐPitchShapeᚄ(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Word_pitch(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Word_pitchShapes(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Word",
 		Field:      field,
 		IsMethod:   true,
-		IsResolver: true,
+		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
 			case "hiragana":
-				return ec.fieldContext_Pitch_hiragana(ctx, field)
-			case "pitch":
-				return ec.fieldContext_Pitch_pitch(ctx, field)
+				return ec.fieldContext_PitchShape_hiragana(ctx, field)
+			case "directions":
+				return ec.fieldContext_PitchShape_directions(ctx, field)
 			}
-			return nil, fmt.Errorf("no field named %q was found under type Pitch", field.Name)
+			return nil, fmt.Errorf("no field named %q was found under type PitchShape", field.Name)
 		},
 	}
 	return fc, nil
@@ -8841,58 +8836,27 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 	return out
 }
 
-var pitchImplementors = []string{"Pitch"}
+var pitchShapeImplementors = []string{"PitchShape"}
 
-func (ec *executionContext) _Pitch(ctx context.Context, sel ast.SelectionSet, obj *lemma.PitchShape) graphql.Marshaler {
-	fields := graphql.CollectFields(ec.OperationContext, sel, pitchImplementors)
+func (ec *executionContext) _PitchShape(ctx context.Context, sel ast.SelectionSet, obj *lemma.PitchShape) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, pitchShapeImplementors)
 
 	out := graphql.NewFieldSet(fields)
 	deferred := make(map[string]*graphql.FieldSet)
 	for i, field := range fields {
 		switch field.Name {
 		case "__typename":
-			out.Values[i] = graphql.MarshalString("Pitch")
+			out.Values[i] = graphql.MarshalString("PitchShape")
 		case "hiragana":
-			out.Values[i] = ec._Pitch_hiragana(ctx, field, obj)
+			out.Values[i] = ec._PitchShape_hiragana(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&out.Invalids, 1)
+				out.Invalids++
 			}
-		case "pitch":
-			field := field
-
-			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Pitch_pitch(ctx, field, obj)
-				if res == graphql.Null {
-					atomic.AddUint32(&fs.Invalids, 1)
-				}
-				return res
+		case "directions":
+			out.Values[i] = ec._PitchShape_directions(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
 			}
-
-			if field.Deferrable != nil {
-				dfs, ok := deferred[field.Deferrable.Label]
-				di := 0
-				if ok {
-					dfs.AddField(field)
-					di = len(dfs.Values) - 1
-				} else {
-					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
-					deferred[field.Deferrable.Label] = dfs
-				}
-				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
-					return innerFunc(ctx, dfs)
-				})
-
-				// don't run the out.Concurrently() call below
-				out.Values[i] = graphql.Null
-				continue
-			}
-
-			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -9459,42 +9423,11 @@ func (ec *executionContext) _Word(ctx context.Context, sel ast.SelectionSet, obj
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
-		case "pitch":
-			field := field
-
-			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Word_pitch(ctx, field, obj)
-				if res == graphql.Null {
-					atomic.AddUint32(&fs.Invalids, 1)
-				}
-				return res
+		case "pitchShapes":
+			out.Values[i] = ec._Word_pitchShapes(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
 			}
-
-			if field.Deferrable != nil {
-				dfs, ok := deferred[field.Deferrable.Label]
-				di := 0
-				if ok {
-					dfs.AddField(field)
-					di = len(dfs.Values) - 1
-				} else {
-					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
-					deferred[field.Deferrable.Label] = dfs
-				}
-				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
-					return innerFunc(ctx, dfs)
-				})
-
-				// don't run the out.Concurrently() call below
-				out.Values[i] = graphql.Null
-				continue
-			}
-
-			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -9843,6 +9776,77 @@ func (ec *executionContext) ___Type(ctx context.Context, sel ast.SelectionSet, o
 // endregion **************************** object.gotpl ****************************
 
 // region    ***************************** type.gotpl *****************************
+
+func (ec *executionContext) unmarshalNAccentDirection2githubᚗcomᚋDarkclainerᚋjapwordsᚋpkgᚋlemmaᚐAccentDirection(ctx context.Context, v interface{}) (lemma.AccentDirection, error) {
+	var res lemma.AccentDirection
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNAccentDirection2githubᚗcomᚋDarkclainerᚋjapwordsᚋpkgᚋlemmaᚐAccentDirection(ctx context.Context, sel ast.SelectionSet, v lemma.AccentDirection) graphql.Marshaler {
+	return v
+}
+
+func (ec *executionContext) unmarshalNAccentDirection2ᚕgithubᚗcomᚋDarkclainerᚋjapwordsᚋpkgᚋlemmaᚐAccentDirectionᚄ(ctx context.Context, v interface{}) ([]lemma.AccentDirection, error) {
+	var vSlice []interface{}
+	if v != nil {
+		vSlice = graphql.CoerceList(v)
+	}
+	var err error
+	res := make([]lemma.AccentDirection, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalNAccentDirection2githubᚗcomᚋDarkclainerᚋjapwordsᚋpkgᚋlemmaᚐAccentDirection(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
+func (ec *executionContext) marshalNAccentDirection2ᚕgithubᚗcomᚋDarkclainerᚋjapwordsᚋpkgᚋlemmaᚐAccentDirectionᚄ(ctx context.Context, sel ast.SelectionSet, v []lemma.AccentDirection) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNAccentDirection2githubᚗcomᚋDarkclainerᚋjapwordsᚋpkgᚋlemmaᚐAccentDirection(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
 
 func (ec *executionContext) marshalNAnki2githubᚗcomᚋDarkclainerᚋjapwordsᚋgraphqlᚋgqlmodelᚐAnki(ctx context.Context, sel ast.SelectionSet, v gqlmodel.Anki) graphql.Marshaler {
 	return ec._Anki(ctx, sel, &v)
@@ -10234,7 +10238,11 @@ func (ec *executionContext) marshalNLemma2ᚖgithubᚗcomᚋDarkclainerᚋjapwor
 	return ec._Lemma(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalNPitch2ᚕᚖgithubᚗcomᚋDarkclainerᚋjapwordsᚋpkgᚋlemmaᚐPitchShapeᚄ(ctx context.Context, sel ast.SelectionSet, v []*lemma.PitchShape) graphql.Marshaler {
+func (ec *executionContext) marshalNPitchShape2githubᚗcomᚋDarkclainerᚋjapwordsᚋpkgᚋlemmaᚐPitchShape(ctx context.Context, sel ast.SelectionSet, v lemma.PitchShape) graphql.Marshaler {
+	return ec._PitchShape(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNPitchShape2ᚕgithubᚗcomᚋDarkclainerᚋjapwordsᚋpkgᚋlemmaᚐPitchShapeᚄ(ctx context.Context, sel ast.SelectionSet, v []lemma.PitchShape) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -10258,88 +10266,7 @@ func (ec *executionContext) marshalNPitch2ᚕᚖgithubᚗcomᚋDarkclainerᚋjap
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNPitch2ᚖgithubᚗcomᚋDarkclainerᚋjapwordsᚋpkgᚋlemmaᚐPitchShape(ctx, sel, v[i])
-		}
-		if isLen1 {
-			f(i)
-		} else {
-			go f(i)
-		}
-
-	}
-	wg.Wait()
-
-	for _, e := range ret {
-		if e == graphql.Null {
-			return graphql.Null
-		}
-	}
-
-	return ret
-}
-
-func (ec *executionContext) marshalNPitch2ᚖgithubᚗcomᚋDarkclainerᚋjapwordsᚋpkgᚋlemmaᚐPitchShape(ctx context.Context, sel ast.SelectionSet, v *lemma.PitchShape) graphql.Marshaler {
-	if v == nil {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
-		}
-		return graphql.Null
-	}
-	return ec._Pitch(ctx, sel, v)
-}
-
-func (ec *executionContext) unmarshalNPitchType2githubᚗcomᚋDarkclainerᚋjapwordsᚋpkgᚋlemmaᚐAccentDirection(ctx context.Context, v interface{}) (lemma.AccentDirection, error) {
-	var res lemma.AccentDirection
-	err := res.UnmarshalGQL(v)
-	return res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) marshalNPitchType2githubᚗcomᚋDarkclainerᚋjapwordsᚋpkgᚋlemmaᚐAccentDirection(ctx context.Context, sel ast.SelectionSet, v lemma.AccentDirection) graphql.Marshaler {
-	return v
-}
-
-func (ec *executionContext) unmarshalNPitchType2ᚕgithubᚗcomᚋDarkclainerᚋjapwordsᚋpkgᚋlemmaᚐAccentDirectionᚄ(ctx context.Context, v interface{}) ([]lemma.AccentDirection, error) {
-	var vSlice []interface{}
-	if v != nil {
-		vSlice = graphql.CoerceList(v)
-	}
-	var err error
-	res := make([]lemma.AccentDirection, len(vSlice))
-	for i := range vSlice {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
-		res[i], err = ec.unmarshalNPitchType2githubᚗcomᚋDarkclainerᚋjapwordsᚋpkgᚋlemmaᚐAccentDirection(ctx, vSlice[i])
-		if err != nil {
-			return nil, err
-		}
-	}
-	return res, nil
-}
-
-func (ec *executionContext) marshalNPitchType2ᚕgithubᚗcomᚋDarkclainerᚋjapwordsᚋpkgᚋlemmaᚐAccentDirectionᚄ(ctx context.Context, sel ast.SelectionSet, v []lemma.AccentDirection) graphql.Marshaler {
-	ret := make(graphql.Array, len(v))
-	var wg sync.WaitGroup
-	isLen1 := len(v) == 1
-	if !isLen1 {
-		wg.Add(len(v))
-	}
-	for i := range v {
-		i := i
-		fc := &graphql.FieldContext{
-			Index:  &i,
-			Result: &v[i],
-		}
-		ctx := graphql.WithFieldContext(ctx, fc)
-		f := func(i int) {
-			defer func() {
-				if r := recover(); r != nil {
-					ec.Error(ctx, ec.Recover(ctx, r))
-					ret = nil
-				}
-			}()
-			if !isLen1 {
-				defer wg.Done()
-			}
-			ret[i] = ec.marshalNPitchType2githubᚗcomᚋDarkclainerᚋjapwordsᚋpkgᚋlemmaᚐAccentDirection(ctx, sel, v[i])
+			ret[i] = ec.marshalNPitchShape2githubᚗcomᚋDarkclainerᚋjapwordsᚋpkgᚋlemmaᚐPitchShape(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)

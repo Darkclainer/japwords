@@ -1,7 +1,7 @@
 import { clsx } from 'clsx';
 import { ReactNode, useRef } from 'react';
 
-import { Audio, Furigana, Lemma, PitchType, Sense, Word } from '../api/__generated__/graphql';
+import { AccentDirection, Audio, Furigana, Lemma, Sense, Word } from '../api/__generated__/graphql';
 import { ToastFunction } from '../lib/styled-toast';
 import PlayIcon from './Icons/PlayIcon';
 
@@ -74,18 +74,18 @@ function LemmaTitle(props: { word: Word; toast: ToastFunction }) {
 function Hiragana({ word }: { word: Word }) {
   return (
     <div className="text-2xl leading-10">
-      {word.pitch.length == 0
+      {word.pitchShapes.length == 0
         ? word.furigana.map((e) => e.hiragana).join('')
-        : word.pitch.map((pitch, index) => {
+        : word.pitchShapes.map((pitch, index) => {
             return (
               <span
                 key={index}
                 className={clsx(
                   'border-blue',
-                  pitch.pitch.includes(PitchType.Up) && 'border-t',
-                  pitch.pitch.includes(PitchType.Down) && 'border-b',
-                  pitch.pitch.includes(PitchType.Right) && 'border-r',
-                  pitch.pitch.includes(PitchType.Left) && 'border-l',
+                  pitch.directions.includes(AccentDirection.Up) && 'border-t',
+                  pitch.directions.includes(AccentDirection.Down) && 'border-b',
+                  pitch.directions.includes(AccentDirection.Right) && 'border-r',
+                  pitch.directions.includes(AccentDirection.Left) && 'border-l',
                 )}
               >
                 {pitch.hiragana}

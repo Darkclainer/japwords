@@ -24,30 +24,16 @@ func (r *lemmaResolver) Audio(ctx context.Context, obj *lemma.Lemma) ([]*gqlmode
 	return audios, nil
 }
 
-// Pitch is the resolver for the pitch field.
-func (r *pitchResolver) Pitch(ctx context.Context, obj *lemma.PitchShape) ([]lemma.AccentDirection, error) {
-	return obj.Directions, nil
-}
-
 // Furigana is the resolver for the furigana field.
 func (r *wordResolver) Furigana(ctx context.Context, obj *lemma.Word) ([]*lemma.FuriganaChar, error) {
 	return sliceToPointers(obj.Furigana), nil
 }
 
-// Pitch is the resolver for the pitch field.
-func (r *wordResolver) Pitch(ctx context.Context, obj *lemma.Word) ([]*lemma.PitchShape, error) {
-	return sliceToPointers(obj.PitchShapes()), nil
-}
-
 // Lemma returns gqlgenerated.LemmaResolver implementation.
 func (r *Resolver) Lemma() gqlgenerated.LemmaResolver { return &lemmaResolver{r} }
-
-// Pitch returns gqlgenerated.PitchResolver implementation.
-func (r *Resolver) Pitch() gqlgenerated.PitchResolver { return &pitchResolver{r} }
 
 // Word returns gqlgenerated.WordResolver implementation.
 func (r *Resolver) Word() gqlgenerated.WordResolver { return &wordResolver{r} }
 
 type lemmaResolver struct{ *Resolver }
-type pitchResolver struct{ *Resolver }
 type wordResolver struct{ *Resolver }

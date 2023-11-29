@@ -15,7 +15,7 @@ type Word {
   word: String!
   hiragana: String!
   furigana: [Furigana!]!
-  pitch: [Pitch!]!
+  pitchShapes: [PitchShape!]!
 }
 
 type Furigana {
@@ -23,16 +23,16 @@ type Furigana {
   hiragana: String!
 }
 
-enum PitchType {
+enum AccentDirection {
   UP
   DOWN
   LEFT
   RIGHT
 }
 
-type Pitch {
+type PitchShape {
   hiragana: String!
-  pitch: [PitchType!]!
+  directions: [AccentDirection!]!
 }
 
 type Audio {

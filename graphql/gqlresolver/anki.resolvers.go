@@ -286,8 +286,6 @@ func (r *Resolver) Mutation() gqlgenerated.MutationResolver { return &mutationRe
 // Query returns gqlgenerated.QueryResolver implementation.
 func (r *Resolver) Query() gqlgenerated.QueryResolver { return &queryResolver{r} }
 
-type (
-	ankiResolver     struct{ *Resolver }
-	mutationResolver struct{ *Resolver }
-	queryResolver    struct{ *Resolver }
-)
+type ankiResolver struct{ *Resolver }
+type mutationResolver struct{ *Resolver }
+type queryResolver struct{ *Resolver }

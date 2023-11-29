@@ -54,10 +54,10 @@ models:
       - github.com/99designs/gqlgen/graphql.Uint64
       - github.com/99designs/gqlgen/graphql.Uint32
 
-  PitchType:
+  AccentDirection:
     model:
       - github.com/Darkclainer/japwords/pkg/lemma.AccentDirection
-  Pitch:
+  PitchShape:
     model:
       - github.com/Darkclainer/japwords/pkg/lemma.PitchShape
   Furigana:
