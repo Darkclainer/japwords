@@ -89,6 +89,7 @@ func Test_Anki_AddNote(t *testing.T) {
 				"deckName":  "mydeckname",
 				"modelName": "mymodelname",
 				"options": map[string]any{
+					"allowDuplicate": true,
 					"duplicateScope": "deck",
 					"duplicateScopeOptions": map[string]any{
 						"deckName": "myduplicatedeck",
@@ -107,7 +108,6 @@ func Test_Anki_AddNote(t *testing.T) {
 			Parameters: &AddNoteParams{},
 			ExpectedRequest: map[string]any{
 				"options": map[string]any{
-					"allowDuplicate":        true,
 					"duplicateScope":        "deck",
 					"duplicateScopeOptions": map[string]any{},
 				},
@@ -124,6 +124,7 @@ func Test_Anki_AddNote(t *testing.T) {
 			Parameters: &AddNoteParams{},
 			ExpectedRequest: map[string]any{
 				"options": map[string]any{
+					"allowDuplicate": true,
 					"duplicateScope": "deck",
 					"duplicateScopeOptions": map[string]any{
 						"checkChildren": true,
@@ -142,6 +143,7 @@ func Test_Anki_AddNote(t *testing.T) {
 			Parameters: &AddNoteParams{},
 			ExpectedRequest: map[string]any{
 				"options": map[string]any{
+					"allowDuplicate": true,
 					"duplicateScope": "deck",
 					"duplicateScopeOptions": map[string]any{
 						"checkAllModels": true,
@@ -160,7 +162,6 @@ func Test_Anki_AddNote(t *testing.T) {
 			Parameters: &AddNoteParams{},
 			ExpectedRequest: map[string]any{
 				"options": map[string]any{
-					"allowDuplicate": true,
 					"duplicateScope": "deck",
 					"duplicateScopeOptions": map[string]any{
 						"checkAllModels": true,
@@ -179,6 +180,7 @@ func Test_Anki_AddNote(t *testing.T) {
 			Parameters: &AddNoteParams{},
 			ExpectedRequest: map[string]any{
 				"options": map[string]any{
+					"allowDuplicate":        true,
 					"duplicateScope":        "deck",
 					"duplicateScopeOptions": map[string]any{},
 				},
@@ -195,6 +197,7 @@ func Test_Anki_AddNote(t *testing.T) {
 			Parameters: &AddNoteParams{},
 			ExpectedRequest: map[string]any{
 				"options": map[string]any{
+					"allowDuplicate":        true,
 					"duplicateScope":        "all",
 					"duplicateScopeOptions": map[string]any{},
 				},
@@ -218,6 +221,7 @@ func Test_Anki_AddNote(t *testing.T) {
 					"f2": "v2",
 				},
 				"options": map[string]any{
+					"allowDuplicate":        true,
 					"duplicateScope":        "deck",
 					"duplicateScopeOptions": map[string]any{},
 				},
@@ -235,6 +239,7 @@ func Test_Anki_AddNote(t *testing.T) {
 			ExpectedRequest: map[string]any{
 				"tags": []any{"t1", "t2"},
 				"options": map[string]any{
+					"allowDuplicate":        true,
 					"duplicateScope":        "deck",
 					"duplicateScopeOptions": map[string]any{},
 				},
@@ -264,6 +269,7 @@ func Test_Anki_AddNote(t *testing.T) {
 					},
 				},
 				"options": map[string]any{
+					"allowDuplicate":        true,
 					"duplicateScope":        "deck",
 					"duplicateScopeOptions": map[string]any{},
 				},
@@ -293,6 +299,7 @@ func Test_Anki_AddNote(t *testing.T) {
 					},
 				},
 				"options": map[string]any{
+					"allowDuplicate":        true,
 					"duplicateScope":        "deck",
 					"duplicateScopeOptions": map[string]any{},
 				},
@@ -322,6 +329,7 @@ func Test_Anki_AddNote(t *testing.T) {
 					},
 				},
 				"options": map[string]any{
+					"allowDuplicate":        true,
 					"duplicateScope":        "deck",
 					"duplicateScopeOptions": map[string]any{},
 				},
@@ -336,6 +344,7 @@ func Test_Anki_AddNote(t *testing.T) {
 			Parameters: &AddNoteParams{},
 			ExpectedRequest: map[string]any{
 				"options": map[string]any{
+					"allowDuplicate":        true,
 					"duplicateScope":        "deck",
 					"duplicateScopeOptions": map[string]any{},
 				},

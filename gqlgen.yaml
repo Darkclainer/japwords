@@ -57,18 +57,44 @@ models:
   AccentDirection:
     model:
       - github.com/Darkclainer/japwords/pkg/lemma.AccentDirection
-  PitchShape:
+  Lemma:
     model:
-      - github.com/Darkclainer/japwords/pkg/lemma.PitchShape
-  Furigana:
-    model:
-      - github.com/Darkclainer/japwords/pkg/lemma.FuriganaChar
+      - github.com/Darkclainer/japwords/pkg/lemma.Lemma
   Word:
     model:
       - github.com/Darkclainer/japwords/pkg/lemma.Word
   Sense:
     model:
       - github.com/Darkclainer/japwords/pkg/lemma.WordSense
-  Lemma:
+  Furigana:
     model:
-      - github.com/Darkclainer/japwords/pkg/lemma.Lemma
+      - github.com/Darkclainer/japwords/pkg/lemma.FuriganaChar
+  PitchShape:
+    model:
+      - github.com/Darkclainer/japwords/pkg/lemma.PitchShape
+
+  ProjectedLemmaInput:
+    model:
+      - github.com/Darkclainer/japwords/pkg/lemma.ProjectedLemma
+  ProjectedWordInput:
+    model:
+      - github.com/Darkclainer/japwords/pkg/lemma.ProjectedWord
+  FuriganaInput:
+    model:
+      - github.com/Darkclainer/japwords/pkg/lemma.FuriganaChar
+  PitchShapeInput:
+    model:
+      - github.com/Darkclainer/japwords/pkg/lemma.PitchShape
+
+  AddNoteRequest:
+    model:
+      - github.com/Darkclainer/japwords/pkg/anki.AddNoteRequest
+  AddNoteField:
+    model:
+      - github.com/Darkclainer/japwords/pkg/anki.AddNoteField
+  AddNoteRequestInput:
+    model:
+      - github.com/Darkclainer/japwords/pkg/anki.AddNoteRequest
+  AddNoteFieldInput:
+    model:
+      - github.com/Darkclainer/japwords/pkg/anki.AddNoteField

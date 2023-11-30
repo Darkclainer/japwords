@@ -179,6 +179,35 @@ func (r *mutationResolver) CreateDefaultAnkiNote(ctx context.Context, input *gql
 	return &gqlmodel.CreateDefaultAnkiNoteResult{}, nil
 }
 
+// AddAnkiNote is the resolver for the addAnkiNote field.
+func (r *mutationResolver) AddAnkiNote(ctx context.Context, request *anki.AddNoteRequest) (*gqlmodel.AnkiAddNoteResult, error) {
+	err := r.ankiClient.AddNote(ctx, request)
+	if err != nil {
+		if errors.Is(err, anki.ErrDuplicatedNoteFound) {
+			return &gqlmodel.AnkiAddNoteResult{
+				Error: &gqlmodel.AnkiAddNoteDuplicateFound{
+					Message: err.Error(),
+				},
+			}, nil
+		}
+		if errors.Is(err, anki.ErrIncompleteConfiguration) {
+			return &gqlmodel.AnkiAddNoteResult{
+				Error: &gqlmodel.AnkiIncompleteConfiguration{
+					Message: err.Error(),
+				},
+			}, nil
+		}
+		if ankiErr, _ := convertAnkiError(err); ankiErr != nil {
+			return &gqlmodel.AnkiAddNoteResult{
+				AnkiError: ankiErr,
+			}, nil
+		}
+		return nil, err
+
+	}
+	return &gqlmodel.AnkiAddNoteResult{}, nil
+}
+
 // Anki is the resolver for the Anki field.
 func (r *queryResolver) Anki(ctx context.Context) (*gqlmodel.Anki, error) {
 	return &gqlmodel.Anki{}, nil
@@ -274,6 +303,30 @@ func (r *queryResolver) RenderFields(ctx context.Context, fields []string, templ
 	return &gqlmodel.RenderedFields{
 		Template: lemmaSrc,
 		Fields:   renderedFields,
+	}, nil
+}
+
+// PrepareProjectedLemma is the resolver for the PrepareProjectedLemma field.
+func (r *queryResolver) PrepareProjectedLemma(ctx context.Context, lemma *lemma.ProjectedLemma) (*gqlmodel.PrepareProjectedLemmaResult, error) {
+	request, err := r.ankiClient.PrepareProjectedLemma(ctx, lemma)
+	if err != nil {
+		if errors.Is(err, anki.ErrIncompleteConfiguration) {
+			return &gqlmodel.PrepareProjectedLemmaResult{
+				Error: &gqlmodel.AnkiIncompleteConfiguration{
+					Message: err.Error(),
+				},
+			}, nil
+		}
+		if ankiErr, _ := convertAnkiError(err); ankiErr != nil {
+			return &gqlmodel.PrepareProjectedLemmaResult{
+				AnkiError: ankiErr,
+			}, nil
+		}
+
+		return nil, err
+	}
+	return &gqlmodel.PrepareProjectedLemmaResult{
+		Request: request,
 	}, nil
 }
 

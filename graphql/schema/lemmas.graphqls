@@ -45,3 +45,36 @@ type Sense {
   partOfSpeech: [String!]!
   tags: [String!]!
 }
+
+input ProjectedLemmaInput {
+  slug: ProjectedWordInput!
+  tags: [String!]!
+  forms: [ProjectedWordInput!]!
+  definitions: [String!]!
+  partsOfSpeech: [String!]!
+  senseTags: [String!]!
+  # Links to audio files
+  audio: [AudioInput!]!
+}
+
+input ProjectedWordInput {
+  word: String!
+  hiragana: String!
+  furigana: [FuriganaInput!]!
+  pitchShapes: [PitchShapeInput!]!
+}
+
+input FuriganaInput {
+  kanji: String!
+  hiragana: String!
+}
+
+input PitchShapeInput {
+  hiragana: String!
+  directions: [AccentDirection!]!
+}
+
+input AudioInput {
+  type: String!
+  source: String!
+}

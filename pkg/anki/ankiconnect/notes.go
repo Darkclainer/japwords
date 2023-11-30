@@ -55,7 +55,7 @@ func (a *Anki) AddNote(ctx context.Context, params *AddNoteParams, opts *AddNote
 		ModelName: opts.Model,
 		Fields:    params.Fields,
 		Options: addNoteRequestOptions{
-			AllowDuplicate: opts.DuplicateFlags&DuplicateFlagsCheck != 0,
+			AllowDuplicate: opts.DuplicateFlags&DuplicateFlagsCheck == 0,
 			DuplicateScope: "",
 			DuplicateScopeOptions: addNoteRequestDuplicateOptions{
 				DeckName:       opts.DuplicateDeck,

@@ -13,6 +13,20 @@ type MockStatefullClient struct {
 	mock.Mock
 }
 
+// AddNote provides a mock function with given fields: ctx, note
+func (_m *MockStatefullClient) AddNote(ctx context.Context, note *AddNoteRequest) error {
+	ret := _m.Called(ctx, note)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, *AddNoteRequest) error); ok {
+		r0 = rf(ctx, note)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
 // Config provides a mock function with given fields:
 func (_m *MockStatefullClient) Config() *Config {
 	ret := _m.Called()

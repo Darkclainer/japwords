@@ -1,10 +1,12 @@
 package anki
 
 import (
+	"bytes"
 	"context"
 	"sync"
 
 	"github.com/Darkclainer/japwords/pkg/anki/ankiconnect"
+	"github.com/Darkclainer/japwords/pkg/lemma"
 )
 
 //go:generate $MOCKERY_TOOL --name StatefullClient --testonly=true --inpackage=true
@@ -14,6 +16,7 @@ type StatefullClient interface {
 	GetState(ctx context.Context) (*State, error)
 	CreateDeck(ctx context.Context, name string) error
 	CreateDefaultNoteType(ctx context.Context, name string) error
+	AddNote(ctx context.Context, note *AddNoteRequest) error
 }
 
 type StatefullClientConstructorFn func(*Config) (StatefullClient, error)
@@ -116,6 +119,53 @@ func (a *Anki) CreateDeck(ctx context.Context, name string) error {
 
 func (a *Anki) CreateDefaultNote(ctx context.Context, name string) error {
 	return a.getClient().CreateDefaultNoteType(ctx, name)
+}
+
+type AddNoteField struct {
+	Name  string
+	Value string
+}
+
+type AddNoteRequest struct {
+	Fields   []AddNoteField
+	Tags     []string
+	AudioURL string
+}
+
+func (a *Anki) PrepareProjectedLemma(ctx context.Context, lemma *lemma.ProjectedLemma) (*AddNoteRequest, error) {
+	client := a.getClient()
+	state, err := client.GetState(ctx)
+	if err != nil {
+		return nil, err
+	}
+	if !state.IsReadyToAddNote() {
+		return nil, ErrIncompleteConfiguration
+	}
+	config := client.Config()
+	fields := make([]AddNoteField, len(state.CurrentFields))
+	var buffer bytes.Buffer
+	for i, fieldName := range state.CurrentFields {
+		fields[i].Name = fieldName
+		fieldTemplate, ok := config.Mapping[fieldName]
+		if !ok {
+			continue
+		}
+		buffer.Reset()
+		err := fieldTemplate.Tmpl.Execute(&buffer, lemma)
+		if err != nil {
+			// Probably best to leave as unexported error
+			return nil, err
+		}
+		fields[i].Value = buffer.String()
+	}
+	return &AddNoteRequest{
+		Fields: fields,
+		// TODO: add audio and tags
+	}, nil
+}
+
+func (a *Anki) AddNote(ctx context.Context, note *AddNoteRequest) error {
+	return a.getClient().AddNote(ctx, note)
 }
 
 func (a *Anki) Stop() {

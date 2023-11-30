@@ -3,8 +3,13 @@
 package gqlmodel
 
 import (
+	"github.com/Darkclainer/japwords/pkg/anki"
 	"github.com/Darkclainer/japwords/pkg/lemma"
 )
+
+type AnkiAddNoteError interface {
+	IsAnkiAddNoteError()
+}
 
 type AnkiError interface {
 	IsAnkiError()
@@ -23,10 +28,28 @@ type Error interface {
 	GetMessage() string
 }
 
+type PrepareProjectedLemmaError interface {
+	IsPrepareProjectedLemmaError()
+}
+
 type Anki struct {
 	Decks      *AnkiDecksResult      `json:"decks"`
 	Notes      *AnkiNotesResult      `json:"notes"`
 	NoteFields *AnkiNoteFieldsResult `json:"noteFields"`
+}
+
+type AnkiAddNoteDuplicateFound struct {
+	Message string `json:"message"`
+}
+
+func (AnkiAddNoteDuplicateFound) IsError()                {}
+func (this AnkiAddNoteDuplicateFound) GetMessage() string { return this.Message }
+
+func (AnkiAddNoteDuplicateFound) IsAnkiAddNoteError() {}
+
+type AnkiAddNoteResult struct {
+	Error     AnkiAddNoteError `json:"error,omitempty"`
+	AnkiError AnkiError        `json:"ankiError,omitempty"`
 }
 
 type AnkiCollectionUnavailable struct {
@@ -101,6 +124,17 @@ func (this AnkiForbiddenOrigin) GetMessage() string { return this.Message }
 
 func (AnkiForbiddenOrigin) IsAnkiError() {}
 
+type AnkiIncompleteConfiguration struct {
+	Message string `json:"message"`
+}
+
+func (AnkiIncompleteConfiguration) IsError()                {}
+func (this AnkiIncompleteConfiguration) GetMessage() string { return this.Message }
+
+func (AnkiIncompleteConfiguration) IsPrepareProjectedLemmaError() {}
+
+func (AnkiIncompleteConfiguration) IsAnkiAddNoteError() {}
+
 type AnkiInvalidAPIKey struct {
 	Message string `json:"message"`
 	Version int    `json:"version"`
@@ -136,6 +170,11 @@ func (this AnkiUnknownError) GetMessage() string { return this.Message }
 func (AnkiUnknownError) IsAnkiError() {}
 
 type Audio struct {
+	Type   string `json:"type"`
+	Source string `json:"source"`
+}
+
+type AudioInput struct {
 	Type   string `json:"type"`
 	Source string `json:"source"`
 }
@@ -178,6 +217,12 @@ type CreateDefaultAnkiNoteResult struct {
 
 type Lemmas struct {
 	Lemmas []*lemma.Lemma `json:"lemmas"`
+}
+
+type PrepareProjectedLemmaResult struct {
+	Request   *anki.AddNoteRequest       `json:"request,omitempty"`
+	Error     PrepareProjectedLemmaError `json:"error,omitempty"`
+	AnkiError AnkiError                  `json:"ankiError,omitempty"`
 }
 
 type RenderedField struct {

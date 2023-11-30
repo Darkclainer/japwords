@@ -29,11 +29,45 @@ func (r *wordResolver) Furigana(ctx context.Context, obj *lemma.Word) ([]*lemma.
 	return sliceToPointers(obj.Furigana), nil
 }
 
+// Audio is the resolver for the audio field.
+func (r *projectedLemmaInputResolver) Audio(ctx context.Context, obj *lemma.ProjectedLemma, data []*gqlmodel.AudioInput) error {
+	audios := make(map[string]string, len(data))
+	for _, audio := range data {
+		audios[audio.Type] = audio.Source
+	}
+	obj.Audio = audios
+	return nil
+}
+
+// Furigana is the resolver for the furigana field.
+func (r *projectedWordInputResolver) Furigana(ctx context.Context, obj *lemma.ProjectedWord, data []*lemma.FuriganaChar) error {
+	obj.Furigana = sliceToValues(data)
+	return nil
+}
+
+// PitchShapes is the resolver for the pitchShapes field.
+func (r *projectedWordInputResolver) PitchShapes(ctx context.Context, obj *lemma.ProjectedWord, data []*lemma.PitchShape) error {
+	obj.Pitches = sliceToValues(data)
+	return nil
+}
+
 // Lemma returns gqlgenerated.LemmaResolver implementation.
 func (r *Resolver) Lemma() gqlgenerated.LemmaResolver { return &lemmaResolver{r} }
 
 // Word returns gqlgenerated.WordResolver implementation.
 func (r *Resolver) Word() gqlgenerated.WordResolver { return &wordResolver{r} }
 
+// ProjectedLemmaInput returns gqlgenerated.ProjectedLemmaInputResolver implementation.
+func (r *Resolver) ProjectedLemmaInput() gqlgenerated.ProjectedLemmaInputResolver {
+	return &projectedLemmaInputResolver{r}
+}
+
+// ProjectedWordInput returns gqlgenerated.ProjectedWordInputResolver implementation.
+func (r *Resolver) ProjectedWordInput() gqlgenerated.ProjectedWordInputResolver {
+	return &projectedWordInputResolver{r}
+}
+
 type lemmaResolver struct{ *Resolver }
 type wordResolver struct{ *Resolver }
+type projectedLemmaInputResolver struct{ *Resolver }
+type projectedWordInputResolver struct{ *Resolver }

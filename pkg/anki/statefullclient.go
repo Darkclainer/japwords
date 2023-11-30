@@ -74,8 +74,8 @@ func (state *State) updateFromAnkiState(config *Config) {
 	}
 }
 
-func (s *State) IsReady() bool {
-	return s.LastError == nil && s.DeckExists && s.NoteTypeExists && s.NoteHasAllFields && s.OrderDefined
+func (s *State) IsReadyToAddNote() bool {
+	return s.LastError == nil && s.DeckExists && s.NoteTypeExists && s.NoteHasAllFields
 }
 
 const (
@@ -290,6 +290,40 @@ func (sc *statefullClient) CreateDefaultNoteType(ctx context.Context, name strin
 		state.NoteFields[name] = modelRequest.Fields
 		state.updateFromAnkiState(config)
 		return state, nil
+	})
+	return err
+}
+
+func (sc *statefullClient) AddNote(ctx context.Context, note *AddNoteRequest) error {
+	err := sc.withClient(func(client AnkiClient, config *Config, state *State) (*State, error) {
+		if !state.IsReadyToAddNote() {
+			return nil, ErrIncompleteConfiguration
+		}
+		// NOTE: we could assert request on known state, but why would we?
+		fields := make(map[string]string, len(note.Fields))
+		for i := range note.Fields {
+			fields[note.Fields[i].Name] = note.Fields[i].Value
+		}
+
+		_, err := client.AddNote(ctx,
+			&ankiconnect.AddNoteParams{
+				Fields: fields,
+				// TODO:
+				// Tags:   note.Tags,
+				// Assets: []*ankiconnect.AddNoteAsset{},
+			},
+			&ankiconnect.AddNoteOptions{
+				Deck:           config.Deck,
+				Model:          config.NoteType,
+				DuplicateScope: ankiconnect.DuplicateScopeDeck,
+				DuplicateFlags: ankiconnect.DuplicateFlagsCheck,
+			},
+		)
+		var serverError *ankiconnect.ServerError
+		if errors.As(err, &serverError) && serverError.Message == "cannot create note because it is a duplicate" {
+			return nil, ErrDuplicatedNoteFound
+		}
+		return nil, err
 	})
 	return err
 }

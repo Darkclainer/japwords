@@ -14,6 +14,7 @@ import (
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/99designs/gqlgen/graphql/introspection"
 	"github.com/Darkclainer/japwords/graphql/gqlmodel"
+	"github.com/Darkclainer/japwords/pkg/anki"
 	"github.com/Darkclainer/japwords/pkg/lemma"
 	gqlparser "github.com/vektah/gqlparser/v2"
 	"github.com/vektah/gqlparser/v2/ast"
@@ -42,16 +43,38 @@ type ResolverRoot interface {
 	Mutation() MutationResolver
 	Query() QueryResolver
 	Word() WordResolver
+	ProjectedLemmaInput() ProjectedLemmaInputResolver
+	ProjectedWordInput() ProjectedWordInputResolver
 }
 
 type DirectiveRoot struct {
 }
 
 type ComplexityRoot struct {
+	AddNoteField struct {
+		Name  func(childComplexity int) int
+		Value func(childComplexity int) int
+	}
+
+	AddNoteRequest struct {
+		AudioURL func(childComplexity int) int
+		Fields   func(childComplexity int) int
+		Tags     func(childComplexity int) int
+	}
+
 	Anki struct {
 		Decks      func(childComplexity int) int
 		NoteFields func(childComplexity int, name string) int
 		Notes      func(childComplexity int) int
+	}
+
+	AnkiAddNoteDuplicateFound struct {
+		Message func(childComplexity int) int
+	}
+
+	AnkiAddNoteResult struct {
+		AnkiError func(childComplexity int) int
+		Error     func(childComplexity int) int
 	}
 
 	AnkiCollectionUnavailable struct {
@@ -100,6 +123,10 @@ type ComplexityRoot struct {
 	}
 
 	AnkiForbiddenOrigin struct {
+		Message func(childComplexity int) int
+	}
+
+	AnkiIncompleteConfiguration struct {
 		Message func(childComplexity int) int
 	}
 
@@ -168,6 +195,7 @@ type ComplexityRoot struct {
 	}
 
 	Mutation struct {
+		AddAnkiNote             func(childComplexity int, request *anki.AddNoteRequest) int
 		CreateAnkiDeck          func(childComplexity int, input *gqlmodel.CreateAnkiDeckInput) int
 		CreateDefaultAnkiNote   func(childComplexity int, input *gqlmodel.CreateDefaultAnkiNoteInput) int
 		SetAnkiConfigConnection func(childComplexity int, input gqlmodel.SetAnkiConfigConnectionInput) int
@@ -181,12 +209,19 @@ type ComplexityRoot struct {
 		Hiragana   func(childComplexity int) int
 	}
 
+	PrepareProjectedLemmaResult struct {
+		AnkiError func(childComplexity int) int
+		Error     func(childComplexity int) int
+		Request   func(childComplexity int) int
+	}
+
 	Query struct {
-		Anki            func(childComplexity int) int
-		AnkiConfig      func(childComplexity int) int
-		AnkiConfigState func(childComplexity int) int
-		Lemmas          func(childComplexity int, query string) int
-		RenderFields    func(childComplexity int, fields []string, template *string) int
+		Anki                  func(childComplexity int) int
+		AnkiConfig            func(childComplexity int) int
+		AnkiConfigState       func(childComplexity int) int
+		Lemmas                func(childComplexity int, query string) int
+		PrepareProjectedLemma func(childComplexity int, lemma *lemma.ProjectedLemma) int
+		RenderFields          func(childComplexity int, fields []string, template *string) int
 	}
 
 	RenderedField struct {
@@ -251,16 +286,26 @@ type MutationResolver interface {
 	SetAnkiConfigMapping(ctx context.Context, input gqlmodel.SetAnkiConfigMappingInput) (*gqlmodel.SetAnkiConfigMappingResult, error)
 	CreateAnkiDeck(ctx context.Context, input *gqlmodel.CreateAnkiDeckInput) (*gqlmodel.CreateAnkiDeckResult, error)
 	CreateDefaultAnkiNote(ctx context.Context, input *gqlmodel.CreateDefaultAnkiNoteInput) (*gqlmodel.CreateDefaultAnkiNoteResult, error)
+	AddAnkiNote(ctx context.Context, request *anki.AddNoteRequest) (*gqlmodel.AnkiAddNoteResult, error)
 }
 type QueryResolver interface {
 	Anki(ctx context.Context) (*gqlmodel.Anki, error)
 	AnkiConfigState(ctx context.Context) (*gqlmodel.AnkiConfigStateResult, error)
 	AnkiConfig(ctx context.Context) (*gqlmodel.AnkiConfig, error)
 	RenderFields(ctx context.Context, fields []string, template *string) (*gqlmodel.RenderedFields, error)
+	PrepareProjectedLemma(ctx context.Context, lemma *lemma.ProjectedLemma) (*gqlmodel.PrepareProjectedLemmaResult, error)
 	Lemmas(ctx context.Context, query string) (*gqlmodel.Lemmas, error)
 }
 type WordResolver interface {
 	Furigana(ctx context.Context, obj *lemma.Word) ([]*lemma.FuriganaChar, error)
+}
+
+type ProjectedLemmaInputResolver interface {
+	Audio(ctx context.Context, obj *lemma.ProjectedLemma, data []*gqlmodel.AudioInput) error
+}
+type ProjectedWordInputResolver interface {
+	Furigana(ctx context.Context, obj *lemma.ProjectedWord, data []*lemma.FuriganaChar) error
+	PitchShapes(ctx context.Context, obj *lemma.ProjectedWord, data []*lemma.PitchShape) error
 }
 
 type executableSchema struct {
@@ -277,6 +322,41 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 	ec := executionContext{nil, e, 0, 0, nil}
 	_ = ec
 	switch typeName + "." + field {
+
+	case "AddNoteField.name":
+		if e.complexity.AddNoteField.Name == nil {
+			break
+		}
+
+		return e.complexity.AddNoteField.Name(childComplexity), true
+
+	case "AddNoteField.value":
+		if e.complexity.AddNoteField.Value == nil {
+			break
+		}
+
+		return e.complexity.AddNoteField.Value(childComplexity), true
+
+	case "AddNoteRequest.audioURL":
+		if e.complexity.AddNoteRequest.AudioURL == nil {
+			break
+		}
+
+		return e.complexity.AddNoteRequest.AudioURL(childComplexity), true
+
+	case "AddNoteRequest.fields":
+		if e.complexity.AddNoteRequest.Fields == nil {
+			break
+		}
+
+		return e.complexity.AddNoteRequest.Fields(childComplexity), true
+
+	case "AddNoteRequest.tags":
+		if e.complexity.AddNoteRequest.Tags == nil {
+			break
+		}
+
+		return e.complexity.AddNoteRequest.Tags(childComplexity), true
 
 	case "Anki.decks":
 		if e.complexity.Anki.Decks == nil {
@@ -303,6 +383,27 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Anki.Notes(childComplexity), true
+
+	case "AnkiAddNoteDuplicateFound.message":
+		if e.complexity.AnkiAddNoteDuplicateFound.Message == nil {
+			break
+		}
+
+		return e.complexity.AnkiAddNoteDuplicateFound.Message(childComplexity), true
+
+	case "AnkiAddNoteResult.ankiError":
+		if e.complexity.AnkiAddNoteResult.AnkiError == nil {
+			break
+		}
+
+		return e.complexity.AnkiAddNoteResult.AnkiError(childComplexity), true
+
+	case "AnkiAddNoteResult.error":
+		if e.complexity.AnkiAddNoteResult.Error == nil {
+			break
+		}
+
+		return e.complexity.AnkiAddNoteResult.Error(childComplexity), true
 
 	case "AnkiCollectionUnavailable.message":
 		if e.complexity.AnkiCollectionUnavailable.Message == nil {
@@ -457,6 +558,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.AnkiForbiddenOrigin.Message(childComplexity), true
+
+	case "AnkiIncompleteConfiguration.message":
+		if e.complexity.AnkiIncompleteConfiguration.Message == nil {
+			break
+		}
+
+		return e.complexity.AnkiIncompleteConfiguration.Message(childComplexity), true
 
 	case "AnkiInvalidAPIKey.message":
 		if e.complexity.AnkiInvalidAPIKey.Message == nil {
@@ -633,6 +741,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Lemmas.Lemmas(childComplexity), true
 
+	case "Mutation.addAnkiNote":
+		if e.complexity.Mutation.AddAnkiNote == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_addAnkiNote_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.AddAnkiNote(childComplexity, args["request"].(*anki.AddNoteRequest)), true
+
 	case "Mutation.createAnkiDeck":
 		if e.complexity.Mutation.CreateAnkiDeck == nil {
 			break
@@ -719,6 +839,27 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.PitchShape.Hiragana(childComplexity), true
 
+	case "PrepareProjectedLemmaResult.ankiError":
+		if e.complexity.PrepareProjectedLemmaResult.AnkiError == nil {
+			break
+		}
+
+		return e.complexity.PrepareProjectedLemmaResult.AnkiError(childComplexity), true
+
+	case "PrepareProjectedLemmaResult.error":
+		if e.complexity.PrepareProjectedLemmaResult.Error == nil {
+			break
+		}
+
+		return e.complexity.PrepareProjectedLemmaResult.Error(childComplexity), true
+
+	case "PrepareProjectedLemmaResult.request":
+		if e.complexity.PrepareProjectedLemmaResult.Request == nil {
+			break
+		}
+
+		return e.complexity.PrepareProjectedLemmaResult.Request(childComplexity), true
+
 	case "Query.Anki":
 		if e.complexity.Query.Anki == nil {
 			break
@@ -751,6 +892,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Query.Lemmas(childComplexity, args["query"].(string)), true
+
+	case "Query.PrepareProjectedLemma":
+		if e.complexity.Query.PrepareProjectedLemma == nil {
+			break
+		}
+
+		args, err := ec.field_Query_PrepareProjectedLemma_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.PrepareProjectedLemma(childComplexity, args["lemma"].(*lemma.ProjectedLemma)), true
 
 	case "Query.RenderFields":
 		if e.complexity.Query.RenderFields == nil {
@@ -905,9 +1058,16 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 	rc := graphql.GetOperationContext(ctx)
 	ec := executionContext{rc, e, 0, 0, make(chan graphql.DeferredResult)}
 	inputUnmarshalMap := graphql.BuildUnmarshalerMap(
+		ec.unmarshalInputAddNoteFieldInput,
+		ec.unmarshalInputAddNoteRequestInput,
 		ec.unmarshalInputAnkiConfigMappingElementInput,
+		ec.unmarshalInputAudioInput,
 		ec.unmarshalInputCreateAnkiDeckInput,
 		ec.unmarshalInputCreateDefaultAnkiNoteInput,
+		ec.unmarshalInputFuriganaInput,
+		ec.unmarshalInputPitchShapeInput,
+		ec.unmarshalInputProjectedLemmaInput,
+		ec.unmarshalInputProjectedWordInput,
 		ec.unmarshalInputSetAnkiConfigConnectionInput,
 		ec.unmarshalInputSetAnkiConfigDeckInput,
 		ec.unmarshalInputSetAnkiConfigMappingInput,
@@ -1033,6 +1193,11 @@ type AnkiUnknownError implements Error {
 
 union AnkiError =  AnkiConnectionError | AnkiInvalidAPIKey | AnkiCollectionUnavailable | AnkiForbiddenOrigin | AnkiUnknownError 
 
+# this is not related to anki-connect itself, more to our configuration, so it's more specific to certain methods
+type AnkiIncompleteConfiguration implements Error {
+ message: String!
+}
+
 extend type Query {
   # Anki represents data available in Anki by AnkiConnect
   Anki: Anki!
@@ -1108,6 +1273,30 @@ type RenderedField {
   field: String!
   result: String!
   error: String
+}
+
+extend type Query {
+  PrepareProjectedLemma(lemma: ProjectedLemmaInput): PrepareProjectedLemmaResult!
+}
+
+type AddNoteRequest {
+  fields: [AddNoteField!]!
+  tags: [String!]!
+  audioURL: String!
+}
+
+type AddNoteField {
+  name: String!
+  value: String!
+}
+
+union PrepareProjectedLemmaError = AnkiIncompleteConfiguration
+
+type PrepareProjectedLemmaResult {
+  request: AddNoteRequest
+  # TODO: can be something like not ready or render failed?
+  error: PrepareProjectedLemmaError
+  ankiError: AnkiError
 }
 
 
@@ -1213,6 +1402,32 @@ type CreateDefaultAnkiNoteResult {
   ankiError: AnkiError
   error: CreateDefaultAnkiNoteError
 }
+
+extend type Mutation {
+  addAnkiNote(request: AddNoteRequestInput): AnkiAddNoteResult!
+}
+
+input AddNoteRequestInput {
+  fields: [AddNoteFieldInput!]!
+  tags: [String!]!
+  audioURL: String!
+}
+
+input AddNoteFieldInput {
+  name: String!
+  value: String!
+}
+
+type AnkiAddNoteDuplicateFound implements Error {
+  message: String!
+}
+
+union AnkiAddNoteError = AnkiAddNoteDuplicateFound | AnkiIncompleteConfiguration
+
+type AnkiAddNoteResult {
+  error: AnkiAddNoteError
+  ankiError: AnkiError
+}
 `, BuiltIn: false},
 	{Name: "../schema/directives.graphqls", Input: `directive @goModel(
 	model: String
@@ -1292,6 +1507,39 @@ type Sense {
   partOfSpeech: [String!]!
   tags: [String!]!
 }
+
+input ProjectedLemmaInput {
+  slug: ProjectedWordInput!
+  tags: [String!]!
+  forms: [ProjectedWordInput!]!
+  definitions: [String!]!
+  partsOfSpeech: [String!]!
+  senseTags: [String!]!
+  # Links to audio files
+  audio: [AudioInput!]!
+}
+
+input ProjectedWordInput {
+  word: String!
+  hiragana: String!
+  furigana: [FuriganaInput!]!
+  pitchShapes: [PitchShapeInput!]!
+}
+
+input FuriganaInput {
+  kanji: String!
+  hiragana: String!
+}
+
+input PitchShapeInput {
+  hiragana: String!
+  directions: [AccentDirection!]!
+}
+
+input AudioInput {
+  type: String!
+  source: String!
+}
 `, BuiltIn: false},
 }
 var parsedSchema = gqlparser.MustLoadSchema(sources...)
@@ -1312,6 +1560,21 @@ func (ec *executionContext) field_Anki_noteFields_args(ctx context.Context, rawA
 		}
 	}
 	args["name"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_addAnkiNote_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 *anki.AddNoteRequest
+	if tmp, ok := rawArgs["request"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("request"))
+		arg0, err = ec.unmarshalOAddNoteRequestInput2ᚖgithubᚗcomᚋDarkclainerᚋjapwordsᚋpkgᚋankiᚐAddNoteRequest(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["request"] = arg0
 	return args, nil
 }
 
@@ -1420,6 +1683,21 @@ func (ec *executionContext) field_Query_Lemmas_args(ctx context.Context, rawArgs
 	return args, nil
 }
 
+func (ec *executionContext) field_Query_PrepareProjectedLemma_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 *lemma.ProjectedLemma
+	if tmp, ok := rawArgs["lemma"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("lemma"))
+		arg0, err = ec.unmarshalOProjectedLemmaInput2ᚖgithubᚗcomᚋDarkclainerᚋjapwordsᚋpkgᚋlemmaᚐProjectedLemma(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["lemma"] = arg0
+	return args, nil
+}
+
 func (ec *executionContext) field_Query_RenderFields_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
@@ -1496,6 +1774,232 @@ func (ec *executionContext) field___Type_fields_args(ctx context.Context, rawArg
 // endregion ************************** directives.gotpl **************************
 
 // region    **************************** field.gotpl *****************************
+
+func (ec *executionContext) _AddNoteField_name(ctx context.Context, field graphql.CollectedField, obj *anki.AddNoteField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_AddNoteField_name(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Name, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_AddNoteField_name(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "AddNoteField",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _AddNoteField_value(ctx context.Context, field graphql.CollectedField, obj *anki.AddNoteField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_AddNoteField_value(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Value, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_AddNoteField_value(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "AddNoteField",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _AddNoteRequest_fields(ctx context.Context, field graphql.CollectedField, obj *anki.AddNoteRequest) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_AddNoteRequest_fields(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Fields, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]anki.AddNoteField)
+	fc.Result = res
+	return ec.marshalNAddNoteField2ᚕgithubᚗcomᚋDarkclainerᚋjapwordsᚋpkgᚋankiᚐAddNoteFieldᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_AddNoteRequest_fields(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "AddNoteRequest",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "name":
+				return ec.fieldContext_AddNoteField_name(ctx, field)
+			case "value":
+				return ec.fieldContext_AddNoteField_value(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type AddNoteField", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _AddNoteRequest_tags(ctx context.Context, field graphql.CollectedField, obj *anki.AddNoteRequest) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_AddNoteRequest_tags(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Tags, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]string)
+	fc.Result = res
+	return ec.marshalNString2ᚕstringᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_AddNoteRequest_tags(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "AddNoteRequest",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _AddNoteRequest_audioURL(ctx context.Context, field graphql.CollectedField, obj *anki.AddNoteRequest) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_AddNoteRequest_audioURL(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.AudioURL, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_AddNoteRequest_audioURL(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "AddNoteRequest",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
 
 func (ec *executionContext) _Anki_decks(ctx context.Context, field graphql.CollectedField, obj *gqlmodel.Anki) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Anki_decks(ctx, field)
@@ -1654,6 +2158,132 @@ func (ec *executionContext) fieldContext_Anki_noteFields(ctx context.Context, fi
 	if fc.Args, err = ec.field_Anki_noteFields_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _AnkiAddNoteDuplicateFound_message(ctx context.Context, field graphql.CollectedField, obj *gqlmodel.AnkiAddNoteDuplicateFound) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_AnkiAddNoteDuplicateFound_message(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Message, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_AnkiAddNoteDuplicateFound_message(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "AnkiAddNoteDuplicateFound",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _AnkiAddNoteResult_error(ctx context.Context, field graphql.CollectedField, obj *gqlmodel.AnkiAddNoteResult) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_AnkiAddNoteResult_error(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Error, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(gqlmodel.AnkiAddNoteError)
+	fc.Result = res
+	return ec.marshalOAnkiAddNoteError2githubᚗcomᚋDarkclainerᚋjapwordsᚋgraphqlᚋgqlmodelᚐAnkiAddNoteError(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_AnkiAddNoteResult_error(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "AnkiAddNoteResult",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type AnkiAddNoteError does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _AnkiAddNoteResult_ankiError(ctx context.Context, field graphql.CollectedField, obj *gqlmodel.AnkiAddNoteResult) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_AnkiAddNoteResult_ankiError(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.AnkiError, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(gqlmodel.AnkiError)
+	fc.Result = res
+	return ec.marshalOAnkiError2githubᚗcomᚋDarkclainerᚋjapwordsᚋgraphqlᚋgqlmodelᚐAnkiError(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_AnkiAddNoteResult_ankiError(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "AnkiAddNoteResult",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type AnkiError does not have child fields")
+		},
 	}
 	return fc, nil
 }
@@ -2626,6 +3256,50 @@ func (ec *executionContext) _AnkiForbiddenOrigin_message(ctx context.Context, fi
 func (ec *executionContext) fieldContext_AnkiForbiddenOrigin_message(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "AnkiForbiddenOrigin",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _AnkiIncompleteConfiguration_message(ctx context.Context, field graphql.CollectedField, obj *gqlmodel.AnkiIncompleteConfiguration) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_AnkiIncompleteConfiguration_message(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Message, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_AnkiIncompleteConfiguration_message(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "AnkiIncompleteConfiguration",
 		Field:      field,
 		IsMethod:   false,
 		IsResolver: false,
@@ -4116,6 +4790,67 @@ func (ec *executionContext) fieldContext_Mutation_createDefaultAnkiNote(ctx cont
 	return fc, nil
 }
 
+func (ec *executionContext) _Mutation_addAnkiNote(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_addAnkiNote(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().AddAnkiNote(rctx, fc.Args["request"].(*anki.AddNoteRequest))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*gqlmodel.AnkiAddNoteResult)
+	fc.Result = res
+	return ec.marshalNAnkiAddNoteResult2ᚖgithubᚗcomᚋDarkclainerᚋjapwordsᚋgraphqlᚋgqlmodelᚐAnkiAddNoteResult(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_addAnkiNote(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "error":
+				return ec.fieldContext_AnkiAddNoteResult_error(ctx, field)
+			case "ankiError":
+				return ec.fieldContext_AnkiAddNoteResult_ankiError(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type AnkiAddNoteResult", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_addAnkiNote_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _PitchShape_hiragana(ctx context.Context, field graphql.CollectedField, obj *lemma.PitchShape) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_PitchShape_hiragana(ctx, field)
 	if err != nil {
@@ -4199,6 +4934,137 @@ func (ec *executionContext) fieldContext_PitchShape_directions(ctx context.Conte
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type AccentDirection does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _PrepareProjectedLemmaResult_request(ctx context.Context, field graphql.CollectedField, obj *gqlmodel.PrepareProjectedLemmaResult) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_PrepareProjectedLemmaResult_request(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Request, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*anki.AddNoteRequest)
+	fc.Result = res
+	return ec.marshalOAddNoteRequest2ᚖgithubᚗcomᚋDarkclainerᚋjapwordsᚋpkgᚋankiᚐAddNoteRequest(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_PrepareProjectedLemmaResult_request(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "PrepareProjectedLemmaResult",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "fields":
+				return ec.fieldContext_AddNoteRequest_fields(ctx, field)
+			case "tags":
+				return ec.fieldContext_AddNoteRequest_tags(ctx, field)
+			case "audioURL":
+				return ec.fieldContext_AddNoteRequest_audioURL(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type AddNoteRequest", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _PrepareProjectedLemmaResult_error(ctx context.Context, field graphql.CollectedField, obj *gqlmodel.PrepareProjectedLemmaResult) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_PrepareProjectedLemmaResult_error(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Error, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(gqlmodel.PrepareProjectedLemmaError)
+	fc.Result = res
+	return ec.marshalOPrepareProjectedLemmaError2githubᚗcomᚋDarkclainerᚋjapwordsᚋgraphqlᚋgqlmodelᚐPrepareProjectedLemmaError(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_PrepareProjectedLemmaResult_error(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "PrepareProjectedLemmaResult",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type PrepareProjectedLemmaError does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _PrepareProjectedLemmaResult_ankiError(ctx context.Context, field graphql.CollectedField, obj *gqlmodel.PrepareProjectedLemmaResult) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_PrepareProjectedLemmaResult_ankiError(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.AnkiError, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(gqlmodel.AnkiError)
+	fc.Result = res
+	return ec.marshalOAnkiError2githubᚗcomᚋDarkclainerᚋjapwordsᚋgraphqlᚋgqlmodelᚐAnkiError(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_PrepareProjectedLemmaResult_ankiError(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "PrepareProjectedLemmaResult",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type AnkiError does not have child fields")
 		},
 	}
 	return fc, nil
@@ -4419,6 +5285,69 @@ func (ec *executionContext) fieldContext_Query_RenderFields(ctx context.Context,
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Query_RenderFields_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_PrepareProjectedLemma(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_PrepareProjectedLemma(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().PrepareProjectedLemma(rctx, fc.Args["lemma"].(*lemma.ProjectedLemma))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*gqlmodel.PrepareProjectedLemmaResult)
+	fc.Result = res
+	return ec.marshalNPrepareProjectedLemmaResult2ᚖgithubᚗcomᚋDarkclainerᚋjapwordsᚋgraphqlᚋgqlmodelᚐPrepareProjectedLemmaResult(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_PrepareProjectedLemma(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "request":
+				return ec.fieldContext_PrepareProjectedLemmaResult_request(ctx, field)
+			case "error":
+				return ec.fieldContext_PrepareProjectedLemmaResult_error(ctx, field)
+			case "ankiError":
+				return ec.fieldContext_PrepareProjectedLemmaResult_ankiError(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type PrepareProjectedLemmaResult", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_PrepareProjectedLemma_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -7247,6 +8176,91 @@ func (ec *executionContext) fieldContext___Type_specifiedByURL(ctx context.Conte
 
 // region    **************************** input.gotpl *****************************
 
+func (ec *executionContext) unmarshalInputAddNoteFieldInput(ctx context.Context, obj interface{}) (anki.AddNoteField, error) {
+	var it anki.AddNoteField
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"name", "value"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "name":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
+			data, err := ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Name = data
+		case "value":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("value"))
+			data, err := ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Value = data
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputAddNoteRequestInput(ctx context.Context, obj interface{}) (anki.AddNoteRequest, error) {
+	var it anki.AddNoteRequest
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"fields", "tags", "audioURL"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "fields":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("fields"))
+			data, err := ec.unmarshalNAddNoteFieldInput2ᚕgithubᚗcomᚋDarkclainerᚋjapwordsᚋpkgᚋankiᚐAddNoteFieldᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Fields = data
+		case "tags":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("tags"))
+			data, err := ec.unmarshalNString2ᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Tags = data
+		case "audioURL":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("audioURL"))
+			data, err := ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.AudioURL = data
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputAnkiConfigMappingElementInput(ctx context.Context, obj interface{}) (gqlmodel.AnkiConfigMappingElementInput, error) {
 	var it gqlmodel.AnkiConfigMappingElementInput
 	asMap := map[string]interface{}{}
@@ -7279,6 +8293,44 @@ func (ec *executionContext) unmarshalInputAnkiConfigMappingElementInput(ctx cont
 				return it, err
 			}
 			it.Value = data
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputAudioInput(ctx context.Context, obj interface{}) (gqlmodel.AudioInput, error) {
+	var it gqlmodel.AudioInput
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"type", "source"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "type":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("type"))
+			data, err := ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Type = data
+		case "source":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("source"))
+			data, err := ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Source = data
 		}
 	}
 
@@ -7337,6 +8389,227 @@ func (ec *executionContext) unmarshalInputCreateDefaultAnkiNoteInput(ctx context
 				return it, err
 			}
 			it.Name = data
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputFuriganaInput(ctx context.Context, obj interface{}) (lemma.FuriganaChar, error) {
+	var it lemma.FuriganaChar
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"kanji", "hiragana"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "kanji":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("kanji"))
+			data, err := ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Kanji = data
+		case "hiragana":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hiragana"))
+			data, err := ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Hiragana = data
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputPitchShapeInput(ctx context.Context, obj interface{}) (lemma.PitchShape, error) {
+	var it lemma.PitchShape
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"hiragana", "directions"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "hiragana":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hiragana"))
+			data, err := ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Hiragana = data
+		case "directions":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("directions"))
+			data, err := ec.unmarshalNAccentDirection2ᚕgithubᚗcomᚋDarkclainerᚋjapwordsᚋpkgᚋlemmaᚐAccentDirectionᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Directions = data
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputProjectedLemmaInput(ctx context.Context, obj interface{}) (lemma.ProjectedLemma, error) {
+	var it lemma.ProjectedLemma
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"slug", "tags", "forms", "definitions", "partsOfSpeech", "senseTags", "audio"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "slug":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("slug"))
+			data, err := ec.unmarshalNProjectedWordInput2githubᚗcomᚋDarkclainerᚋjapwordsᚋpkgᚋlemmaᚐProjectedWord(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Slug = data
+		case "tags":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("tags"))
+			data, err := ec.unmarshalNString2ᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Tags = data
+		case "forms":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("forms"))
+			data, err := ec.unmarshalNProjectedWordInput2ᚕgithubᚗcomᚋDarkclainerᚋjapwordsᚋpkgᚋlemmaᚐProjectedWordᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Forms = data
+		case "definitions":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("definitions"))
+			data, err := ec.unmarshalNString2ᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Definitions = data
+		case "partsOfSpeech":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("partsOfSpeech"))
+			data, err := ec.unmarshalNString2ᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.PartsOfSpeech = data
+		case "senseTags":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("senseTags"))
+			data, err := ec.unmarshalNString2ᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.SenseTags = data
+		case "audio":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("audio"))
+			data, err := ec.unmarshalNAudioInput2ᚕᚖgithubᚗcomᚋDarkclainerᚋjapwordsᚋgraphqlᚋgqlmodelᚐAudioInputᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			if err = ec.resolvers.ProjectedLemmaInput().Audio(ctx, &it, data); err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputProjectedWordInput(ctx context.Context, obj interface{}) (lemma.ProjectedWord, error) {
+	var it lemma.ProjectedWord
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"word", "hiragana", "furigana", "pitchShapes"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "word":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("word"))
+			data, err := ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Word = data
+		case "hiragana":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hiragana"))
+			data, err := ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Hiragana = data
+		case "furigana":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("furigana"))
+			data, err := ec.unmarshalNFuriganaInput2ᚕᚖgithubᚗcomᚋDarkclainerᚋjapwordsᚋpkgᚋlemmaᚐFuriganaCharᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			if err = ec.resolvers.ProjectedWordInput().Furigana(ctx, &it, data); err != nil {
+				return it, err
+			}
+		case "pitchShapes":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("pitchShapes"))
+			data, err := ec.unmarshalNPitchShapeInput2ᚕᚖgithubᚗcomᚋDarkclainerᚋjapwordsᚋpkgᚋlemmaᚐPitchShapeᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			if err = ec.resolvers.ProjectedWordInput().PitchShapes(ctx, &it, data); err != nil {
+				return it, err
+			}
 		}
 	}
 
@@ -7472,6 +8745,29 @@ func (ec *executionContext) unmarshalInputSetAnkiConfigNote(ctx context.Context,
 
 // region    ************************** interface.gotpl ***************************
 
+func (ec *executionContext) _AnkiAddNoteError(ctx context.Context, sel ast.SelectionSet, obj gqlmodel.AnkiAddNoteError) graphql.Marshaler {
+	switch obj := (obj).(type) {
+	case nil:
+		return graphql.Null
+	case gqlmodel.AnkiAddNoteDuplicateFound:
+		return ec._AnkiAddNoteDuplicateFound(ctx, sel, &obj)
+	case *gqlmodel.AnkiAddNoteDuplicateFound:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._AnkiAddNoteDuplicateFound(ctx, sel, obj)
+	case gqlmodel.AnkiIncompleteConfiguration:
+		return ec._AnkiIncompleteConfiguration(ctx, sel, &obj)
+	case *gqlmodel.AnkiIncompleteConfiguration:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._AnkiIncompleteConfiguration(ctx, sel, obj)
+	default:
+		panic(fmt.Errorf("unexpected type %T", obj))
+	}
+}
+
 func (ec *executionContext) _AnkiError(ctx context.Context, sel ast.SelectionSet, obj gqlmodel.AnkiError) graphql.Marshaler {
 	switch obj := (obj).(type) {
 	case nil:
@@ -7601,6 +8897,13 @@ func (ec *executionContext) _Error(ctx context.Context, sel ast.SelectionSet, ob
 			return graphql.Null
 		}
 		return ec._AnkiUnknownError(ctx, sel, obj)
+	case gqlmodel.AnkiIncompleteConfiguration:
+		return ec._AnkiIncompleteConfiguration(ctx, sel, &obj)
+	case *gqlmodel.AnkiIncompleteConfiguration:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._AnkiIncompleteConfiguration(ctx, sel, obj)
 	case gqlmodel.AnkiConfigMappingError:
 		return ec._AnkiConfigMappingError(ctx, sel, &obj)
 	case *gqlmodel.AnkiConfigMappingError:
@@ -7622,6 +8925,13 @@ func (ec *executionContext) _Error(ctx context.Context, sel ast.SelectionSet, ob
 			return graphql.Null
 		}
 		return ec._CreateDefaultAnkiNoteAlreadyExists(ctx, sel, obj)
+	case gqlmodel.AnkiAddNoteDuplicateFound:
+		return ec._AnkiAddNoteDuplicateFound(ctx, sel, &obj)
+	case *gqlmodel.AnkiAddNoteDuplicateFound:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._AnkiAddNoteDuplicateFound(ctx, sel, obj)
 	case gqlmodel.ValidationError:
 		return ec._ValidationError(ctx, sel, &obj)
 	case *gqlmodel.ValidationError:
@@ -7634,9 +8944,118 @@ func (ec *executionContext) _Error(ctx context.Context, sel ast.SelectionSet, ob
 	}
 }
 
+func (ec *executionContext) _PrepareProjectedLemmaError(ctx context.Context, sel ast.SelectionSet, obj gqlmodel.PrepareProjectedLemmaError) graphql.Marshaler {
+	switch obj := (obj).(type) {
+	case nil:
+		return graphql.Null
+	case gqlmodel.AnkiIncompleteConfiguration:
+		return ec._AnkiIncompleteConfiguration(ctx, sel, &obj)
+	case *gqlmodel.AnkiIncompleteConfiguration:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._AnkiIncompleteConfiguration(ctx, sel, obj)
+	default:
+		panic(fmt.Errorf("unexpected type %T", obj))
+	}
+}
+
 // endregion ************************** interface.gotpl ***************************
 
 // region    **************************** object.gotpl ****************************
+
+var addNoteFieldImplementors = []string{"AddNoteField"}
+
+func (ec *executionContext) _AddNoteField(ctx context.Context, sel ast.SelectionSet, obj *anki.AddNoteField) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, addNoteFieldImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("AddNoteField")
+		case "name":
+			out.Values[i] = ec._AddNoteField_name(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "value":
+			out.Values[i] = ec._AddNoteField_value(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var addNoteRequestImplementors = []string{"AddNoteRequest"}
+
+func (ec *executionContext) _AddNoteRequest(ctx context.Context, sel ast.SelectionSet, obj *anki.AddNoteRequest) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, addNoteRequestImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("AddNoteRequest")
+		case "fields":
+			out.Values[i] = ec._AddNoteRequest_fields(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "tags":
+			out.Values[i] = ec._AddNoteRequest_tags(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "audioURL":
+			out.Values[i] = ec._AddNoteRequest_audioURL(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
 
 var ankiImplementors = []string{"Anki"}
 
@@ -7757,6 +9176,83 @@ func (ec *executionContext) _Anki(ctx context.Context, sel ast.SelectionSet, obj
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var ankiAddNoteDuplicateFoundImplementors = []string{"AnkiAddNoteDuplicateFound", "Error", "AnkiAddNoteError"}
+
+func (ec *executionContext) _AnkiAddNoteDuplicateFound(ctx context.Context, sel ast.SelectionSet, obj *gqlmodel.AnkiAddNoteDuplicateFound) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, ankiAddNoteDuplicateFoundImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("AnkiAddNoteDuplicateFound")
+		case "message":
+			out.Values[i] = ec._AnkiAddNoteDuplicateFound_message(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var ankiAddNoteResultImplementors = []string{"AnkiAddNoteResult"}
+
+func (ec *executionContext) _AnkiAddNoteResult(ctx context.Context, sel ast.SelectionSet, obj *gqlmodel.AnkiAddNoteResult) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, ankiAddNoteResultImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("AnkiAddNoteResult")
+		case "error":
+			out.Values[i] = ec._AnkiAddNoteResult_error(ctx, field, obj)
+		case "ankiError":
+			out.Values[i] = ec._AnkiAddNoteResult_ankiError(ctx, field, obj)
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -8152,6 +9648,45 @@ func (ec *executionContext) _AnkiForbiddenOrigin(ctx context.Context, sel ast.Se
 			out.Values[i] = graphql.MarshalString("AnkiForbiddenOrigin")
 		case "message":
 			out.Values[i] = ec._AnkiForbiddenOrigin_message(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var ankiIncompleteConfigurationImplementors = []string{"AnkiIncompleteConfiguration", "Error", "PrepareProjectedLemmaError", "AnkiAddNoteError"}
+
+func (ec *executionContext) _AnkiIncompleteConfiguration(ctx context.Context, sel ast.SelectionSet, obj *gqlmodel.AnkiIncompleteConfiguration) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, ankiIncompleteConfigurationImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("AnkiIncompleteConfiguration")
+		case "message":
+			out.Values[i] = ec._AnkiIncompleteConfiguration_message(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
@@ -8813,6 +10348,13 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
+		case "addAnkiNote":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_addAnkiNote(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -8857,6 +10399,46 @@ func (ec *executionContext) _PitchShape(ctx context.Context, sel ast.SelectionSe
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var prepareProjectedLemmaResultImplementors = []string{"PrepareProjectedLemmaResult"}
+
+func (ec *executionContext) _PrepareProjectedLemmaResult(ctx context.Context, sel ast.SelectionSet, obj *gqlmodel.PrepareProjectedLemmaResult) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, prepareProjectedLemmaResultImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("PrepareProjectedLemmaResult")
+		case "request":
+			out.Values[i] = ec._PrepareProjectedLemmaResult_request(ctx, field, obj)
+		case "error":
+			out.Values[i] = ec._PrepareProjectedLemmaResult_error(ctx, field, obj)
+		case "ankiError":
+			out.Values[i] = ec._PrepareProjectedLemmaResult_ankiError(ctx, field, obj)
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -8975,6 +10557,28 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_RenderFields(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "PrepareProjectedLemma":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_PrepareProjectedLemma(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&fs.Invalids, 1)
 				}
@@ -9848,6 +11452,76 @@ func (ec *executionContext) marshalNAccentDirection2ᚕgithubᚗcomᚋDarkclaine
 	return ret
 }
 
+func (ec *executionContext) marshalNAddNoteField2githubᚗcomᚋDarkclainerᚋjapwordsᚋpkgᚋankiᚐAddNoteField(ctx context.Context, sel ast.SelectionSet, v anki.AddNoteField) graphql.Marshaler {
+	return ec._AddNoteField(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNAddNoteField2ᚕgithubᚗcomᚋDarkclainerᚋjapwordsᚋpkgᚋankiᚐAddNoteFieldᚄ(ctx context.Context, sel ast.SelectionSet, v []anki.AddNoteField) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNAddNoteField2githubᚗcomᚋDarkclainerᚋjapwordsᚋpkgᚋankiᚐAddNoteField(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) unmarshalNAddNoteFieldInput2githubᚗcomᚋDarkclainerᚋjapwordsᚋpkgᚋankiᚐAddNoteField(ctx context.Context, v interface{}) (anki.AddNoteField, error) {
+	res, err := ec.unmarshalInputAddNoteFieldInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalNAddNoteFieldInput2ᚕgithubᚗcomᚋDarkclainerᚋjapwordsᚋpkgᚋankiᚐAddNoteFieldᚄ(ctx context.Context, v interface{}) ([]anki.AddNoteField, error) {
+	var vSlice []interface{}
+	if v != nil {
+		vSlice = graphql.CoerceList(v)
+	}
+	var err error
+	res := make([]anki.AddNoteField, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalNAddNoteFieldInput2githubᚗcomᚋDarkclainerᚋjapwordsᚋpkgᚋankiᚐAddNoteField(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
 func (ec *executionContext) marshalNAnki2githubᚗcomᚋDarkclainerᚋjapwordsᚋgraphqlᚋgqlmodelᚐAnki(ctx context.Context, sel ast.SelectionSet, v gqlmodel.Anki) graphql.Marshaler {
 	return ec._Anki(ctx, sel, &v)
 }
@@ -9860,6 +11534,20 @@ func (ec *executionContext) marshalNAnki2ᚖgithubᚗcomᚋDarkclainerᚋjapword
 		return graphql.Null
 	}
 	return ec._Anki(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNAnkiAddNoteResult2githubᚗcomᚋDarkclainerᚋjapwordsᚋgraphqlᚋgqlmodelᚐAnkiAddNoteResult(ctx context.Context, sel ast.SelectionSet, v gqlmodel.AnkiAddNoteResult) graphql.Marshaler {
+	return ec._AnkiAddNoteResult(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNAnkiAddNoteResult2ᚖgithubᚗcomᚋDarkclainerᚋjapwordsᚋgraphqlᚋgqlmodelᚐAnkiAddNoteResult(ctx context.Context, sel ast.SelectionSet, v *gqlmodel.AnkiAddNoteResult) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._AnkiAddNoteResult(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalNAnkiConfig2githubᚗcomᚋDarkclainerᚋjapwordsᚋgraphqlᚋgqlmodelᚐAnkiConfig(ctx context.Context, sel ast.SelectionSet, v gqlmodel.AnkiConfig) graphql.Marshaler {
@@ -10072,6 +11760,28 @@ func (ec *executionContext) marshalNAudio2ᚖgithubᚗcomᚋDarkclainerᚋjapwor
 	return ec._Audio(ctx, sel, v)
 }
 
+func (ec *executionContext) unmarshalNAudioInput2ᚕᚖgithubᚗcomᚋDarkclainerᚋjapwordsᚋgraphqlᚋgqlmodelᚐAudioInputᚄ(ctx context.Context, v interface{}) ([]*gqlmodel.AudioInput, error) {
+	var vSlice []interface{}
+	if v != nil {
+		vSlice = graphql.CoerceList(v)
+	}
+	var err error
+	res := make([]*gqlmodel.AudioInput, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalNAudioInput2ᚖgithubᚗcomᚋDarkclainerᚋjapwordsᚋgraphqlᚋgqlmodelᚐAudioInput(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
+func (ec *executionContext) unmarshalNAudioInput2ᚖgithubᚗcomᚋDarkclainerᚋjapwordsᚋgraphqlᚋgqlmodelᚐAudioInput(ctx context.Context, v interface{}) (*gqlmodel.AudioInput, error) {
+	res, err := ec.unmarshalInputAudioInput(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
 func (ec *executionContext) unmarshalNBoolean2bool(ctx context.Context, v interface{}) (bool, error) {
 	res, err := graphql.UnmarshalBoolean(v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -10167,6 +11877,28 @@ func (ec *executionContext) marshalNFurigana2ᚖgithubᚗcomᚋDarkclainerᚋjap
 		return graphql.Null
 	}
 	return ec._Furigana(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNFuriganaInput2ᚕᚖgithubᚗcomᚋDarkclainerᚋjapwordsᚋpkgᚋlemmaᚐFuriganaCharᚄ(ctx context.Context, v interface{}) ([]*lemma.FuriganaChar, error) {
+	var vSlice []interface{}
+	if v != nil {
+		vSlice = graphql.CoerceList(v)
+	}
+	var err error
+	res := make([]*lemma.FuriganaChar, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalNFuriganaInput2ᚖgithubᚗcomᚋDarkclainerᚋjapwordsᚋpkgᚋlemmaᚐFuriganaChar(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
+func (ec *executionContext) unmarshalNFuriganaInput2ᚖgithubᚗcomᚋDarkclainerᚋjapwordsᚋpkgᚋlemmaᚐFuriganaChar(ctx context.Context, v interface{}) (*lemma.FuriganaChar, error) {
+	res, err := ec.unmarshalInputFuriganaInput(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) unmarshalNInt2int(ctx context.Context, v interface{}) (int, error) {
@@ -10284,6 +12016,64 @@ func (ec *executionContext) marshalNPitchShape2ᚕgithubᚗcomᚋDarkclainerᚋj
 	}
 
 	return ret
+}
+
+func (ec *executionContext) unmarshalNPitchShapeInput2ᚕᚖgithubᚗcomᚋDarkclainerᚋjapwordsᚋpkgᚋlemmaᚐPitchShapeᚄ(ctx context.Context, v interface{}) ([]*lemma.PitchShape, error) {
+	var vSlice []interface{}
+	if v != nil {
+		vSlice = graphql.CoerceList(v)
+	}
+	var err error
+	res := make([]*lemma.PitchShape, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalNPitchShapeInput2ᚖgithubᚗcomᚋDarkclainerᚋjapwordsᚋpkgᚋlemmaᚐPitchShape(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
+func (ec *executionContext) unmarshalNPitchShapeInput2ᚖgithubᚗcomᚋDarkclainerᚋjapwordsᚋpkgᚋlemmaᚐPitchShape(ctx context.Context, v interface{}) (*lemma.PitchShape, error) {
+	res, err := ec.unmarshalInputPitchShapeInput(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNPrepareProjectedLemmaResult2githubᚗcomᚋDarkclainerᚋjapwordsᚋgraphqlᚋgqlmodelᚐPrepareProjectedLemmaResult(ctx context.Context, sel ast.SelectionSet, v gqlmodel.PrepareProjectedLemmaResult) graphql.Marshaler {
+	return ec._PrepareProjectedLemmaResult(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNPrepareProjectedLemmaResult2ᚖgithubᚗcomᚋDarkclainerᚋjapwordsᚋgraphqlᚋgqlmodelᚐPrepareProjectedLemmaResult(ctx context.Context, sel ast.SelectionSet, v *gqlmodel.PrepareProjectedLemmaResult) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._PrepareProjectedLemmaResult(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNProjectedWordInput2githubᚗcomᚋDarkclainerᚋjapwordsᚋpkgᚋlemmaᚐProjectedWord(ctx context.Context, v interface{}) (lemma.ProjectedWord, error) {
+	res, err := ec.unmarshalInputProjectedWordInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalNProjectedWordInput2ᚕgithubᚗcomᚋDarkclainerᚋjapwordsᚋpkgᚋlemmaᚐProjectedWordᚄ(ctx context.Context, v interface{}) ([]lemma.ProjectedWord, error) {
+	var vSlice []interface{}
+	if v != nil {
+		vSlice = graphql.CoerceList(v)
+	}
+	var err error
+	res := make([]lemma.ProjectedWord, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalNProjectedWordInput2githubᚗcomᚋDarkclainerᚋjapwordsᚋpkgᚋlemmaᚐProjectedWord(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
 }
 
 func (ec *executionContext) marshalNRenderedField2ᚕᚖgithubᚗcomᚋDarkclainerᚋjapwordsᚋgraphqlᚋgqlmodelᚐRenderedFieldᚄ(ctx context.Context, sel ast.SelectionSet, v []*gqlmodel.RenderedField) graphql.Marshaler {
@@ -10826,6 +12616,28 @@ func (ec *executionContext) marshalN__TypeKind2string(ctx context.Context, sel a
 	return res
 }
 
+func (ec *executionContext) marshalOAddNoteRequest2ᚖgithubᚗcomᚋDarkclainerᚋjapwordsᚋpkgᚋankiᚐAddNoteRequest(ctx context.Context, sel ast.SelectionSet, v *anki.AddNoteRequest) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._AddNoteRequest(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalOAddNoteRequestInput2ᚖgithubᚗcomᚋDarkclainerᚋjapwordsᚋpkgᚋankiᚐAddNoteRequest(ctx context.Context, v interface{}) (*anki.AddNoteRequest, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalInputAddNoteRequestInput(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOAnkiAddNoteError2githubᚗcomᚋDarkclainerᚋjapwordsᚋgraphqlᚋgqlmodelᚐAnkiAddNoteError(ctx context.Context, sel ast.SelectionSet, v gqlmodel.AnkiAddNoteError) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._AnkiAddNoteError(ctx, sel, v)
+}
+
 func (ec *executionContext) marshalOAnkiConfigMappingElementError2ᚕᚖgithubᚗcomᚋDarkclainerᚋjapwordsᚋgraphqlᚋgqlmodelᚐAnkiConfigMappingElementErrorᚄ(ctx context.Context, sel ast.SelectionSet, v []*gqlmodel.AnkiConfigMappingElementError) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
@@ -10955,6 +12767,21 @@ func (ec *executionContext) marshalOLemmas2ᚖgithubᚗcomᚋDarkclainerᚋjapwo
 		return graphql.Null
 	}
 	return ec._Lemmas(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalOPrepareProjectedLemmaError2githubᚗcomᚋDarkclainerᚋjapwordsᚋgraphqlᚋgqlmodelᚐPrepareProjectedLemmaError(ctx context.Context, sel ast.SelectionSet, v gqlmodel.PrepareProjectedLemmaError) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._PrepareProjectedLemmaError(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalOProjectedLemmaInput2ᚖgithubᚗcomᚋDarkclainerᚋjapwordsᚋpkgᚋlemmaᚐProjectedLemma(ctx context.Context, v interface{}) (*lemma.ProjectedLemma, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalInputProjectedLemmaInput(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) unmarshalOString2ᚕstringᚄ(ctx context.Context, v interface{}) ([]string, error) {

@@ -13,9 +13,11 @@ var (
 	ErrInvalidAPIKey         = errors.New("anki-connect rejected request because api key is invalid")
 	ErrCollectionUnavailable = errors.New("anki-connect is not ready for specified action")
 
-	ErrNoteTypeNotExists     = errors.New("selected note type doesn't exists")
-	ErrDeckAlreadyExists     = errors.New("deck with the same name already exists")
-	ErrNoteTypeAlreadyExists = errors.New("note type with the same name already exists")
+	ErrNoteTypeNotExists       = errors.New("selected note type doesn't exists")
+	ErrDeckAlreadyExists       = errors.New("deck with the same name already exists")
+	ErrNoteTypeAlreadyExists   = errors.New("note type with the same name already exists")
+	ErrDuplicatedNoteFound     = errors.New("failed to add note, because the same note already exists")
+	ErrIncompleteConfiguration = errors.New("configuration is incomplete")
 
 	// ErrUnknownServerError unrecognized error from anki-connect, but probably should
 	ErrUnknownServerError = errors.New("anki-connect returned unknown error")

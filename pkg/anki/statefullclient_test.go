@@ -13,6 +13,74 @@ import (
 	"github.com/Darkclainer/japwords/pkg/anki/ankiconnect"
 )
 
+func Test_State_IsReadyToAddNote(t *testing.T) {
+	testCases := []struct {
+		Name     string
+		State    *State
+		Expected bool
+	}{
+		{
+			Name:     "Empty",
+			State:    &State{},
+			Expected: false,
+		},
+		{
+			Name: "Ready",
+			State: &State{
+				LastError:        nil,
+				DeckExists:       true,
+				NoteTypeExists:   true,
+				NoteHasAllFields: true,
+			},
+			Expected: true,
+		},
+		{
+			Name: "Error",
+			State: &State{
+				LastError:        errors.New("example"),
+				DeckExists:       true,
+				NoteTypeExists:   true,
+				NoteHasAllFields: true,
+			},
+			Expected: false,
+		},
+		{
+			Name: "deck not exists",
+			State: &State{
+				DeckExists:       false,
+				NoteTypeExists:   true,
+				NoteHasAllFields: true,
+			},
+			Expected: false,
+		},
+		{
+			Name: "note type not exists",
+			State: &State{
+				DeckExists:       true,
+				NoteTypeExists:   false,
+				NoteHasAllFields: true,
+			},
+			Expected: false,
+		},
+		{
+			Name: "note doesn't have all fields",
+			State: &State{
+				DeckExists:       true,
+				NoteTypeExists:   true,
+				NoteHasAllFields: false,
+			},
+			Expected: false,
+		},
+	}
+	for i := range testCases {
+		tc := testCases[i]
+		t.Run(tc.Name, func(t *testing.T) {
+			actual := tc.State.IsReadyToAddNote()
+			assert.Equal(t, tc.Expected, actual)
+		})
+	}
+}
+
 func Test_statefullClient_getState(t *testing.T) {
 	testCases := []struct {
 		Name            string
@@ -779,5 +847,83 @@ func Test_statefullClient_CreateDefaultNoteType(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Equal(t, []string{"note1", "note2", "note3"}, client.state.NoteTypes)
 		assert.True(t, client.state.NoteTypeExists)
+	})
+}
+
+func Test_statefullClient_AddNote(t *testing.T) {
+	t.Run("note type not exists", func(t *testing.T) {
+		client, _, _ := newTestNormalStatefullClient(t, &Config{
+			NoteType: "noexists",
+		})
+		err := client.AddNote(context.Background(), &AddNoteRequest{})
+		assert.ErrorIs(t, err, ErrIncompleteConfiguration)
+	})
+	t.Run("duplicated note", func(t *testing.T) {
+		client, ankiClient, _ := newTestNormalStatefullClient(t, &Config{
+			NoteType: "note1",
+			Deck:     "deck1",
+		})
+		ankiClient.On("AddNote", mock.Anything, mock.Anything, mock.Anything).
+			Return(
+				int64(0),
+				&ankiconnect.ServerError{
+					Message: "cannot create note because it is a duplicate",
+				}).
+			Once()
+		err := client.AddNote(context.Background(), &AddNoteRequest{})
+		assert.ErrorIs(t, err, ErrDuplicatedNoteFound)
+	})
+	t.Run("anki error", func(t *testing.T) {
+		client, ankiClient, _ := newTestNormalStatefullClient(t, &Config{
+			NoteType: "note1",
+			Deck:     "deck1",
+		})
+		ankiClient.On("AddNote", mock.Anything, mock.Anything, mock.Anything).
+			Return(
+				int64(0),
+				&ankiconnect.ServerError{
+					Err: ankiconnect.ErrCollectionUnavailable,
+				}).
+			Once()
+		err := client.AddNote(context.Background(), &AddNoteRequest{})
+		assert.ErrorIs(t, err, ErrCollectionUnavailable)
+	})
+	t.Run("ok", func(t *testing.T) {
+		client, ankiClient, _ := newTestNormalStatefullClient(t, &Config{
+			NoteType: "note1",
+			Deck:     "deck1",
+		})
+		ankiClient.On("AddNote", mock.Anything,
+			&ankiconnect.AddNoteParams{
+				Fields: map[string]string{
+					"a": "avalue",
+					"b": "bvalue",
+				},
+			},
+			&ankiconnect.AddNoteOptions{
+				Deck:           "deck1",
+				Model:          "note1",
+				DuplicateScope: ankiconnect.DuplicateScopeDeck,
+				DuplicateFlags: ankiconnect.DuplicateFlagsCheck,
+			},
+		).
+			Return(
+				int64(1),
+				nil,
+			).
+			Once()
+		err := client.AddNote(context.Background(), &AddNoteRequest{
+			Fields: []AddNoteField{
+				{
+					Name:  "a",
+					Value: "avalue",
+				},
+				{
+					Name:  "b",
+					Value: "bvalue",
+				},
+			},
+		})
+		assert.NoError(t, err)
 	})
 }

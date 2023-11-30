@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"testing"
+	"text/template"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -330,6 +331,156 @@ func Test_Anki_CreateDefaultNote(t *testing.T) {
 	require.NoError(t, err)
 	actualErr := anki.CreateDefaultNote(context.Background(), "newnotetype")
 	assert.ErrorIs(t, actualErr, expectedErr)
+}
+
+func Test_Anki_PrepareProjectedLemma(t *testing.T) {
+	readyState := &State{
+		DeckExists:       true,
+		NoteTypeExists:   true,
+		NoteHasAllFields: true,
+	}
+	testCases := []struct {
+		Name        string
+		InitClient  func(config *Config, client *MockStatefullClient)
+		Config      *Config
+		AssertError assert.ErrorAssertionFunc
+		Expected    *AddNoteRequest
+	}{
+		{
+			Name: "GetState Error",
+			InitClient: func(_ *Config, client *MockStatefullClient) {
+				client.On("GetState", mock.Anything).
+					Return(nil, errors.New("GetState error"))
+			},
+			AssertError: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorContains(tt, err, "GetState error")
+			},
+		},
+		{
+			Name: "state not ready",
+			InitClient: func(_ *Config, client *MockStatefullClient) {
+				client.On("GetState", mock.Anything).
+					Return(&State{}, nil)
+			},
+			AssertError: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorIs(tt, err, ErrIncompleteConfiguration)
+			},
+		},
+		{
+			Name: "mapping error",
+			InitClient: func(conf *Config, client *MockStatefullClient) {
+				newState := *readyState
+				newState.CurrentFields = []string{"a"}
+				client.On("GetState", mock.Anything).
+					Return(&newState, nil)
+				client.On("Config").Return(conf)
+			},
+			Config: &Config{
+				Mapping: map[string]*Template{
+					"a": {
+						Tmpl: template.Must(template.New("").Parse("{{.NotExists}}")),
+					},
+				},
+			},
+			AssertError: assert.Error,
+		},
+		{
+			Name: "default fields",
+			InitClient: func(conf *Config, client *MockStatefullClient) {
+				newState := *readyState
+				newState.CurrentFields = []string{"a", "b"}
+				client.On("GetState", mock.Anything).
+					Return(&newState, nil)
+				client.On("Config").Return(conf)
+			},
+			Config: &Config{
+				Mapping: map[string]*Template{},
+			},
+			AssertError: assert.NoError,
+			Expected: &AddNoteRequest{
+				Fields: []AddNoteField{
+					{
+						Name:  "a",
+						Value: "",
+					},
+					{
+						Name:  "b",
+						Value: "",
+					},
+				},
+			},
+		},
+		{
+			Name: "mapping",
+			InitClient: func(conf *Config, client *MockStatefullClient) {
+				newState := *readyState
+				newState.CurrentFields = []string{"a", "b"}
+				client.On("GetState", mock.Anything).
+					Return(&newState, nil)
+				client.On("Config").Return(conf)
+			},
+			Config: &Config{
+				Mapping: map[string]*Template{
+					"a": {
+						Tmpl: template.Must(template.New("").Parse("{{.Slug.Word}}")),
+					},
+				},
+			},
+			AssertError: assert.NoError,
+			Expected: &AddNoteRequest{
+				Fields: []AddNoteField{
+					{
+						Name:  "a",
+						Value: "一二わ三はい",
+					},
+					{
+						Name:  "b",
+						Value: "",
+					},
+				},
+			},
+		},
+	}
+	for i := range testCases {
+		tc := testCases[i]
+		t.Run(tc.Name, func(t *testing.T) {
+			anki := NewAnki(func(conf *Config) (StatefullClient, error) {
+				client := NewMockStatefullClient(t)
+				tc.InitClient(conf, client)
+				return client, nil
+			})
+			err := anki.ReloadConfig(tc.Config)
+			require.NoError(t, err)
+			actual, err := anki.PrepareProjectedLemma(context.Background(), &DefaultExampleLemma)
+			tc.AssertError(t, err)
+			if err != nil {
+				return
+			}
+			assert.Equal(t, tc.Expected, actual)
+		})
+	}
+}
+
+func Test_Anki_AddNote(t *testing.T) {
+	request := &AddNoteRequest{
+		Fields: []AddNoteField{
+			{
+				Name:  "hello",
+				Value: "world",
+			},
+		},
+		Tags:     []string{"a", "b"},
+		AudioURL: "",
+	}
+	anki := NewAnki(func(_ *Config) (StatefullClient, error) {
+		client := NewMockStatefullClient(t)
+		client.On("AddNote", mock.Anything, request).Return(errors.New("myerror")).Once()
+		return client, nil
+	})
+	err := anki.ReloadConfig(&Config{})
+	require.NoError(t, err)
+	err = anki.AddNote(context.Background(), request)
+	assert.ErrorContains(t, err, "myerror")
 }
 
 func Test_Anki_Stop(t *testing.T) {

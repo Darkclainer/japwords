@@ -22,6 +22,11 @@ type AnkiUnknownError implements Error {
 
 union AnkiError =  AnkiConnectionError | AnkiInvalidAPIKey | AnkiCollectionUnavailable | AnkiForbiddenOrigin | AnkiUnknownError 
 
+# this is not related to anki-connect itself, more to our configuration, so it's more specific to certain methods
+type AnkiIncompleteConfiguration implements Error {
+ message: String!
+}
+
 extend type Query {
   # Anki represents data available in Anki by AnkiConnect
   Anki: Anki!
@@ -97,6 +102,30 @@ type RenderedField {
   field: String!
   result: String!
   error: String
+}
+
+extend type Query {
+  PrepareProjectedLemma(lemma: ProjectedLemmaInput): PrepareProjectedLemmaResult!
+}
+
+type AddNoteRequest {
+  fields: [AddNoteField!]!
+  tags: [String!]!
+  audioURL: String!
+}
+
+type AddNoteField {
+  name: String!
+  value: String!
+}
+
+union PrepareProjectedLemmaError = AnkiIncompleteConfiguration
+
+type PrepareProjectedLemmaResult {
+  request: AddNoteRequest
+  # TODO: can be something like not ready or render failed?
+  error: PrepareProjectedLemmaError
+  ankiError: AnkiError
 }
 
 
@@ -201,4 +230,30 @@ union CreateDefaultAnkiNoteError = CreateDefaultAnkiNoteAlreadyExists | Validati
 type CreateDefaultAnkiNoteResult {
   ankiError: AnkiError
   error: CreateDefaultAnkiNoteError
+}
+
+extend type Mutation {
+  addAnkiNote(request: AddNoteRequestInput): AnkiAddNoteResult!
+}
+
+input AddNoteRequestInput {
+  fields: [AddNoteFieldInput!]!
+  tags: [String!]!
+  audioURL: String!
+}
+
+input AddNoteFieldInput {
+  name: String!
+  value: String!
+}
+
+type AnkiAddNoteDuplicateFound implements Error {
+  message: String!
+}
+
+union AnkiAddNoteError = AnkiAddNoteDuplicateFound | AnkiIncompleteConfiguration
+
+type AnkiAddNoteResult {
+  error: AnkiAddNoteError
+  ankiError: AnkiError
 }
