@@ -197,31 +197,46 @@ function Mapping({
                 </div>
               </FieldColumn>
             </Field>
-            {fields.map((e, index) => (
-              <Field
-                key={e.name}
-                className={clsx(updatedFieldName == e.name && 'animate-reversePing')}
-              >
-                <FieldColumn>
-                  <div className="flex">
-                    <FieldButton
-                      tooltip="Edit"
-                      aria-label="Edit"
-                      disabled={updateInProccess}
-                      onClick={() => {
-                        setEditingField(e);
-                        setUpdatedFieldName(undefined);
-                      }}
-                    >
-                      <Pencil2Icon className="inline" color={COLORS.blue} />
-                    </FieldButton>
-                    <div className="truncate">{e.name}</div>
-                  </div>
-                </FieldColumn>
-                <FieldColumn className="font-mono">{e.value}</FieldColumn>
-                <FieldColumn>{renderFields?.at(index)?.result}</FieldColumn>
-              </Field>
-            ))}
+            {fields.map((e, index) => {
+              const firstFieldUndefined = index === 0 && !e.value;
+              return (
+                <Field
+                  key={e.name}
+                  className={clsx(
+                    updatedFieldName == e.name && 'animate-reversePing',
+                    // if first field is undefined, require it!
+                    firstFieldUndefined && '!bg-light-red',
+                  )}
+                >
+                  <FieldColumn>
+                    <div className="flex">
+                      <FieldButton
+                        tooltip="Edit"
+                        aria-label="Edit"
+                        disabled={updateInProccess}
+                        onClick={() => {
+                          setEditingField(e);
+                          setUpdatedFieldName(undefined);
+                        }}
+                      >
+                        <Pencil2Icon className="inline" color={COLORS.blue} />
+                      </FieldButton>
+                      <div className="truncate">{e.name}</div>
+                    </div>
+                  </FieldColumn>
+                  {firstFieldUndefined ? (
+                    <FieldColumn className="col-span-2">
+                      Error! First field must defined
+                    </FieldColumn>
+                  ) : (
+                    <>
+                      <FieldColumn className="font-mono">{e.value}</FieldColumn>
+                      <FieldColumn>{renderFields?.at(index)?.result}</FieldColumn>
+                    </>
+                  )}
+                </Field>
+              );
+            })}
             {missingFields.length > 0 && (
               <Field>
                 <FieldColumn className="col-span-3 text-center text-error-red">

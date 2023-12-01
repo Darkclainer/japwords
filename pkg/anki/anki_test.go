@@ -338,6 +338,7 @@ func Test_Anki_PrepareProjectedLemma(t *testing.T) {
 		DeckExists:       true,
 		NoteTypeExists:   true,
 		NoteHasAllFields: true,
+		OrderDefined:     true,
 	}
 	testCases := []struct {
 		Name        string

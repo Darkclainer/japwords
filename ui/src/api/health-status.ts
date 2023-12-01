@@ -10,6 +10,7 @@ export const GET_HEALTH_STATUS = gql(`
         deckExists
         noteTypeExists
         noteHasAllFields
+        orderDefined
       }
       error {
         ... on AnkiConnectionError {

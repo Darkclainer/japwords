@@ -31,6 +31,7 @@ func Test_State_IsReadyToAddNote(t *testing.T) {
 				DeckExists:       true,
 				NoteTypeExists:   true,
 				NoteHasAllFields: true,
+				OrderDefined:     true,
 			},
 			Expected: true,
 		},
@@ -41,6 +42,7 @@ func Test_State_IsReadyToAddNote(t *testing.T) {
 				DeckExists:       true,
 				NoteTypeExists:   true,
 				NoteHasAllFields: true,
+				OrderDefined:     true,
 			},
 			Expected: false,
 		},
@@ -50,6 +52,7 @@ func Test_State_IsReadyToAddNote(t *testing.T) {
 				DeckExists:       false,
 				NoteTypeExists:   true,
 				NoteHasAllFields: true,
+				OrderDefined:     true,
 			},
 			Expected: false,
 		},
@@ -59,6 +62,7 @@ func Test_State_IsReadyToAddNote(t *testing.T) {
 				DeckExists:       true,
 				NoteTypeExists:   false,
 				NoteHasAllFields: true,
+				OrderDefined:     true,
 			},
 			Expected: false,
 		},
@@ -68,6 +72,17 @@ func Test_State_IsReadyToAddNote(t *testing.T) {
 				DeckExists:       true,
 				NoteTypeExists:   true,
 				NoteHasAllFields: false,
+				OrderDefined:     true,
+			},
+			Expected: false,
+		},
+		{
+			Name: "order is not defined",
+			State: &State{
+				DeckExists:       true,
+				NoteTypeExists:   true,
+				NoteHasAllFields: true,
+				OrderDefined:     false,
 			},
 			Expected: false,
 		},
@@ -851,6 +866,13 @@ func Test_statefullClient_CreateDefaultNoteType(t *testing.T) {
 }
 
 func Test_statefullClient_AddNote(t *testing.T) {
+	readyConfig := &Config{
+		NoteType: "note1",
+		Deck:     "deck1",
+		Mapping: TemplateMapping{
+			"field1": {},
+		},
+	}
 	t.Run("note type not exists", func(t *testing.T) {
 		client, _, _ := newTestNormalStatefullClient(t, &Config{
 			NoteType: "noexists",
@@ -859,10 +881,7 @@ func Test_statefullClient_AddNote(t *testing.T) {
 		assert.ErrorIs(t, err, ErrIncompleteConfiguration)
 	})
 	t.Run("duplicated note", func(t *testing.T) {
-		client, ankiClient, _ := newTestNormalStatefullClient(t, &Config{
-			NoteType: "note1",
-			Deck:     "deck1",
-		})
+		client, ankiClient, _ := newTestNormalStatefullClient(t, readyConfig)
 		ankiClient.On("AddNote", mock.Anything, mock.Anything, mock.Anything).
 			Return(
 				int64(0),
@@ -874,10 +893,7 @@ func Test_statefullClient_AddNote(t *testing.T) {
 		assert.ErrorIs(t, err, ErrDuplicatedNoteFound)
 	})
 	t.Run("anki error", func(t *testing.T) {
-		client, ankiClient, _ := newTestNormalStatefullClient(t, &Config{
-			NoteType: "note1",
-			Deck:     "deck1",
-		})
+		client, ankiClient, _ := newTestNormalStatefullClient(t, readyConfig)
 		ankiClient.On("AddNote", mock.Anything, mock.Anything, mock.Anything).
 			Return(
 				int64(0),
@@ -889,10 +905,7 @@ func Test_statefullClient_AddNote(t *testing.T) {
 		assert.ErrorIs(t, err, ErrCollectionUnavailable)
 	})
 	t.Run("ok", func(t *testing.T) {
-		client, ankiClient, _ := newTestNormalStatefullClient(t, &Config{
-			NoteType: "note1",
-			Deck:     "deck1",
-		})
+		client, ankiClient, _ := newTestNormalStatefullClient(t, readyConfig)
 		ankiClient.On("AddNote", mock.Anything,
 			&ankiconnect.AddNoteParams{
 				Fields: map[string]string{

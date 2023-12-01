@@ -158,6 +158,12 @@ function StatusBox({ ankiState }: { ankiState: AnkiStateOk }) {
       msg: 'Mapping has fields that note type has not.',
     });
   }
+  if (!ankiState.orderDefined) {
+    errors.push({
+      key: 'orderundefined',
+      msg: 'First field in the mapping must have some value.',
+    });
+  }
   return (
     <div className="flex flex-row justify-start items-start gap-2 basis-16">
       <StatusIcon className="w-10 h-10" kind={errors.length == 0 ? 'OK' : 'Error'} />

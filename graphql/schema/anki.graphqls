@@ -69,6 +69,7 @@ type AnkiConfigState {
   deckExists: Boolean!
   noteTypeExists: Boolean!
   noteHasAllFields: Boolean!
+  orderDefined: Boolean!
 }
 
 extend type Query {

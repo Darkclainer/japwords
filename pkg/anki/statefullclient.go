@@ -43,6 +43,10 @@ type State struct {
 	OrderDefined     bool
 }
 
+func (s *State) IsReadyToAddNote() bool {
+	return s.LastError == nil && s.DeckExists && s.NoteTypeExists && s.NoteHasAllFields && s.OrderDefined
+}
+
 func (state *State) updateFromAnkiState(config *Config) {
 	state.DeckExists = slices.ContainsFunc(state.Decks, func(e string) bool { return e == config.Deck })
 	// this is redudant, but necessary, because NoteFields is more like all already known fields and can be outdated
@@ -72,10 +76,6 @@ func (state *State) updateFromAnkiState(config *Config) {
 		}
 		state.NoteHasAllFields = hasAllFieds
 	}
-}
-
-func (s *State) IsReadyToAddNote() bool {
-	return s.LastError == nil && s.DeckExists && s.NoteTypeExists && s.NoteHasAllFields
 }
 
 const (

@@ -104,6 +104,7 @@ export interface AnkiStateOk {
   deckExists: boolean;
   noteTypeExists: boolean;
   noteHasAllFields: boolean;
+  orderDefined: boolean;
 }
 
 export function healthStatusFromGql(
@@ -168,13 +169,17 @@ function ankiStateFromGql(state: AnkiConfigStateResult): AnkiState {
     const confState = state.ankiConfigState;
     return {
       kind:
-        confState.deckExists && confState.noteTypeExists && confState.noteHasAllFields
+        confState.deckExists &&
+        confState.noteTypeExists &&
+        confState.noteHasAllFields &&
+        confState.orderDefined
           ? 'Ok'
           : 'UserError',
       version: confState.version,
       deckExists: confState.deckExists,
       noteTypeExists: confState.noteTypeExists,
       noteHasAllFields: confState.noteHasAllFields,
+      orderDefined: confState.orderDefined,
     };
   }
   throw 'unreachable';

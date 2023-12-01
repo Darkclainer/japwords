@@ -94,6 +94,7 @@ type AnkiConfigState struct {
 	DeckExists       bool `json:"deckExists"`
 	NoteTypeExists   bool `json:"noteTypeExists"`
 	NoteHasAllFields bool `json:"noteHasAllFields"`
+	OrderDefined     bool `json:"orderDefined"`
 }
 
 type AnkiConfigStateResult struct {
