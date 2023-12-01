@@ -378,6 +378,119 @@ func Test_Anki_AddNote(t *testing.T) {
 	}
 }
 
+func Test_Anki_NotesInfo(t *testing.T) {
+	testCases := []struct {
+		Name        string
+		Handlers    []http.Handler
+		Ids         []int64
+		Expected    []*NoteInfo
+		ErrorAssert assert.ErrorAssertionFunc
+	}{
+		{
+			Name: "some notes",
+			Handlers: []http.Handler{
+				handlerAssertRequest(t, &fullRequest{
+					Action: "notesInfo",
+					Params: map[string]any{
+						"notes": []interface{}{float64(1), float64(2), float64(3)},
+					},
+				}),
+				handlerRespondJSON(t, &fullResponse{
+					Result: []*NoteInfo{
+						{
+							NoteID:    1,
+							ModelName: "hello",
+							Tags:      []string{"tag1", "tag2"},
+							Fields: map[string]*NoteInfoField{
+								"a": {
+									Value: "aa",
+									Order: 1,
+								},
+								"b": {
+									Value: "bb",
+									Order: 2,
+								},
+							},
+						},
+						{
+							NoteID:    2,
+							ModelName: "world",
+							Tags:      []string{"tag1"},
+							Fields: map[string]*NoteInfoField{
+								"a": {
+									Value: "aa",
+									Order: 1,
+								},
+							},
+						},
+					},
+				}),
+			},
+			Ids: []int64{1, 2, 3},
+			Expected: []*NoteInfo{
+				{
+					NoteID:    1,
+					ModelName: "hello",
+					Tags:      []string{"tag1", "tag2"},
+					Fields: map[string]*NoteInfoField{
+						"a": {
+							Value: "aa",
+							Order: 1,
+						},
+						"b": {
+							Value: "bb",
+							Order: 2,
+						},
+					},
+				},
+				{
+					NoteID:    2,
+					ModelName: "world",
+					Tags:      []string{"tag1"},
+					Fields: map[string]*NoteInfoField{
+						"a": {
+							Value: "aa",
+							Order: 1,
+						},
+					},
+				},
+			},
+			ErrorAssert: assert.NoError,
+		},
+		{
+			Name: "no notes",
+			Handlers: []http.Handler{
+				handlerRespondJSON(t, &fullResponse{
+					Result: nil,
+				}),
+			},
+			Expected:    nil,
+			ErrorAssert: assert.NoError,
+		},
+		{
+			Name: "error",
+			Handlers: []http.Handler{
+				handlerRespondJSON(t, &fullResponse{
+					Error: "myspecificerr",
+				}),
+			},
+			Expected: nil,
+			ErrorAssert: func(t assert.TestingT, err error, _ ...any) bool {
+				return assert.ErrorContains(t, err, "myspecificerr")
+			},
+		},
+	}
+	for i := range testCases {
+		tc := testCases[i]
+		t.Run(tc.Name, func(t *testing.T) {
+			ctx, a := prepareMockServer(t, tc.Handlers...)
+			result, err := a.NotesInfo(ctx, tc.Ids)
+			tc.ErrorAssert(t, err)
+			assert.Equal(t, tc.Expected, result)
+		})
+	}
+}
+
 func Test_Anki_DeleteNotes(t *testing.T) {
 	testCases := []struct {
 		Name        string

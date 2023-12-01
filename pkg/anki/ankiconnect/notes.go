@@ -130,6 +130,29 @@ type addNoteRequestDuplicateOptions struct {
 	CheckAllModels bool   `json:"checkAllModels,omitempty"`
 }
 
+func (a *Anki) NotesInfo(ctx context.Context, ids []int64) ([]*NoteInfo, error) {
+	request := struct {
+		Notes []int64 `json:"notes"`
+	}{
+		Notes: ids,
+	}
+	var result []*NoteInfo
+	err := a.request(ctx, "notesInfo", &request, &result)
+	return result, err
+}
+
+type NoteInfo struct {
+	NoteID    int64
+	ModelName string
+	Tags      []string
+	Fields    map[string]*NoteInfoField
+}
+
+type NoteInfoField struct {
+	Value string
+	Order int
+}
+
 func (a *Anki) DeleteNotes(ctx context.Context, ids []int64) error {
 	request := struct {
 		Notes []int64 `json:"notes"`

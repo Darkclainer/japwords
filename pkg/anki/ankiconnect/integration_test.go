@@ -152,6 +152,27 @@ func Test_Anki_Note_Functions_Integrations(t *testing.T) {
 	searchedIds, err := a.FindNotes(ctx, fmt.Sprintf("nid:%d", noteID))
 	require.NoError(t, err)
 	assert.Equal(t, []int64{noteID}, searchedIds)
+	requstedNotes, err := a.NotesInfo(ctx, []int64{noteID})
+	require.NoError(t, err)
+	assert.Equal(t,
+		[]*NoteInfo{
+			{
+				NoteID:    noteID,
+				ModelName: modelName,
+				Tags:      []string{},
+				Fields: map[string]*NoteInfoField{
+					"foo": {
+						Value: "hello",
+						Order: 0,
+					},
+					"bar": {
+						Value: "world",
+						Order: 1,
+					},
+				},
+			},
+		},
+		requstedNotes)
 	err = a.DeleteNotes(ctx, []int64{noteID})
 	require.NoError(t, err)
 	searchedIds, err = a.FindNotes(ctx, fmt.Sprintf("nid:%d", noteID))
