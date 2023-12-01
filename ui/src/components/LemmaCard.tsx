@@ -5,8 +5,14 @@ import { AccentDirection, Audio, Furigana, Lemma, Sense, Word } from '../api/__g
 import { ToastFunction } from '../lib/styled-toast';
 import PlayIcon from './Icons/PlayIcon';
 
-export default function LemmaCard(props: { lemma: Lemma; toast: ToastFunction }) {
-  const { lemma, toast } = props;
+export type LemmaCardProps = {
+  lemma: Lemma;
+  toast: ToastFunction;
+  previewLemma: (lemma: Lemma, senseIndex: number) => Promise<void>;
+};
+
+export default function LemmaCard({ lemma, toast, previewLemma }: LemmaCardProps) {
+  const preview = (senseIndex: number) => previewLemma(lemma, senseIndex);
   return (
     <div className="shadow-md rounded-md bg-gray my-4 px-10 py-2">
       <div className="flex flex-col divide-y divide-blue">
@@ -20,7 +26,7 @@ export default function LemmaCard(props: { lemma: Lemma; toast: ToastFunction })
           </div>
         </LemmaCardItem>
         <LemmaCardItem render={lemma.senses.length > 0} className="py-3">
-          <Senses senses={lemma.senses} />
+          <Senses senses={lemma.senses} previewLemma={preview} />
         </LemmaCardItem>
         <LemmaCardItem render={lemma.forms.length > 0}>
           <LemmaForms forms={lemma.forms} />
@@ -96,7 +102,13 @@ function Hiragana({ word }: { word: Word }) {
   );
 }
 
-function Senses({ senses }: { senses: Sense[] }) {
+function Senses({
+  senses,
+  previewLemma,
+}: {
+  senses: Sense[];
+  previewLemma: (senseIndex: number) => Promise<void>;
+}) {
   return (
     <ol className="text-lg -mx-4">
       {senses.map((sense, index) => {
@@ -113,7 +125,10 @@ function Senses({ senses }: { senses: Sense[] }) {
               <p className="text-dark-gray">{sense.tags.join(', ')}</p>
             </div>
             <div className="pl-16 w-max shrink-0 flex items-center">
-              <button className="h-full text-blue underline underline-offset-4 hover:text-green active:text-dark-green transition-color transition-colors duration-300">
+              <button
+                className="h-full text-blue underline underline-offset-4 hover:text-green active:text-dark-green transition-color transition-colors duration-300"
+                onClick={() => previewLemma(index)}
+              >
                 Add to Anki
               </button>
             </div>

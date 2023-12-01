@@ -23,6 +23,30 @@ export enum AccentDirection {
   Up = 'UP'
 }
 
+export type AddNoteField = {
+  __typename?: 'AddNoteField';
+  name: Scalars['String']['output'];
+  value: Scalars['String']['output'];
+};
+
+export type AddNoteFieldInput = {
+  name: Scalars['String']['input'];
+  value: Scalars['String']['input'];
+};
+
+export type AddNoteRequest = {
+  __typename?: 'AddNoteRequest';
+  audioURL: Scalars['String']['output'];
+  fields: Array<AddNoteField>;
+  tags: Array<Scalars['String']['output']>;
+};
+
+export type AddNoteRequestInput = {
+  audioURL: Scalars['String']['input'];
+  fields: Array<AddNoteFieldInput>;
+  tags: Array<Scalars['String']['input']>;
+};
+
 export type Anki = {
   __typename?: 'Anki';
   decks: AnkiDecksResult;
@@ -33,6 +57,19 @@ export type Anki = {
 
 export type AnkiNoteFieldsArgs = {
   name: Scalars['String']['input'];
+};
+
+export type AnkiAddNoteDuplicateFound = Error & {
+  __typename?: 'AnkiAddNoteDuplicateFound';
+  message: Scalars['String']['output'];
+};
+
+export type AnkiAddNoteError = AnkiAddNoteDuplicateFound | AnkiIncompleteConfiguration;
+
+export type AnkiAddNoteResult = {
+  __typename?: 'AnkiAddNoteResult';
+  ankiError?: Maybe<AnkiError>;
+  error?: Maybe<AnkiAddNoteError>;
 };
 
 export type AnkiCollectionUnavailable = Error & {
@@ -100,6 +137,11 @@ export type AnkiForbiddenOrigin = Error & {
   message: Scalars['String']['output'];
 };
 
+export type AnkiIncompleteConfiguration = Error & {
+  __typename?: 'AnkiIncompleteConfiguration';
+  message: Scalars['String']['output'];
+};
+
 export type AnkiInvalidApiKey = Error & {
   __typename?: 'AnkiInvalidAPIKey';
   message: Scalars['String']['output'];
@@ -133,6 +175,11 @@ export type Audio = {
   __typename?: 'Audio';
   source: Scalars['String']['output'];
   type: Scalars['String']['output'];
+};
+
+export type AudioInput = {
+  source: Scalars['String']['input'];
+  type: Scalars['String']['input'];
 };
 
 export type CreateAnkiDeckAlreadyExists = Error & {
@@ -179,6 +226,11 @@ export type Furigana = {
   kanji: Scalars['String']['output'];
 };
 
+export type FuriganaInput = {
+  hiragana: Scalars['String']['input'];
+  kanji: Scalars['String']['input'];
+};
+
 export type Lemma = {
   __typename?: 'Lemma';
   audio: Array<Audio>;
@@ -195,12 +247,18 @@ export type Lemmas = {
 
 export type Mutation = {
   __typename?: 'Mutation';
+  addAnkiNote: AnkiAddNoteResult;
   createAnkiDeck: CreateAnkiDeckResult;
   createDefaultAnkiNote: CreateDefaultAnkiNoteResult;
   setAnkiConfigConnection: SetAnkiConfigConnectionResult;
   setAnkiConfigDeck: SetAnkiConfigDeckResult;
   setAnkiConfigMapping: SetAnkiConfigMappingResult;
   setAnkiConfigNote: SetAnkiConfigNoteResult;
+};
+
+
+export type MutationAddAnkiNoteArgs = {
+  request?: InputMaybe<AddNoteRequestInput>;
 };
 
 
@@ -239,18 +297,55 @@ export type PitchShape = {
   hiragana: Scalars['String']['output'];
 };
 
+export type PitchShapeInput = {
+  directions: Array<AccentDirection>;
+  hiragana: Scalars['String']['input'];
+};
+
+export type PrepareProjectedLemmaError = AnkiIncompleteConfiguration;
+
+export type PrepareProjectedLemmaResult = {
+  __typename?: 'PrepareProjectedLemmaResult';
+  ankiError?: Maybe<AnkiError>;
+  error?: Maybe<PrepareProjectedLemmaError>;
+  request?: Maybe<AddNoteRequest>;
+};
+
+export type ProjectedLemmaInput = {
+  audio: Array<AudioInput>;
+  definitions: Array<Scalars['String']['input']>;
+  forms: Array<ProjectedWordInput>;
+  partsOfSpeech: Array<Scalars['String']['input']>;
+  senseTags: Array<Scalars['String']['input']>;
+  slug: ProjectedWordInput;
+  tags: Array<Scalars['String']['input']>;
+};
+
+export type ProjectedWordInput = {
+  furigana: Array<FuriganaInput>;
+  hiragana: Scalars['String']['input'];
+  pitchShapes: Array<PitchShapeInput>;
+  word: Scalars['String']['input'];
+};
+
 export type Query = {
   __typename?: 'Query';
   Anki: Anki;
   AnkiConfig: AnkiConfig;
   AnkiConfigState: AnkiConfigStateResult;
   Lemmas?: Maybe<Lemmas>;
+  PrepareProjectedLemma: PrepareProjectedLemmaResult;
   RenderFields: RenderedFields;
 };
 
 
 export type QueryLemmasArgs = {
   query: Scalars['String']['input'];
+};
+
+
+export type QueryPrepareProjectedLemmaArgs = {
+  lemma?: InputMaybe<ProjectedLemmaInput>;
 };
 
 
@@ -335,6 +430,20 @@ export type GetHealthStatusQueryVariables = Exact<{ [key: string]: never; }>;
 
 
 export type GetHealthStatusQuery = { __typename?: 'Query', AnkiConfigState: { __typename?: 'AnkiConfigStateResult', ankiConfigState?: { __typename?: 'AnkiConfigState', version: number, deckExists: boolean, noteTypeExists: boolean, noteHasAllFields: boolean } | null, error?: { __typename?: 'AnkiCollectionUnavailable', version: number, message: string } | { __typename?: 'AnkiConnectionError', message: string } | { __typename?: 'AnkiForbiddenOrigin', message: string } | { __typename?: 'AnkiInvalidAPIKey', version: number, message: string } | { __typename?: 'AnkiUnknownError', message: string } | null } };
+
+export type PrepareProjectedLemmaQueryVariables = Exact<{
+  lemma?: InputMaybe<ProjectedLemmaInput>;
+}>;
+
+
+export type PrepareProjectedLemmaQuery = { __typename?: 'Query', PrepareProjectedLemma: { __typename?: 'PrepareProjectedLemmaResult', request?: { __typename?: 'AddNoteRequest', tags: Array<string>, audioURL: string, fields: Array<{ __typename?: 'AddNoteField', name: string, value: string }> } | null, error?: { __typename?: 'AnkiIncompleteConfiguration', message: string } | null, ankiError?: { __typename: 'AnkiCollectionUnavailable', message: string } | { __typename: 'AnkiConnectionError', message: string } | { __typename: 'AnkiForbiddenOrigin', message: string } | { __typename: 'AnkiInvalidAPIKey', message: string } | { __typename: 'AnkiUnknownError', message: string } | null } };
+
+export type AddAnkiNoteMutationVariables = Exact<{
+  note: AddNoteRequestInput;
+}>;
+
+
+export type AddAnkiNoteMutation = { __typename?: 'Mutation', addAnkiNote: { __typename?: 'AnkiAddNoteResult', error?: { __typename?: 'AnkiAddNoteDuplicateFound', message: string } | { __typename?: 'AnkiIncompleteConfiguration', message: string } | null, ankiError?: { __typename?: 'AnkiCollectionUnavailable', message: string } | { __typename?: 'AnkiConnectionError', message: string } | { __typename?: 'AnkiForbiddenOrigin', message: string } | { __typename?: 'AnkiInvalidAPIKey', message: string } | { __typename?: 'AnkiUnknownError', message: string } | null } };
 
 export type GetConnectionConfigQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -427,6 +536,8 @@ export type GetLemmasQuery = { __typename?: 'Query', Lemmas?: { __typename?: 'Le
 
 
 export const GetHealthStatusDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetHealthStatus"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"AnkiConfigState"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"ankiConfigState"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"version"}},{"kind":"Field","name":{"kind":"Name","value":"deckExists"}},{"kind":"Field","name":{"kind":"Name","value":"noteTypeExists"}},{"kind":"Field","name":{"kind":"Name","value":"noteHasAllFields"}}]}},{"kind":"Field","name":{"kind":"Name","value":"error"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"InlineFragment","typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"AnkiConnectionError"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"message"}}]}},{"kind":"InlineFragment","typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"AnkiInvalidAPIKey"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"version"}},{"kind":"Field","name":{"kind":"Name","value":"message"}}]}},{"kind":"InlineFragment","typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"AnkiCollectionUnavailable"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"version"}},{"kind":"Field","name":{"kind":"Name","value":"message"}}]}},{"kind":"InlineFragment","typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"AnkiForbiddenOrigin"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"message"}}]}},{"kind":"InlineFragment","typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Error"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"message"}}]}}]}}]}}]}}]} as unknown as DocumentNode<GetHealthStatusQuery, GetHealthStatusQueryVariables>;
+export const PrepareProjectedLemmaDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"PrepareProjectedLemma"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"lemma"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"ProjectedLemmaInput"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"PrepareProjectedLemma"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"lemma"},"value":{"kind":"Variable","name":{"kind":"Name","value":"lemma"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"request"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"fields"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"value"}}]}},{"kind":"Field","name":{"kind":"Name","value":"tags"}},{"kind":"Field","name":{"kind":"Name","value":"audioURL"}}]}},{"kind":"Field","name":{"kind":"Name","value":"error"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"InlineFragment","typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"AnkiIncompleteConfiguration"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"message"}}]}},{"kind":"InlineFragment","typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Error"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"message"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"ankiError"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"__typename"}},{"kind":"InlineFragment","typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Error"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"message"}}]}}]}}]}}]}}]} as unknown as DocumentNode<PrepareProjectedLemmaQuery, PrepareProjectedLemmaQueryVariables>;
+export const AddAnkiNoteDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"AddAnkiNote"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"note"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"AddNoteRequestInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"addAnkiNote"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"request"},"value":{"kind":"Variable","name":{"kind":"Name","value":"note"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"error"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"InlineFragment","typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"AnkiIncompleteConfiguration"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"message"}}]}},{"kind":"InlineFragment","typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"AnkiAddNoteDuplicateFound"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"message"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"ankiError"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"InlineFragment","typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Error"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"message"}}]}}]}}]}}]}}]} as unknown as DocumentNode<AddAnkiNoteMutation, AddAnkiNoteMutationVariables>;
 export const GetConnectionConfigDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetConnectionConfig"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"AnkiConfig"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"addr"}},{"kind":"Field","name":{"kind":"Name","value":"apiKey"}}]}}]}}]} as unknown as DocumentNode<GetConnectionConfigQuery, GetConnectionConfigQueryVariables>;
 export const UpdateConnectionConfigDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"UpdateConnectionConfig"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"addr"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"apiKey"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"setAnkiConfigConnection"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"addr"},"value":{"kind":"Variable","name":{"kind":"Name","value":"addr"}}},{"kind":"ObjectField","name":{"kind":"Name","value":"apiKey"},"value":{"kind":"Variable","name":{"kind":"Name","value":"apiKey"}}}]}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"error"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"InlineFragment","typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"ValidationError"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"paths"}},{"kind":"Field","name":{"kind":"Name","value":"message"}}]}}]}}]}}]}}]} as unknown as DocumentNode<UpdateConnectionConfigMutation, UpdateConnectionConfigMutationVariables>;
 export const GetAnkiConfigCurrentNoteDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetAnkiConfigCurrentNote"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"AnkiConfig"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"noteType"}}]}}]}}]} as unknown as DocumentNode<GetAnkiConfigCurrentNoteQuery, GetAnkiConfigCurrentNoteQueryVariables>;
