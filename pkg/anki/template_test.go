@@ -11,6 +11,14 @@ import (
 	"github.com/Darkclainer/japwords/pkg/lemma"
 )
 
+func mustConvertMapping(t *testing.T, mapping map[string]string) TemplateMapping {
+	templateMapping, mappingErrs := convertMapping(mapping)
+	for _, mappingErr := range mappingErrs {
+		t.Fatalf("mustConvertMapping failed on template with key %s: %s", mappingErr.Key, mappingErr.Msg)
+	}
+	return templateMapping
+}
+
 func Test_RenderRawTemplate(t *testing.T) {
 	t.Run("OK", func(t *testing.T) {
 		result, err := RenderRawTemplate("{{.Slug.Word}}-test", &lemma.ProjectedLemma{

@@ -6,6 +6,7 @@ import (
 	"sync"
 
 	"github.com/Darkclainer/japwords/pkg/anki/ankiconnect"
+	"github.com/Darkclainer/japwords/pkg/anki/query"
 	"github.com/Darkclainer/japwords/pkg/lemma"
 )
 
@@ -17,6 +18,7 @@ type StatefullClient interface {
 	CreateDeck(ctx context.Context, name string) error
 	CreateDefaultNoteType(ctx context.Context, name string) error
 	AddNote(ctx context.Context, note *AddNoteRequest) error
+	QueryNotes(ctx context.Context, query string) ([]*ankiconnect.NoteInfo, error)
 }
 
 type StatefullClientConstructorFn func(*Config) (StatefullClient, error)
@@ -164,6 +166,88 @@ func (a *Anki) PrepareProjectedLemma(ctx context.Context, lemma *lemma.Projected
 		Fields: fields,
 		// TODO: add audio and tags
 	}, nil
+}
+
+// SearchProjectedLemmas returns note id for specified lemmas, empty string means not found.
+// Note id represented as string, because it's not fully documented what id actually means
+func (a *Anki) SearchProjectedLemmas(ctx context.Context, lemmas []*lemma.ProjectedLemma) ([]int64, error) {
+	client := a.getClient()
+	state, err := client.GetState(ctx)
+	if err != nil {
+		return nil, err
+	}
+	if !state.IsReadyToAddNote() {
+		return nil, ErrIncompleteConfiguration
+	}
+	// actually checks bellow redudant because "readiness" should include it
+	if len(state.CurrentFields) < 1 {
+		return nil, ErrIncompleteConfiguration
+	}
+	orderField := state.CurrentFields[0]
+	searchQuery, orderValues, err := generateQueryForNotes(lemmas, orderField, client.Config())
+	if err != nil {
+		return nil, err
+	}
+	notes, err := client.QueryNotes(ctx, searchQuery)
+	if err != nil {
+		return nil, err
+	}
+	// because query return notes in no particular order, we need to rebuild result
+	return confirmFoundNotes(notes, orderField, orderValues), nil
+}
+
+// generateQueryForNotes returns search query for anki, slice of values of expected values of order field and errors
+func generateQueryForNotes(lemmas []*lemma.ProjectedLemma, orderField string, config *Config) (string, []string, error) {
+	orderTemplate, ok := config.Mapping[orderField]
+	if !ok {
+		return "", nil, ErrIncompleteConfiguration
+	}
+	var buffer bytes.Buffer
+	// what values in orderField we will search
+	fieldQueries := make([]query.Query, len(lemmas))
+	// we associate note with value in order field, this list will help
+	// us understand what notes anki actually has
+	orderValues := make([]string, len(lemmas))
+	for i, lemma := range lemmas {
+		buffer.Reset()
+		err := orderTemplate.Tmpl.Execute(&buffer, lemma)
+		if err != nil {
+			return "", nil, err
+		}
+		v := buffer.String()
+		fieldQueries[i] = query.Exact(orderField, v)
+		orderValues[i] = v
+	}
+	searchQuery := query.And(
+		// this must be exactly duplication settings in add note function
+		query.Exact("deck", config.Deck),
+		query.Exact("note", config.NoteType),
+		// search for any fields
+		query.Or(fieldQueries...),
+	)
+	return query.Render(searchQuery), orderValues, nil
+}
+
+// confirmFoundNotes returns actually found notes using expected values of order field
+func confirmFoundNotes(notes []*ankiconnect.NoteInfo, orderField string, orderValues []string) []int64 {
+	foundIds := make([]int64, len(orderValues))
+	// orderField value to noteId
+	foundNotes := make(map[string]int64, len(orderValues))
+	for _, note := range notes {
+		field, ok := note.Fields[orderField]
+		if !ok {
+			// redudant
+			continue
+		}
+		foundNotes[field.Value] = note.NoteID
+	}
+	for i, orderValue := range orderValues {
+		id, ok := foundNotes[orderValue]
+		if ok {
+			foundIds[i] = id
+		}
+	}
+	return foundIds
 }
 
 func (a *Anki) AddNote(ctx context.Context, note *AddNoteRequest) error {

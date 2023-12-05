@@ -940,3 +940,84 @@ func Test_statefullClient_AddNote(t *testing.T) {
 		assert.NoError(t, err)
 	})
 }
+
+func Test_statefullClient_QueryNote(t *testing.T) {
+	readyConfig := &Config{
+		NoteType: "note1",
+		Deck:     "deck1",
+		Mapping: TemplateMapping{
+			"field1": {},
+		},
+	}
+	t.Run("error state", func(t *testing.T) {
+		client, _, _ := newTestErrorStatefullClient(t, &Config{})
+		_, err := client.QueryNotes(context.Background(), "")
+		assert.ErrorIs(t, err, ErrForbiddenOrigin)
+	})
+	t.Run("find note error", func(t *testing.T) {
+		client, ankiClient, _ := newTestNormalStatefullClient(t, readyConfig)
+		ankiClient.On("FindNotes", mock.Anything, "myquery").
+			Return(
+				nil,
+				&ankiconnect.ServerError{
+					Err: ankiconnect.ErrCollectionUnavailable,
+				}).
+			Once()
+		notes, err := client.QueryNotes(context.Background(), "myquery")
+		assert.Len(t, notes, 0)
+		assert.ErrorIs(t, err, ErrCollectionUnavailable)
+	})
+	t.Run("notes info error", func(t *testing.T) {
+		client, ankiClient, _ := newTestNormalStatefullClient(t, readyConfig)
+		noteIds := []int64{1, 2, 3, 4}
+		ankiClient.On("FindNotes", mock.Anything, "myquery").
+			Return(
+				noteIds,
+				nil,
+			).
+			Once()
+		ankiClient.On("NotesInfo", mock.Anything, noteIds).
+			Return(
+				nil,
+				&ankiconnect.ServerError{
+					Err: ankiconnect.ErrCollectionUnavailable,
+				},
+			).
+			Once()
+		notes, err := client.QueryNotes(context.Background(), "myquery")
+		assert.Len(t, notes, 0)
+		assert.ErrorIs(t, err, ErrCollectionUnavailable)
+	})
+	t.Run("ok", func(t *testing.T) {
+		client, ankiClient, _ := newTestNormalStatefullClient(t, readyConfig)
+		noteIds := []int64{1, 2, 3, 4}
+		ankiClient.On("FindNotes", mock.Anything, "myquery").
+			Return(
+				noteIds,
+				nil,
+			).
+			Once()
+		notesExpected := []*ankiconnect.NoteInfo{
+			{
+				NoteID:    2,
+				ModelName: "hello",
+				Tags:      []string{"hello", "world"},
+				Fields: map[string]*ankiconnect.NoteInfoField{
+					"a": {
+						Value: "b",
+						Order: 3,
+					},
+				},
+			},
+		}
+		ankiClient.On("NotesInfo", mock.Anything, noteIds).
+			Return(
+				notesExpected,
+				nil,
+			).
+			Once()
+		notesActual, err := client.QueryNotes(context.Background(), "myquery")
+		assert.NoError(t, err)
+		assert.Equal(t, notesExpected, notesActual)
+	})
+}

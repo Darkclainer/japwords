@@ -113,6 +113,32 @@ func (_m *MockAnkiClient) DeckNames(ctx context.Context) ([]string, error) {
 	return r0, r1
 }
 
+// FindNotes provides a mock function with given fields: ctx, query
+func (_m *MockAnkiClient) FindNotes(ctx context.Context, query string) ([]int64, error) {
+	ret := _m.Called(ctx, query)
+
+	var r0 []int64
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, string) ([]int64, error)); ok {
+		return rf(ctx, query)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, string) []int64); ok {
+		r0 = rf(ctx, query)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]int64)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
+		r1 = rf(ctx, query)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // ModelFieldNames provides a mock function with given fields: ctx, modelName
 func (_m *MockAnkiClient) ModelFieldNames(ctx context.Context, modelName string) ([]string, error) {
 	ret := _m.Called(ctx, modelName)
@@ -158,6 +184,32 @@ func (_m *MockAnkiClient) ModelNames(ctx context.Context) ([]string, error) {
 
 	if rf, ok := ret.Get(1).(func(context.Context) error); ok {
 		r1 = rf(ctx)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// NotesInfo provides a mock function with given fields: ctx, ids
+func (_m *MockAnkiClient) NotesInfo(ctx context.Context, ids []int64) ([]*ankiconnect.NoteInfo, error) {
+	ret := _m.Called(ctx, ids)
+
+	var r0 []*ankiconnect.NoteInfo
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, []int64) ([]*ankiconnect.NoteInfo, error)); ok {
+		return rf(ctx, ids)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, []int64) []*ankiconnect.NoteInfo); ok {
+		r0 = rf(ctx, ids)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*ankiconnect.NoteInfo)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, []int64) error); ok {
+		r1 = rf(ctx, ids)
 	} else {
 		r1 = ret.Error(1)
 	}

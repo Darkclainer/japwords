@@ -3,12 +3,16 @@ package anki
 import (
 	"context"
 	"errors"
+	"fmt"
 	"testing"
 	"text/template"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
+
+	"github.com/Darkclainer/japwords/pkg/anki/ankiconnect"
+	"github.com/Darkclainer/japwords/pkg/lemma"
 )
 
 func Test_Anki_New(t *testing.T) {
@@ -482,6 +486,336 @@ func Test_Anki_AddNote(t *testing.T) {
 	require.NoError(t, err)
 	err = anki.AddNote(context.Background(), request)
 	assert.ErrorContains(t, err, "myerror")
+}
+
+func Test_Anki_SearchProjectedLemmas(t *testing.T) {
+	t.Run("get state error", func(t *testing.T) {
+		anki := NewAnki(func(_ *Config) (StatefullClient, error) {
+			client := NewMockStatefullClient(t)
+			client.On("GetState", mock.Anything).
+				Return(
+					nil,
+					errors.New("myerror"),
+				)
+
+			return client, nil
+		})
+		err := anki.ReloadConfig(&Config{})
+		require.NoError(t, err)
+		_, err = anki.SearchProjectedLemmas(context.Background(), nil)
+		assert.ErrorContains(t, err, "myerror")
+	})
+	t.Run("state not ready", func(t *testing.T) {
+		anki := NewAnki(func(_ *Config) (StatefullClient, error) {
+			client := NewMockStatefullClient(t)
+			client.On("GetState", mock.Anything).
+				Return(
+					&State{},
+					nil,
+				)
+
+			return client, nil
+		})
+		err := anki.ReloadConfig(&Config{})
+		require.NoError(t, err)
+		_, err = anki.SearchProjectedLemmas(context.Background(), nil)
+		assert.ErrorIs(t, err, ErrIncompleteConfiguration)
+	})
+	t.Run("no current fields", func(t *testing.T) {
+		anki := NewAnki(func(_ *Config) (StatefullClient, error) {
+			client := NewMockStatefullClient(t)
+			client.On("GetState", mock.Anything).
+				Return(
+					&State{
+						DeckExists:       true,
+						NoteTypeExists:   true,
+						NoteHasAllFields: true,
+						OrderDefined:     true,
+					},
+					nil,
+				)
+
+			return client, nil
+		})
+		err := anki.ReloadConfig(&Config{})
+		require.NoError(t, err)
+		_, err = anki.SearchProjectedLemmas(context.Background(), nil)
+		assert.ErrorIs(t, err, ErrIncompleteConfiguration)
+	})
+	readyState := &State{
+		DeckExists:       true,
+		NoteTypeExists:   true,
+		NoteHasAllFields: true,
+		OrderDefined:     true,
+		CurrentFields:    []string{"of"},
+	}
+	t.Run("generate query returns error", func(t *testing.T) {
+		anki := NewAnki(func(_ *Config) (StatefullClient, error) {
+			client := NewMockStatefullClient(t)
+			client.On("GetState", mock.Anything).
+				Return(readyState, nil)
+			client.On("Config").
+				Return(&Config{
+					// it will return error, because order field doesn't have template
+					Mapping: TemplateMapping{},
+				})
+
+			return client, nil
+		})
+		err := anki.ReloadConfig(&Config{})
+		require.NoError(t, err)
+		_, err = anki.SearchProjectedLemmas(context.Background(), nil)
+		assert.ErrorIs(t, err, ErrIncompleteConfiguration)
+	})
+	config := &Config{
+		Deck:     "mydeck",
+		NoteType: "mynote",
+		Mapping: mustConvertMapping(t, map[string]string{
+			"of": `{{.Slug.Word}}`,
+		}),
+	}
+	t.Run("generate query returns error", func(t *testing.T) {
+		anki := NewAnki(func(_ *Config) (StatefullClient, error) {
+			client := NewMockStatefullClient(t)
+			client.On("GetState", mock.Anything).
+				Return(readyState, nil)
+			client.On("Config").
+				Return(config)
+			client.On("QueryNotes", mock.Anything, `("deck:mydeck" "note:mynote" )`).
+				Return(nil, errors.New("myerror"))
+
+			return client, nil
+		})
+		err := anki.ReloadConfig(&Config{})
+		require.NoError(t, err)
+		_, err = anki.SearchProjectedLemmas(context.Background(), nil)
+		assert.ErrorContains(t, err, "myerror")
+	})
+	t.Run("OK", func(t *testing.T) {
+		anki := NewAnki(func(_ *Config) (StatefullClient, error) {
+			client := NewMockStatefullClient(t)
+			client.On("GetState", mock.Anything).
+				Return(readyState, nil)
+			client.On("Config").
+				Return(config)
+			client.On("QueryNotes", mock.Anything, `("deck:mydeck" "note:mynote" ("of:hello" OR "of:world"))`).
+				Return(
+					[]*ankiconnect.NoteInfo{
+						{
+							NoteID: 2,
+							Fields: map[string]*ankiconnect.NoteInfoField{
+								"of": {
+									Value: "world",
+								},
+							},
+						},
+						{
+							NoteID: 1,
+							Fields: map[string]*ankiconnect.NoteInfoField{
+								"of": {
+									Value: "hello",
+								},
+							},
+						},
+					},
+					nil,
+				)
+
+			return client, nil
+		})
+		err := anki.ReloadConfig(&Config{})
+		require.NoError(t, err)
+		actual, err := anki.SearchProjectedLemmas(context.Background(), []*lemma.ProjectedLemma{
+			{
+				Slug: lemma.ProjectedWord{
+					Word: "hello",
+				},
+			},
+			{
+				Slug: lemma.ProjectedWord{
+					Word: "world",
+				},
+			},
+		})
+		require.NoError(t, err)
+		assert.Equal(t, []int64{1, 2}, actual)
+	})
+}
+
+func Test_generateQueryForNotes_NoOrderTemplate(t *testing.T) {
+	_, _, err := generateQueryForNotes(nil, "hello", &Config{})
+	assert.ErrorIs(t, err, ErrIncompleteConfiguration)
+}
+
+func Test_generateQueryForNotes_DeckNote(t *testing.T) {
+	query, _, err := generateQueryForNotes(nil, "hello", &Config{
+		Mapping: mustConvertMapping(t, map[string]string{
+			"hello": "",
+		}),
+		NoteType: "note1",
+		Deck:     "deck1",
+	})
+	require.NoError(t, err)
+	assert.Equal(t, `("deck:deck1" "note:note1" )`, query)
+	query, _, err = generateQueryForNotes(nil, "hello", &Config{
+		Mapping: mustConvertMapping(t, map[string]string{
+			"hello": "",
+		}),
+		NoteType: "note2",
+		Deck:     "deck2",
+	})
+	require.NoError(t, err)
+	assert.Equal(t, `("deck:deck2" "note:note2" )`, query)
+}
+
+func Test_generateQueryForNotes(t *testing.T) {
+	deck := "mydeck"
+	noteType := "mynote"
+	orderField := "of"
+	ornamentQuery := func(s string) string {
+		return fmt.Sprintf(`("deck:%s" "note:%s" (%s))`, deck, noteType, s)
+	}
+	testCases := []struct {
+		Name           string
+		Lemmas         []*lemma.ProjectedLemma
+		OrderTemplate  string
+		ExpectedQuery  string
+		ExpectedValues []string
+		ErrorAssert    assert.ErrorAssertionFunc
+	}{
+		{
+			Name: "template execute failed",
+			Lemmas: []*lemma.ProjectedLemma{
+				// need to fail on this note specifically
+				{
+					SenseIndex: 999,
+				},
+			},
+			OrderTemplate: `{{ if  eq .SenseIndex 999 }}{{ fail "intended to fail" }}{{ end }}`,
+			ErrorAssert:   assert.Error,
+		},
+		{
+			Name: "constant template",
+			Lemmas: []*lemma.ProjectedLemma{
+				{},
+				{},
+				{},
+			},
+			OrderTemplate:  `foo`,
+			ExpectedQuery:  ornamentQuery(`"of:foo" OR "of:foo" OR "of:foo"`),
+			ExpectedValues: []string{"foo", "foo", "foo"},
+			ErrorAssert:    assert.NoError,
+		},
+		{
+			Name: "slug word",
+			Lemmas: []*lemma.ProjectedLemma{
+				{
+					Slug: lemma.ProjectedWord{
+						Word: "word1",
+					},
+				},
+				{
+					Slug: lemma.ProjectedWord{
+						Word: "word2",
+					},
+				},
+			},
+			OrderTemplate:  `{{.Slug.Word}}`,
+			ExpectedQuery:  ornamentQuery(`"of:word1" OR "of:word2"`),
+			ExpectedValues: []string{"word1", "word2"},
+			ErrorAssert:    assert.NoError,
+		},
+	}
+	for i := range testCases {
+		tc := testCases[i]
+		t.Run(tc.Name, func(t *testing.T) {
+			config := &Config{
+				Deck:     deck,
+				NoteType: noteType,
+				Mapping: mustConvertMapping(t, map[string]string{
+					orderField: tc.OrderTemplate,
+				}),
+			}
+			actualQuery, actualValues, err := generateQueryForNotes(tc.Lemmas, orderField, config)
+			tc.ErrorAssert(t, err)
+			if err != nil {
+				return
+			}
+			assert.Equal(t, tc.ExpectedQuery, actualQuery)
+			assert.Equal(t, tc.ExpectedValues, actualValues)
+		})
+	}
+}
+
+func Test_confirmFoundNotes(t *testing.T) {
+	const orderField = "of"
+	testCases := []struct {
+		Name        string
+		Notes       []*ankiconnect.NoteInfo
+		OrderValues []string
+		Expected    []int64
+	}{
+		{
+			Name: "wrong order field",
+			Notes: []*ankiconnect.NoteInfo{
+				{},
+			},
+			Expected: []int64{},
+		},
+		{
+			Name: "one for all",
+			Notes: []*ankiconnect.NoteInfo{
+				{
+					NoteID: 1,
+					Fields: map[string]*ankiconnect.NoteInfoField{
+						"of": {
+							Value: "foo",
+						},
+					},
+				},
+			},
+			OrderValues: []string{"foo", "notfound", "foo"},
+			Expected:    []int64{1, 0, 1},
+		},
+		{
+			Name: "found",
+			Notes: []*ankiconnect.NoteInfo{
+				{
+					NoteID: 3,
+					Fields: map[string]*ankiconnect.NoteInfoField{
+						"of": {
+							Value: "foo",
+						},
+					},
+				},
+				{
+					NoteID: 2,
+					Fields: map[string]*ankiconnect.NoteInfoField{
+						"of": {
+							Value: "bar",
+						},
+					},
+				},
+				{
+					NoteID: 1,
+					Fields: map[string]*ankiconnect.NoteInfoField{
+						"of": {
+							Value: "foobar",
+						},
+					},
+				},
+			},
+			OrderValues: []string{"foobar", "bar", "foo", "notfound"},
+			Expected:    []int64{1, 2, 3, 0},
+		},
+	}
+	for i := range testCases {
+		tc := testCases[i]
+		t.Run(tc.Name, func(t *testing.T) {
+			actual := confirmFoundNotes(tc.Notes, orderField, tc.OrderValues)
+			assert.Equal(t, tc.Expected, actual)
+		})
+	}
 }
 
 func Test_Anki_Stop(t *testing.T) {

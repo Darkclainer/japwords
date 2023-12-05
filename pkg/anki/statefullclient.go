@@ -17,6 +17,8 @@ type AnkiClient interface {
 	DeckNames(ctx context.Context) ([]string, error)
 	ModelNames(ctx context.Context) ([]string, error)
 	ModelFieldNames(ctx context.Context, modelName string) ([]string, error)
+	FindNotes(ctx context.Context, query string) ([]int64, error)
+	NotesInfo(ctx context.Context, ids []int64) ([]*ankiconnect.NoteInfo, error)
 
 	CreateDeck(ctx context.Context, name string) (int64, error)
 	CreateModel(ctx context.Context, parameters *ankiconnect.CreateModelRequest) (int64, error)
@@ -326,4 +328,21 @@ func (sc *statefullClient) AddNote(ctx context.Context, note *AddNoteRequest) er
 		return nil, err
 	})
 	return err
+}
+
+// QueryNotes get notes by query, it does FindNotes and NoteInfo.
+func (sc *statefullClient) QueryNotes(ctx context.Context, query string) ([]*ankiconnect.NoteInfo, error) {
+	var notes []*ankiconnect.NoteInfo
+	err := sc.withClient(func(client AnkiClient, _ *Config, _ *State) (*State, error) {
+		noteIds, err := client.FindNotes(ctx, query)
+		if err != nil {
+			return nil, err
+		}
+		notes, err = client.NotesInfo(ctx, noteIds)
+		return nil, err
+	})
+	if err != nil {
+		return nil, err
+	}
+	return notes, nil
 }

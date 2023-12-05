@@ -5,6 +5,8 @@ package anki
 import (
 	context "context"
 
+	ankiconnect "github.com/Darkclainer/japwords/pkg/anki/ankiconnect"
+
 	mock "github.com/stretchr/testify/mock"
 )
 
@@ -90,6 +92,32 @@ func (_m *MockStatefullClient) GetState(ctx context.Context) (*State, error) {
 
 	if rf, ok := ret.Get(1).(func(context.Context) error); ok {
 		r1 = rf(ctx)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// QueryNotes provides a mock function with given fields: ctx, query
+func (_m *MockStatefullClient) QueryNotes(ctx context.Context, query string) ([]*ankiconnect.NoteInfo, error) {
+	ret := _m.Called(ctx, query)
+
+	var r0 []*ankiconnect.NoteInfo
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, string) ([]*ankiconnect.NoteInfo, error)); ok {
+		return rf(ctx, query)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, string) []*ankiconnect.NoteInfo); ok {
+		r0 = rf(ctx, query)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*ankiconnect.NoteInfo)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
+		r1 = rf(ctx, query)
 	} else {
 		r1 = ret.Error(1)
 	}
