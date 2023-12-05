@@ -3,11 +3,12 @@ import * as Dialog from '@radix-ui/react-dialog';
 import * as Label from '@radix-ui/react-label';
 import { clsx } from 'clsx';
 import { FieldArray, Form, Formik, FormikHelpers } from 'formik';
-import { Dispatch, useCallback, useId, useMemo, useRef, useState } from 'react';
+import { Dispatch, SetStateAction, useCallback, useId, useMemo, useRef, useState } from 'react';
 
 import { gql } from '../api/__generated__';
-import { AddNoteRequest, Lemma } from '../api/__generated__/graphql';
+import { AddNoteRequest, LemmaNoteInfo } from '../api/__generated__/graphql';
 import { useToastify } from '../hooks/toastify';
+import { groupLemmaNotes } from '../lib/lemmas';
 import { apolloErrorToast, ToastFunction } from '../lib/styled-toast';
 import Button, { ButtonVariant } from './Button';
 import { DialogModal, DialogWidth } from './DialogModal';
@@ -17,9 +18,9 @@ import TextField, { TextFieldProps } from './TextField';
 
 const AddNoteFailedActionTitle = 'Add note failed';
 
-const PREPARE_PROJECTED_LEMMA = gql(`
-query PrepareProjectedLemma($lemma: ProjectedLemmaInput) {
-  PrepareProjectedLemma(lemma: $lemma) {
+const PREPARE_LEMMA = gql(`
+query PrepareLemma($lemma: LemmaInput) {
+  PrepareLemma(lemma: $lemma) {
     request {
       fields {
         name
@@ -46,35 +47,38 @@ query PrepareProjectedLemma($lemma: ProjectedLemmaInput) {
 }
 `);
 
-export default function LemmaList({ lemmas }: { lemmas: Array<Lemma> }) {
-  const [prepareLemma] = useLazyQuery(PREPARE_PROJECTED_LEMMA, {
+type AddLemmaRequest = {
+  note: AddNoteRequest;
+  lemma: LemmaNoteInfo;
+};
+
+export default function LemmaList({
+  lemmaNotes: initialLemmaNotes,
+}: {
+  lemmaNotes: LemmaNoteInfo[];
+}) {
+  // more propper way will be to modify cache, but because lemmas now returned from react-router-dom it's not possible
+  const [lemmaNotes, setLemmaNotes] = useState(initialLemmaNotes);
+  const lemmaBags = useMemo(() => groupLemmaNotes(lemmaNotes), [lemmaNotes]);
+  const [prepareLemma] = useLazyQuery(PREPARE_LEMMA, {
     fetchPolicy: 'network-only',
   });
   const [openAddNote, setOpenAddNote] = useState(false);
-  const [noteRequest, setNoteRequest] = useState<AddNoteRequest>();
+  const [addLemmaRequest, setAddLemmaRequest] = useState<AddLemmaRequest>();
   const abortReset = useAbortRef();
   const toast = useToastify({
     autoClose: 2000,
     type: 'info',
   });
   const previewLemma = useCallback(
-    async (lemma: Lemma, senseIndex: number) => {
+    async (lemmaNote: LemmaNoteInfo) => {
       const currentAbortController = abortReset();
-      setNoteRequest(undefined);
+      setAddLemmaRequest(undefined);
       setOpenAddNote(true);
-      const definition = lemma.senses[senseIndex];
       const now = new Date().valueOf();
       const { data, error } = await prepareLemma({
         variables: {
-          lemma: {
-            slug: lemma.slug,
-            forms: lemma.forms,
-            tags: lemma.tags,
-            definitions: definition.definition,
-            senseTags: definition.tags,
-            partsOfSpeech: definition.partOfSpeech,
-            audio: lemma.audio,
-          },
+          lemma: lemmaNote.lemma,
         },
         context: {
           fetchOptions: {
@@ -95,7 +99,7 @@ export default function LemmaList({ lemmas }: { lemmas: Array<Lemma> }) {
         });
         return;
       }
-      const ankiError = data?.PrepareProjectedLemma.ankiError;
+      const ankiError = data?.PrepareLemma.ankiError;
       if (ankiError) {
         setOpenAddNote(false);
         toast(`${AddNoteFailedActionTitle}: problems with anki-connect`, {
@@ -103,7 +107,7 @@ export default function LemmaList({ lemmas }: { lemmas: Array<Lemma> }) {
         });
         return;
       }
-      const userError = data?.PrepareProjectedLemma.error;
+      const userError = data?.PrepareLemma.error;
       if (userError) {
         setOpenAddNote(false);
         let message = `${AddNoteFailedActionTitle}: `;
@@ -118,7 +122,13 @@ export default function LemmaList({ lemmas }: { lemmas: Array<Lemma> }) {
         return;
       }
       if (!currentAbortController.signal.aborted) {
-        setNoteRequest(data?.PrepareProjectedLemma.request ?? undefined);
+        if (!data?.PrepareLemma.request) {
+          throw 'unreachable';
+        }
+        setAddLemmaRequest({
+          note: data.PrepareLemma.request,
+          lemma: lemmaNote,
+        });
       }
     },
     [setOpenAddNote, toast, prepareLemma],
@@ -126,10 +136,10 @@ export default function LemmaList({ lemmas }: { lemmas: Array<Lemma> }) {
 
   return (
     <>
-      {lemmas.map((lemma, index) => (
+      {lemmaBags.map((lemmaBag, index) => (
         <LemmaCard
-          key={lemma.slug.word + '-' + index}
-          lemma={lemma}
+          key={lemmaBag.slug.word + '-' + index}
+          lemmaBag={lemmaBag}
           toast={toast}
           previewLemma={previewLemma}
         />
@@ -142,8 +152,9 @@ export default function LemmaList({ lemmas }: { lemmas: Array<Lemma> }) {
           }
           return setOpenAddNote(value);
         }}
-        noteRequest={noteRequest}
+        addLemmaRequest={addLemmaRequest}
         toast={toast}
+        setLemmaNotes={setLemmaNotes}
       />
     </>
   );
@@ -152,16 +163,23 @@ export default function LemmaList({ lemmas }: { lemmas: Array<Lemma> }) {
 type AddNoteDialogProps = {
   open: boolean;
   setOpen: Dispatch<boolean>;
-  noteRequest?: AddNoteRequest;
+  addLemmaRequest?: AddLemmaRequest;
   toast: ToastFunction;
+  setLemmaNotes: Dispatch<SetStateAction<LemmaNoteInfo[]>>;
 };
 
-function AddNoteDialog({ open, setOpen, noteRequest, toast }: AddNoteDialogProps) {
+function AddNoteDialog({
+  open,
+  setOpen,
+  addLemmaRequest,
+  setLemmaNotes,
+  toast,
+}: AddNoteDialogProps) {
   return (
     <DialogModal open={open} onOpenChange={setOpen} widthVariant={DialogWidth.Large}>
       <Dialog.Title className="mb-2.5 text-2xl font-bold text-blue">Add note to Anki</Dialog.Title>
 
-      {noteRequest === undefined ? (
+      {addLemmaRequest === undefined ? (
         <div className="flex p-8 text-2xl gap-5 justify-center place-items-center">
           <div>
             <LoadingIcon className="w-8 h-8" />
@@ -169,7 +187,12 @@ function AddNoteDialog({ open, setOpen, noteRequest, toast }: AddNoteDialogProps
           <div>Loading...</div>
         </div>
       ) : (
-        <AddNoteForm noteRequest={noteRequest} setOpen={setOpen} toast={toast} />
+        <AddNoteForm
+          addLemmaRequest={addLemmaRequest}
+          setLemmaNotes={setLemmaNotes}
+          setOpen={setOpen}
+          toast={toast}
+        />
       )}
     </DialogModal>
   );
@@ -195,9 +218,10 @@ mutation AddAnkiNote($note: AddNoteRequestInput!) {
 `);
 
 type AddNoteFormProps = {
-  noteRequest: AddNoteRequest;
+  addLemmaRequest: AddLemmaRequest;
   toast: ToastFunction;
   setOpen: Dispatch<boolean>;
+  setLemmaNotes: Dispatch<SetStateAction<LemmaNoteInfo[]>>;
 };
 
 type Note = {
@@ -211,64 +235,80 @@ type NoteField = {
   value: string;
 };
 
-function AddNoteForm({ noteRequest, setOpen, toast }: AddNoteFormProps) {
+function AddNoteForm({ addLemmaRequest, setOpen, setLemmaNotes, toast }: AddNoteFormProps) {
   const note: Note = useMemo(() => {
     return {
-      fields: noteRequest.fields.map((field) => ({
+      fields: addLemmaRequest.note.fields.map((field) => ({
         name: field.name,
         value: field.value,
       })),
       audioURL: '',
       tags: [],
     };
-  }, [noteRequest]);
+  }, [addLemmaRequest]);
   const [addNote] = useMutation(ADD_ANKI_NOTE, {
     // we passe empty onError because in this case apollo will not throw in case if network error for some reason
     onError: () => {},
   });
-  const handleSubmit = useCallback(async (values: Note, helpers: FormikHelpers<Note>) => {
-    console.log(values);
-    const { data, errors } = await addNote({
-      variables: {
-        note: note,
-      },
-    });
-    if (errors) {
-      apolloErrorToast(errors, `${AddNoteFailedActionTitle}: `, { toast: toast });
-      return;
-    }
-    if (data?.addAnkiNote.ankiError) {
-      toast(`${AddNoteFailedActionTitle}: problems with anki-connect`, {
-        type: 'error',
+  const handleSubmit = useCallback(
+    async (values: Note, helpers: FormikHelpers<Note>) => {
+      const { data, errors } = await addNote({
+        variables: {
+          note: values,
+        },
       });
-    }
-    const userError = data?.addAnkiNote.error;
-    if (userError) {
-      switch (userError.__typename) {
-        case 'AnkiAddNoteDuplicateFound':
-          helpers.setErrors({
-            fields: [{ value: 'duplicated found' }],
-          });
-          toast(`${AddNoteFailedActionTitle}: similar note already exists in Anki`, {
-            type: 'error',
-          });
-          return;
-        case 'AnkiIncompleteConfiguration':
-          toast(`${AddNoteFailedActionTitle}: anki configuration is incomplete`, {
-            type: 'error',
-          });
-          return;
-        case undefined:
-          throw 'unreachable';
-        default: {
-          const _exhaustiveCheck: never = userError;
-          return _exhaustiveCheck;
+      if (errors) {
+        apolloErrorToast(errors, `${AddNoteFailedActionTitle}: `, { toast: toast });
+        return;
+      }
+      if (data?.addAnkiNote.ankiError) {
+        toast(`${AddNoteFailedActionTitle}: problems with anki-connect`, {
+          type: 'error',
+        });
+      }
+      const userError = data?.addAnkiNote.error;
+      if (userError) {
+        switch (userError.__typename) {
+          case 'AnkiAddNoteDuplicateFound':
+            helpers.setErrors({
+              fields: [{ value: 'duplicated found' }],
+            });
+            toast(`${AddNoteFailedActionTitle}: similar note already exists in Anki`, {
+              type: 'error',
+            });
+            return;
+          case 'AnkiIncompleteConfiguration':
+            toast(`${AddNoteFailedActionTitle}: anki configuration is incomplete`, {
+              type: 'error',
+            });
+            return;
+          case undefined:
+            throw 'unreachable';
+          default: {
+            const _exhaustiveCheck: never = userError;
+            return _exhaustiveCheck;
+          }
         }
       }
-    }
-    toast('Note added to Anki');
-    setOpen(false);
-  }, []);
+      toast('Note added to Anki', { type: 'success' });
+      setOpen(false);
+      setLemmaNotes((lemmas) =>
+        lemmas.map((lemma) => {
+          if (lemma === addLemmaRequest.lemma) {
+            return {
+              lemma: lemma.lemma,
+              // TODO: need to get ID from add note
+              noteID: 'new',
+            };
+          }
+          {
+            return lemma;
+          }
+        }),
+      );
+    },
+    [addLemmaRequest, setLemmaNotes, setOpen, toast],
+  );
   return (
     <Formik<Note> initialValues={note} onSubmit={handleSubmit}>
       {(props) => (
@@ -276,7 +316,7 @@ function AddNoteForm({ noteRequest, setOpen, toast }: AddNoteFormProps) {
           <FieldArray
             name="fields"
             render={() =>
-              noteRequest.fields.map((field, index) => (
+              addLemmaRequest.note.fields.map((field, index) => (
                 <FormTextField key={field.name} name={`fields.${index}.value`} label={field.name} />
               ))
             }

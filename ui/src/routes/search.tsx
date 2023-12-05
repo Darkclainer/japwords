@@ -9,7 +9,7 @@ import {
 } from 'react-router-dom';
 
 import { gql } from '../api/__generated__/gql';
-import { Lemma } from '../api/__generated__/graphql';
+import { LemmaNoteInfo } from '../api/__generated__/graphql';
 import apolloClient from '../apollo-client';
 import LensIcon from '../components/Icons/LensIcon';
 import LemmaList from '../components/LemmaList';
@@ -19,47 +19,48 @@ const GET_LEMMAS = gql(`
   query GetLemmas($query: String!) {
     Lemmas(query: $query) {
       lemmas {
-        slug {
-          word
-          hiragana
-          furigana {
-            kanji
+        noteID
+        lemma {
+          slug {
+            word
             hiragana
+            furigana {
+              kanji
+              hiragana
+            }
+            pitchShapes {
+              hiragana
+              directions
+            } 
           }
-          pitchShapes {
-            hiragana
-            directions
-          } 
-        }
-        tags
-        forms {
-          word
-          hiragana
-          furigana {
-            kanji
-            hiragana
-          }
-          pitchShapes {
-            hiragana
-            directions
-          } 
-        }
-        senses {
-          definition
-          partOfSpeech
           tags
-        }
-        audio {
-          type
-          source
-        }
-      } 
+          forms {
+            word
+            hiragana
+            furigana {
+              kanji
+              hiragana
+            }
+            pitchShapes {
+              hiragana
+              directions
+            } 
+          }
+          definitions
+          partsOfSpeech
+          senseTags
+          audio {
+            type
+            source
+          }
+        } 
+      }
     }
   }
 `);
 
 export async function loader({ params }: LoaderFunctionArgs): Promise<{
-  lemmas: Array<Lemma> | undefined;
+  lemmas: LemmaNoteInfo[] | undefined;
   query: string;
 }> {
   const query = params.query ?? '';
@@ -136,7 +137,7 @@ export default function Search() {
       >
         {lemmas && lemmas.length != 0 ? (
           <div className="flex flex-1 flex-col">
-            <LemmaList lemmas={lemmas} />
+            <LemmaList lemmaNotes={lemmas} />
           </div>
         ) : (
           <div className="flex flex-1 flex-col justify-center">

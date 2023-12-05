@@ -1,12 +1,10 @@
-type Lemmas {
-  lemmas: [Lemma!]!
-}
-
-type Lemma {
+type Lemma{
   slug: Word!
   tags: [String!]!
   forms: [Word!]!
-  senses: [Sense!]!
+  definitions: [String!]!
+  partsOfSpeech: [String!]!
+  senseTags: [String!]!
   # Links to audio files
   audio: [Audio!]!
 }
@@ -17,7 +15,6 @@ type Word {
   furigana: [Furigana!]!
   pitchShapes: [PitchShape!]!
 }
-
 type Furigana {
   kanji: String!
   hiragana: String!
@@ -40,16 +37,11 @@ type Audio {
   source: String!
 }
 
-type Sense {
-  definition: [String!]!
-  partOfSpeech: [String!]!
-  tags: [String!]!
-}
 
-input ProjectedLemmaInput {
-  slug: ProjectedWordInput!
+input LemmaInput {
+  slug: WordInput!
   tags: [String!]!
-  forms: [ProjectedWordInput!]!
+  forms: [WordInput!]!
   definitions: [String!]!
   partsOfSpeech: [String!]!
   senseTags: [String!]!
@@ -57,7 +49,7 @@ input ProjectedLemmaInput {
   audio: [AudioInput!]!
 }
 
-input ProjectedWordInput {
+input WordInput {
   word: String!
   hiragana: String!
   furigana: [FuriganaInput!]!

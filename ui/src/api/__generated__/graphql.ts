@@ -235,15 +235,33 @@ export type FuriganaInput = {
 export type Lemma = {
   __typename?: 'Lemma';
   audio: Array<Audio>;
+  definitions: Array<Scalars['String']['output']>;
   forms: Array<Word>;
-  senses: Array<Sense>;
+  partsOfSpeech: Array<Scalars['String']['output']>;
+  senseTags: Array<Scalars['String']['output']>;
   slug: Word;
   tags: Array<Scalars['String']['output']>;
 };
 
-export type Lemmas = {
-  __typename?: 'Lemmas';
-  lemmas: Array<Lemma>;
+export type LemmaInput = {
+  audio: Array<AudioInput>;
+  definitions: Array<Scalars['String']['input']>;
+  forms: Array<WordInput>;
+  partsOfSpeech: Array<Scalars['String']['input']>;
+  senseTags: Array<Scalars['String']['input']>;
+  slug: WordInput;
+  tags: Array<Scalars['String']['input']>;
+};
+
+export type LemmaNoteInfo = {
+  __typename?: 'LemmaNoteInfo';
+  lemma: Lemma;
+  noteID: Scalars['String']['output'];
+};
+
+export type LemmasResult = {
+  __typename?: 'LemmasResult';
+  lemmas: Array<LemmaNoteInfo>;
 };
 
 export type Mutation = {
@@ -303,30 +321,13 @@ export type PitchShapeInput = {
   hiragana: Scalars['String']['input'];
 };
 
-export type PrepareProjectedLemmaError = AnkiIncompleteConfiguration;
+export type PrepareLemmaError = AnkiIncompleteConfiguration;
 
-export type PrepareProjectedLemmaResult = {
-  __typename?: 'PrepareProjectedLemmaResult';
+export type PrepareLemmaResult = {
+  __typename?: 'PrepareLemmaResult';
   ankiError?: Maybe<AnkiError>;
-  error?: Maybe<PrepareProjectedLemmaError>;
+  error?: Maybe<PrepareLemmaError>;
   request?: Maybe<AddNoteRequest>;
-};
-
-export type ProjectedLemmaInput = {
-  audio: Array<AudioInput>;
-  definitions: Array<Scalars['String']['input']>;
-  forms: Array<ProjectedWordInput>;
-  partsOfSpeech: Array<Scalars['String']['input']>;
-  senseTags: Array<Scalars['String']['input']>;
-  slug: ProjectedWordInput;
-  tags: Array<Scalars['String']['input']>;
-};
-
-export type ProjectedWordInput = {
-  furigana: Array<FuriganaInput>;
-  hiragana: Scalars['String']['input'];
-  pitchShapes: Array<PitchShapeInput>;
-  word: Scalars['String']['input'];
 };
 
 export type Query = {
@@ -334,8 +335,8 @@ export type Query = {
   Anki: Anki;
   AnkiConfig: AnkiConfig;
   AnkiConfigState: AnkiConfigStateResult;
-  Lemmas?: Maybe<Lemmas>;
-  PrepareProjectedLemma: PrepareProjectedLemmaResult;
+  Lemmas?: Maybe<LemmasResult>;
+  PrepareLemma: PrepareLemmaResult;
   RenderFields: RenderedFields;
 };
 
@@ -345,8 +346,8 @@ export type QueryLemmasArgs = {
 };
 
 
-export type QueryPrepareProjectedLemmaArgs = {
-  lemma?: InputMaybe<ProjectedLemmaInput>;
+export type QueryPrepareLemmaArgs = {
+  lemma?: InputMaybe<LemmaInput>;
 };
 
 
@@ -367,13 +368,6 @@ export type RenderedFields = {
   fields: Array<RenderedField>;
   template: Scalars['String']['output'];
   templateError?: Maybe<Scalars['String']['output']>;
-};
-
-export type Sense = {
-  __typename?: 'Sense';
-  definition: Array<Scalars['String']['output']>;
-  partOfSpeech: Array<Scalars['String']['output']>;
-  tags: Array<Scalars['String']['output']>;
 };
 
 export type SetAnkiConfigConnectionInput = {
@@ -427,17 +421,24 @@ export type Word = {
   word: Scalars['String']['output'];
 };
 
+export type WordInput = {
+  furigana: Array<FuriganaInput>;
+  hiragana: Scalars['String']['input'];
+  pitchShapes: Array<PitchShapeInput>;
+  word: Scalars['String']['input'];
+};
+
 export type GetHealthStatusQueryVariables = Exact<{ [key: string]: never; }>;
 
 
 export type GetHealthStatusQuery = { __typename?: 'Query', AnkiConfigState: { __typename?: 'AnkiConfigStateResult', ankiConfigState?: { __typename?: 'AnkiConfigState', version: number, deckExists: boolean, noteTypeExists: boolean, noteHasAllFields: boolean, orderDefined: boolean } | null, error?: { __typename?: 'AnkiCollectionUnavailable', version: number, message: string } | { __typename?: 'AnkiConnectionError', message: string } | { __typename?: 'AnkiForbiddenOrigin', message: string } | { __typename?: 'AnkiInvalidAPIKey', version: number, message: string } | { __typename?: 'AnkiUnknownError', message: string } | null } };
 
-export type PrepareProjectedLemmaQueryVariables = Exact<{
-  lemma?: InputMaybe<ProjectedLemmaInput>;
+export type PrepareLemmaQueryVariables = Exact<{
+  lemma?: InputMaybe<LemmaInput>;
 }>;
 
 
-export type PrepareProjectedLemmaQuery = { __typename?: 'Query', PrepareProjectedLemma: { __typename?: 'PrepareProjectedLemmaResult', request?: { __typename?: 'AddNoteRequest', tags: Array<string>, audioURL: string, fields: Array<{ __typename?: 'AddNoteField', name: string, value: string }> } | null, error?: { __typename?: 'AnkiIncompleteConfiguration', message: string } | null, ankiError?: { __typename: 'AnkiCollectionUnavailable', message: string } | { __typename: 'AnkiConnectionError', message: string } | { __typename: 'AnkiForbiddenOrigin', message: string } | { __typename: 'AnkiInvalidAPIKey', message: string } | { __typename: 'AnkiUnknownError', message: string } | null } };
+export type PrepareLemmaQuery = { __typename?: 'Query', PrepareLemma: { __typename?: 'PrepareLemmaResult', request?: { __typename?: 'AddNoteRequest', tags: Array<string>, audioURL: string, fields: Array<{ __typename?: 'AddNoteField', name: string, value: string }> } | null, error?: { __typename?: 'AnkiIncompleteConfiguration', message: string } | null, ankiError?: { __typename: 'AnkiCollectionUnavailable', message: string } | { __typename: 'AnkiConnectionError', message: string } | { __typename: 'AnkiForbiddenOrigin', message: string } | { __typename: 'AnkiInvalidAPIKey', message: string } | { __typename: 'AnkiUnknownError', message: string } | null } };
 
 export type AddAnkiNoteMutationVariables = Exact<{
   note: AddNoteRequestInput;
@@ -533,11 +534,11 @@ export type GetLemmasQueryVariables = Exact<{
 }>;
 
 
-export type GetLemmasQuery = { __typename?: 'Query', Lemmas?: { __typename?: 'Lemmas', lemmas: Array<{ __typename?: 'Lemma', tags: Array<string>, slug: { __typename?: 'Word', word: string, hiragana: string, furigana: Array<{ __typename?: 'Furigana', kanji: string, hiragana: string }>, pitchShapes: Array<{ __typename?: 'PitchShape', hiragana: string, directions: Array<AccentDirection> }> }, forms: Array<{ __typename?: 'Word', word: string, hiragana: string, furigana: Array<{ __typename?: 'Furigana', kanji: string, hiragana: string }>, pitchShapes: Array<{ __typename?: 'PitchShape', hiragana: string, directions: Array<AccentDirection> }> }>, senses: Array<{ __typename?: 'Sense', definition: Array<string>, partOfSpeech: Array<string>, tags: Array<string> }>, audio: Array<{ __typename?: 'Audio', type: string, source: string }> }> } | null };
+export type GetLemmasQuery = { __typename?: 'Query', Lemmas?: { __typename?: 'LemmasResult', lemmas: Array<{ __typename?: 'LemmaNoteInfo', noteID: string, lemma: { __typename?: 'Lemma', tags: Array<string>, definitions: Array<string>, partsOfSpeech: Array<string>, senseTags: Array<string>, slug: { __typename?: 'Word', word: string, hiragana: string, furigana: Array<{ __typename?: 'Furigana', kanji: string, hiragana: string }>, pitchShapes: Array<{ __typename?: 'PitchShape', hiragana: string, directions: Array<AccentDirection> }> }, forms: Array<{ __typename?: 'Word', word: string, hiragana: string, furigana: Array<{ __typename?: 'Furigana', kanji: string, hiragana: string }>, pitchShapes: Array<{ __typename?: 'PitchShape', hiragana: string, directions: Array<AccentDirection> }> }>, audio: Array<{ __typename?: 'Audio', type: string, source: string }> } }> } | null };
 
 
 export const GetHealthStatusDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetHealthStatus"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"AnkiConfigState"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"ankiConfigState"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"version"}},{"kind":"Field","name":{"kind":"Name","value":"deckExists"}},{"kind":"Field","name":{"kind":"Name","value":"noteTypeExists"}},{"kind":"Field","name":{"kind":"Name","value":"noteHasAllFields"}},{"kind":"Field","name":{"kind":"Name","value":"orderDefined"}}]}},{"kind":"Field","name":{"kind":"Name","value":"error"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"InlineFragment","typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"AnkiConnectionError"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"message"}}]}},{"kind":"InlineFragment","typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"AnkiInvalidAPIKey"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"version"}},{"kind":"Field","name":{"kind":"Name","value":"message"}}]}},{"kind":"InlineFragment","typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"AnkiCollectionUnavailable"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"version"}},{"kind":"Field","name":{"kind":"Name","value":"message"}}]}},{"kind":"InlineFragment","typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"AnkiForbiddenOrigin"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"message"}}]}},{"kind":"InlineFragment","typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Error"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"message"}}]}}]}}]}}]}}]} as unknown as DocumentNode<GetHealthStatusQuery, GetHealthStatusQueryVariables>;
-export const PrepareProjectedLemmaDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"PrepareProjectedLemma"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"lemma"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"ProjectedLemmaInput"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"PrepareProjectedLemma"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"lemma"},"value":{"kind":"Variable","name":{"kind":"Name","value":"lemma"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"request"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"fields"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"value"}}]}},{"kind":"Field","name":{"kind":"Name","value":"tags"}},{"kind":"Field","name":{"kind":"Name","value":"audioURL"}}]}},{"kind":"Field","name":{"kind":"Name","value":"error"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"InlineFragment","typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"AnkiIncompleteConfiguration"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"message"}}]}},{"kind":"InlineFragment","typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Error"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"message"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"ankiError"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"__typename"}},{"kind":"InlineFragment","typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Error"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"message"}}]}}]}}]}}]}}]} as unknown as DocumentNode<PrepareProjectedLemmaQuery, PrepareProjectedLemmaQueryVariables>;
+export const PrepareLemmaDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"PrepareLemma"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"lemma"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"LemmaInput"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"PrepareLemma"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"lemma"},"value":{"kind":"Variable","name":{"kind":"Name","value":"lemma"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"request"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"fields"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"value"}}]}},{"kind":"Field","name":{"kind":"Name","value":"tags"}},{"kind":"Field","name":{"kind":"Name","value":"audioURL"}}]}},{"kind":"Field","name":{"kind":"Name","value":"error"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"InlineFragment","typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"AnkiIncompleteConfiguration"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"message"}}]}},{"kind":"InlineFragment","typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Error"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"message"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"ankiError"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"__typename"}},{"kind":"InlineFragment","typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Error"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"message"}}]}}]}}]}}]}}]} as unknown as DocumentNode<PrepareLemmaQuery, PrepareLemmaQueryVariables>;
 export const AddAnkiNoteDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"AddAnkiNote"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"note"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"AddNoteRequestInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"addAnkiNote"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"request"},"value":{"kind":"Variable","name":{"kind":"Name","value":"note"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"error"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"InlineFragment","typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"AnkiIncompleteConfiguration"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"message"}}]}},{"kind":"InlineFragment","typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"AnkiAddNoteDuplicateFound"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"message"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"ankiError"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"InlineFragment","typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Error"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"message"}}]}}]}}]}}]}}]} as unknown as DocumentNode<AddAnkiNoteMutation, AddAnkiNoteMutationVariables>;
 export const GetConnectionConfigDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetConnectionConfig"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"AnkiConfig"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"addr"}},{"kind":"Field","name":{"kind":"Name","value":"apiKey"}}]}}]}}]} as unknown as DocumentNode<GetConnectionConfigQuery, GetConnectionConfigQueryVariables>;
 export const UpdateConnectionConfigDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"UpdateConnectionConfig"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"addr"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"apiKey"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"setAnkiConfigConnection"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"addr"},"value":{"kind":"Variable","name":{"kind":"Name","value":"addr"}}},{"kind":"ObjectField","name":{"kind":"Name","value":"apiKey"},"value":{"kind":"Variable","name":{"kind":"Name","value":"apiKey"}}}]}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"error"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"InlineFragment","typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"ValidationError"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"paths"}},{"kind":"Field","name":{"kind":"Name","value":"message"}}]}}]}}]}}]}}]} as unknown as DocumentNode<UpdateConnectionConfigMutation, UpdateConnectionConfigMutationVariables>;
@@ -552,4 +553,4 @@ export const UpdateMappingDocument = {"kind":"Document","definitions":[{"kind":"
 export const GetAnkiNotesDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetAnkiNotes"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"Anki"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"notes"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"notes"}},{"kind":"Field","name":{"kind":"Name","value":"error"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"__typename"}}]}}]}}]}}]}}]} as unknown as DocumentNode<GetAnkiNotesQuery, GetAnkiNotesQueryVariables>;
 export const SetAnkiConfigCurrentNoteDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"SetAnkiConfigCurrentNote"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"name"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"setAnkiConfigNote"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"name"},"value":{"kind":"Variable","name":{"kind":"Name","value":"name"}}}]}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"error"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"message"}}]}}]}}]}}]} as unknown as DocumentNode<SetAnkiConfigCurrentNoteMutation, SetAnkiConfigCurrentNoteMutationVariables>;
 export const CreateDefaultAnkiNoteDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"CreateDefaultAnkiNote"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"name"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"createDefaultAnkiNote"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"name"},"value":{"kind":"Variable","name":{"kind":"Name","value":"name"}}}]}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"ankiError"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"InlineFragment","typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Error"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"message"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"error"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"InlineFragment","typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"CreateDefaultAnkiNoteAlreadyExists"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"message"}}]}},{"kind":"InlineFragment","typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"ValidationError"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"message"}}]}},{"kind":"InlineFragment","typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Error"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"message"}}]}}]}}]}}]}}]} as unknown as DocumentNode<CreateDefaultAnkiNoteMutation, CreateDefaultAnkiNoteMutationVariables>;
-export const GetLemmasDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetLemmas"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"query"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"Lemmas"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"query"},"value":{"kind":"Variable","name":{"kind":"Name","value":"query"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"lemmas"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"slug"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"word"}},{"kind":"Field","name":{"kind":"Name","value":"hiragana"}},{"kind":"Field","name":{"kind":"Name","value":"furigana"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"kanji"}},{"kind":"Field","name":{"kind":"Name","value":"hiragana"}}]}},{"kind":"Field","name":{"kind":"Name","value":"pitchShapes"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"hiragana"}},{"kind":"Field","name":{"kind":"Name","value":"directions"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"tags"}},{"kind":"Field","name":{"kind":"Name","value":"forms"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"word"}},{"kind":"Field","name":{"kind":"Name","value":"hiragana"}},{"kind":"Field","name":{"kind":"Name","value":"furigana"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"kanji"}},{"kind":"Field","name":{"kind":"Name","value":"hiragana"}}]}},{"kind":"Field","name":{"kind":"Name","value":"pitchShapes"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"hiragana"}},{"kind":"Field","name":{"kind":"Name","value":"directions"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"senses"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"definition"}},{"kind":"Field","name":{"kind":"Name","value":"partOfSpeech"}},{"kind":"Field","name":{"kind":"Name","value":"tags"}}]}},{"kind":"Field","name":{"kind":"Name","value":"audio"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"type"}},{"kind":"Field","name":{"kind":"Name","value":"source"}}]}}]}}]}}]}}]} as unknown as DocumentNode<GetLemmasQuery, GetLemmasQueryVariables>;
+export const GetLemmasDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetLemmas"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"query"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"Lemmas"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"query"},"value":{"kind":"Variable","name":{"kind":"Name","value":"query"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"lemmas"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"noteID"}},{"kind":"Field","name":{"kind":"Name","value":"lemma"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"slug"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"word"}},{"kind":"Field","name":{"kind":"Name","value":"hiragana"}},{"kind":"Field","name":{"kind":"Name","value":"furigana"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"kanji"}},{"kind":"Field","name":{"kind":"Name","value":"hiragana"}}]}},{"kind":"Field","name":{"kind":"Name","value":"pitchShapes"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"hiragana"}},{"kind":"Field","name":{"kind":"Name","value":"directions"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"tags"}},{"kind":"Field","name":{"kind":"Name","value":"forms"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"word"}},{"kind":"Field","name":{"kind":"Name","value":"hiragana"}},{"kind":"Field","name":{"kind":"Name","value":"furigana"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"kanji"}},{"kind":"Field","name":{"kind":"Name","value":"hiragana"}}]}},{"kind":"Field","name":{"kind":"Name","value":"pitchShapes"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"hiragana"}},{"kind":"Field","name":{"kind":"Name","value":"directions"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"definitions"}},{"kind":"Field","name":{"kind":"Name","value":"partsOfSpeech"}},{"kind":"Field","name":{"kind":"Name","value":"senseTags"}},{"kind":"Field","name":{"kind":"Name","value":"audio"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"type"}},{"kind":"Field","name":{"kind":"Name","value":"source"}}]}}]}}]}}]}}]}}]} as unknown as DocumentNode<GetLemmasQuery, GetLemmasQueryVariables>;

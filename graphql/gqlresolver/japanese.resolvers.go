@@ -6,17 +6,41 @@ package gqlresolver
 
 import (
 	"context"
+	"strconv"
 
 	"github.com/Darkclainer/japwords/graphql/gqlmodel"
 )
 
 // Lemmas is the resolver for the Lemmas field.
-func (r *queryResolver) Lemmas(ctx context.Context, query string) (*gqlmodel.Lemmas, error) {
+func (r *queryResolver) Lemmas(ctx context.Context, query string) (*gqlmodel.LemmasResult, error) {
 	lemmas, err := r.multiDict.Query(ctx, query)
 	if err != nil {
 		return nil, err
 	}
-	return &gqlmodel.Lemmas{
-		Lemmas: lemmas,
+	projectedLemmas := expandLemmas(lemmas)
+	exstingIds, err := r.ankiClient.SearchProjectedLemmas(ctx, projectedLemmas)
+	var noteIds []string
+	if err == nil {
+		noteIds = make([]string, len(exstingIds))
+		for i, intID := range exstingIds {
+			if intID == 0 {
+				noteIds[i] = ""
+				continue
+			}
+			noteIds[i] = strconv.FormatInt(intID, 10)
+		}
+	}
+	result := make([]*gqlmodel.LemmaNoteInfo, len(projectedLemmas))
+	for i, projectedLemma := range projectedLemmas {
+		result[i] = &gqlmodel.LemmaNoteInfo{
+			Lemma:  projectedLemma,
+			NoteID: "",
+		}
+		if len(noteIds) != 0 {
+			result[i].NoteID = noteIds[i]
+		}
+	}
+	return &gqlmodel.LemmasResult{
+		Lemmas: result,
 	}, nil
 }

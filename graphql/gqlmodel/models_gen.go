@@ -28,8 +28,8 @@ type Error interface {
 	GetMessage() string
 }
 
-type PrepareProjectedLemmaError interface {
-	IsPrepareProjectedLemmaError()
+type PrepareLemmaError interface {
+	IsPrepareLemmaError()
 }
 
 type Anki struct {
@@ -132,7 +132,7 @@ type AnkiIncompleteConfiguration struct {
 func (AnkiIncompleteConfiguration) IsError()                {}
 func (this AnkiIncompleteConfiguration) GetMessage() string { return this.Message }
 
-func (AnkiIncompleteConfiguration) IsPrepareProjectedLemmaError() {}
+func (AnkiIncompleteConfiguration) IsPrepareLemmaError() {}
 
 func (AnkiIncompleteConfiguration) IsAnkiAddNoteError() {}
 
@@ -216,14 +216,19 @@ type CreateDefaultAnkiNoteResult struct {
 	Error     CreateDefaultAnkiNoteError `json:"error,omitempty"`
 }
 
-type Lemmas struct {
-	Lemmas []*lemma.Lemma `json:"lemmas"`
+type LemmaNoteInfo struct {
+	Lemma  *lemma.ProjectedLemma `json:"lemma"`
+	NoteID string                `json:"noteID"`
 }
 
-type PrepareProjectedLemmaResult struct {
-	Request   *anki.AddNoteRequest       `json:"request,omitempty"`
-	Error     PrepareProjectedLemmaError `json:"error,omitempty"`
-	AnkiError AnkiError                  `json:"ankiError,omitempty"`
+type LemmasResult struct {
+	Lemmas []*LemmaNoteInfo `json:"lemmas"`
+}
+
+type PrepareLemmaResult struct {
+	Request   *anki.AddNoteRequest `json:"request,omitempty"`
+	Error     PrepareLemmaError    `json:"error,omitempty"`
+	AnkiError AnkiError            `json:"ankiError,omitempty"`
 }
 
 type RenderedField struct {

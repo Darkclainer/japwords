@@ -106,7 +106,7 @@ type RenderedField {
 }
 
 extend type Query {
-  PrepareProjectedLemma(lemma: ProjectedLemmaInput): PrepareProjectedLemmaResult!
+  PrepareLemma(lemma: LemmaInput): PrepareLemmaResult!
 }
 
 type AddNoteRequest {
@@ -120,12 +120,12 @@ type AddNoteField {
   value: String!
 }
 
-union PrepareProjectedLemmaError = AnkiIncompleteConfiguration
+union PrepareLemmaError = AnkiIncompleteConfiguration
 
-type PrepareProjectedLemmaResult {
+type PrepareLemmaResult {
   request: AddNoteRequest
   # TODO: can be something like not ready or render failed?
-  error: PrepareProjectedLemmaError
+  error: PrepareLemmaError
   ankiError: AnkiError
 }
 

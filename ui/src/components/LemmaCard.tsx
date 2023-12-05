@@ -1,38 +1,44 @@
 import { clsx } from 'clsx';
 import { ReactNode, useRef } from 'react';
 
-import { AccentDirection, Audio, Furigana, Lemma, Sense, Word } from '../api/__generated__/graphql';
+import {
+  AccentDirection,
+  Audio,
+  Furigana,
+  LemmaNoteInfo,
+  Word,
+} from '../api/__generated__/graphql';
+import { LemmaBag } from '../lib/lemmas';
 import { ToastFunction } from '../lib/styled-toast';
 import PlayIcon from './Icons/PlayIcon';
 
 export type LemmaCardProps = {
-  lemma: Lemma;
+  lemmaBag: LemmaBag;
   toast: ToastFunction;
-  previewLemma: (lemma: Lemma, senseIndex: number) => Promise<void>;
+  previewLemma: (lemma: LemmaNoteInfo) => Promise<void>;
 };
 
-export default function LemmaCard({ lemma, toast, previewLemma }: LemmaCardProps) {
-  const preview = (senseIndex: number) => previewLemma(lemma, senseIndex);
+export default function LemmaCard({ lemmaBag, toast, previewLemma }: LemmaCardProps) {
   return (
     <div className="shadow-md rounded-md bg-gray my-4 px-10 py-2">
       <div className="flex flex-col divide-y divide-blue">
         <LemmaCardItem render={true}>
-          <LemmaTitle word={lemma.slug} toast={toast} />
+          <LemmaTitle word={lemmaBag.slug} toast={toast} />
         </LemmaCardItem>
-        <LemmaCardItem render={lemma.slug.hiragana !== '' || lemma.audio.length > 0}>
+        <LemmaCardItem render={lemmaBag.slug.hiragana !== '' || lemmaBag.audio.length > 0}>
           <div className="flex flex-row justify-between items-start">
-            <Hiragana word={lemma.slug} />
-            {lemma.audio.length > 0 && <AudioControls audios={lemma.audio} />}
+            <Hiragana word={lemmaBag.slug} />
+            {lemmaBag.audio.length > 0 && <AudioControls audios={lemmaBag.audio} />}
           </div>
         </LemmaCardItem>
-        <LemmaCardItem render={lemma.senses.length > 0} className="py-3">
-          <Senses senses={lemma.senses} previewLemma={preview} />
+        <LemmaCardItem render={lemmaBag.lemmas.length > 0} className="py-3">
+          <Senses projectedLemmas={lemmaBag.lemmas} previewLemma={previewLemma} />
         </LemmaCardItem>
-        <LemmaCardItem render={lemma.forms.length > 0}>
-          <LemmaForms forms={lemma.forms} />
+        <LemmaCardItem render={lemmaBag.forms.length > 0}>
+          <LemmaForms forms={lemmaBag.forms} />
         </LemmaCardItem>
-        <LemmaCardItem render={lemma.tags.length > 0}>
-          <Tags tags={lemma.tags} />
+        <LemmaCardItem render={lemmaBag.tags.length > 0}>
+          <Tags tags={lemmaBag.tags} />
         </LemmaCardItem>
       </div>
     </div>
@@ -103,34 +109,43 @@ function Hiragana({ word }: { word: Word }) {
 }
 
 function Senses({
-  senses,
+  projectedLemmas,
   previewLemma,
 }: {
-  senses: Sense[];
-  previewLemma: (senseIndex: number) => Promise<void>;
+  projectedLemmas: LemmaNoteInfo[];
+  previewLemma: (lemma: LemmaNoteInfo) => Promise<void>;
 }) {
   return (
     <ol className="text-lg -mx-4">
-      {senses.map((sense, index) => {
+      {projectedLemmas.map((projectedLemma, index) => {
+        const lemma = projectedLemma.lemma;
         return (
           <li
             className="mb-3 p-4 last:mb-0 hover:bg-[#fdfdfd] rounded-xl flex flex-row justify-between"
             key={index}
           >
             <div>
-              <p className="text-blue">{sense.partOfSpeech.join(', ')}</p>
+              <p className="text-blue">{lemma.partsOfSpeech.join(', ')}</p>
               <p className="text-2xl">
-                {index + 1}. {sense.definition.join('; ')}
+                {index + 1}. {lemma.definitions.join('; ')}
               </p>
-              <p className="text-dark-gray">{sense.tags.join(', ')}</p>
+              <p className="text-dark-gray">{lemma.senseTags.join(', ')}</p>
             </div>
-            <div className="pl-16 w-max shrink-0 flex items-center">
+            <div
+              className={clsx(
+                'pl-16 w-max shrink-0 flex flex-col place-content-center gap-1',
+                projectedLemma.noteID ? 'text-blue/60' : 'text-blue',
+              )}
+            >
               <button
-                className="h-full text-blue underline underline-offset-4 hover:text-green active:text-dark-green transition-color transition-colors duration-300"
-                onClick={() => previewLemma(index)}
+                className="underline underline-offset-4 hover:text-green active:text-dark-green transition-color transition-colors duration-300"
+                onClick={() => previewLemma(projectedLemma)}
               >
                 Add to Anki
               </button>
+              <div className="text-xs self-center">
+                {projectedLemma.noteID && '(already exists)'}
+              </div>
             </div>
           </li>
         );

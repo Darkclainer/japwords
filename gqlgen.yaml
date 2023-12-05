@@ -59,13 +59,10 @@ models:
       - github.com/Darkclainer/japwords/pkg/lemma.AccentDirection
   Lemma:
     model:
-      - github.com/Darkclainer/japwords/pkg/lemma.Lemma
+      - github.com/Darkclainer/japwords/pkg/lemma.ProjectedLemma
   Word:
     model:
-      - github.com/Darkclainer/japwords/pkg/lemma.Word
-  Sense:
-    model:
-      - github.com/Darkclainer/japwords/pkg/lemma.WordSense
+      - github.com/Darkclainer/japwords/pkg/lemma.ProjectedWord
   Furigana:
     model:
       - github.com/Darkclainer/japwords/pkg/lemma.FuriganaChar
@@ -73,10 +70,10 @@ models:
     model:
       - github.com/Darkclainer/japwords/pkg/lemma.PitchShape
 
-  ProjectedLemmaInput:
+  LemmaInput:
     model:
       - github.com/Darkclainer/japwords/pkg/lemma.ProjectedLemma
-  ProjectedWordInput:
+  WordInput:
     model:
       - github.com/Darkclainer/japwords/pkg/lemma.ProjectedWord
   FuriganaInput:

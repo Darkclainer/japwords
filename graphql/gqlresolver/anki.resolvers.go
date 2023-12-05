@@ -307,26 +307,26 @@ func (r *queryResolver) RenderFields(ctx context.Context, fields []string, templ
 	}, nil
 }
 
-// PrepareProjectedLemma is the resolver for the PrepareProjectedLemma field.
-func (r *queryResolver) PrepareProjectedLemma(ctx context.Context, lemma *lemma.ProjectedLemma) (*gqlmodel.PrepareProjectedLemmaResult, error) {
+// PrepareLemma is the resolver for the PrepareLemma field.
+func (r *queryResolver) PrepareLemma(ctx context.Context, lemma *lemma.ProjectedLemma) (*gqlmodel.PrepareLemmaResult, error) {
 	request, err := r.ankiClient.PrepareProjectedLemma(ctx, lemma)
 	if err != nil {
 		if errors.Is(err, anki.ErrIncompleteConfiguration) {
-			return &gqlmodel.PrepareProjectedLemmaResult{
+			return &gqlmodel.PrepareLemmaResult{
 				Error: &gqlmodel.AnkiIncompleteConfiguration{
 					Message: err.Error(),
 				},
 			}, nil
 		}
 		if ankiErr, _ := convertAnkiError(err); ankiErr != nil {
-			return &gqlmodel.PrepareProjectedLemmaResult{
+			return &gqlmodel.PrepareLemmaResult{
 				AnkiError: ankiErr,
 			}, nil
 		}
 
 		return nil, err
 	}
-	return &gqlmodel.PrepareProjectedLemmaResult{
+	return &gqlmodel.PrepareLemmaResult{
 		Request: request,
 	}, nil
 }
@@ -340,8 +340,6 @@ func (r *Resolver) Mutation() gqlgenerated.MutationResolver { return &mutationRe
 // Query returns gqlgenerated.QueryResolver implementation.
 func (r *Resolver) Query() gqlgenerated.QueryResolver { return &queryResolver{r} }
 
-type (
-	ankiResolver     struct{ *Resolver }
-	mutationResolver struct{ *Resolver }
-	queryResolver    struct{ *Resolver }
-)
+type ankiResolver struct{ *Resolver }
+type mutationResolver struct{ *Resolver }
+type queryResolver struct{ *Resolver }
