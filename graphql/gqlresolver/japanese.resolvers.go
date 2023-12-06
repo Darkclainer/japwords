@@ -17,22 +17,15 @@ func (r *queryResolver) Lemmas(ctx context.Context, query string) (*gqlmodel.Lem
 		return nil, err
 	}
 	projectedLemmas := expandLemmas(lemmas)
-	exstingIds, err := r.ankiClient.SearchProjectedLemmas(ctx, projectedLemmas)
-	var noteIds []string
-	if err == nil {
-		noteIds = make([]string, len(exstingIds))
-		for i, intID := range exstingIds {
-			noteIds[i] = intID.String()
-		}
-	}
+	exstingIds, _ := r.ankiClient.SearchProjectedLemmas(ctx, projectedLemmas)
 	result := make([]*gqlmodel.LemmaNoteInfo, len(projectedLemmas))
 	for i, projectedLemma := range projectedLemmas {
 		result[i] = &gqlmodel.LemmaNoteInfo{
 			Lemma:  projectedLemma,
 			NoteID: "",
 		}
-		if len(noteIds) != 0 {
-			result[i].NoteID = noteIds[i]
+		if len(exstingIds) != 0 {
+			result[i].NoteID = exstingIds[i].String()
 		}
 	}
 	return &gqlmodel.LemmasResult{
