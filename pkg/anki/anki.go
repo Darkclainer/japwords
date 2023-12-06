@@ -17,7 +17,7 @@ type StatefullClient interface {
 	GetState(ctx context.Context) (*State, error)
 	CreateDeck(ctx context.Context, name string) error
 	CreateDefaultNoteType(ctx context.Context, name string) error
-	AddNote(ctx context.Context, note *AddNoteRequest) error
+	AddNote(ctx context.Context, note *AddNoteRequest) (int64, error)
 	QueryNotes(ctx context.Context, query string) ([]*ankiconnect.NoteInfo, error)
 }
 
@@ -105,7 +105,6 @@ func (a *Anki) NoteTypes(ctx context.Context) ([]string, error) {
 	return state.NoteTypes, nil
 }
 
-// TODO: remove name parameter
 func (a *Anki) NoteTypeFields(ctx context.Context) ([]string, error) {
 	state, err := a.getClient().GetState(ctx)
 	if err != nil {
@@ -170,7 +169,7 @@ func (a *Anki) PrepareProjectedLemma(ctx context.Context, lemma *lemma.Projected
 
 // SearchProjectedLemmas returns note id for specified lemmas, empty string means not found.
 // Note id represented as string, because it's not fully documented what id actually means
-func (a *Anki) SearchProjectedLemmas(ctx context.Context, lemmas []*lemma.ProjectedLemma) ([]int64, error) {
+func (a *Anki) SearchProjectedLemmas(ctx context.Context, lemmas []*lemma.ProjectedLemma) ([]NoteID, error) {
 	client := a.getClient()
 	state, err := client.GetState(ctx)
 	if err != nil {
@@ -229,8 +228,8 @@ func generateQueryForNotes(lemmas []*lemma.ProjectedLemma, orderField string, co
 }
 
 // confirmFoundNotes returns actually found notes using expected values of order field
-func confirmFoundNotes(notes []*ankiconnect.NoteInfo, orderField string, orderValues []string) []int64 {
-	foundIds := make([]int64, len(orderValues))
+func confirmFoundNotes(notes []*ankiconnect.NoteInfo, orderField string, orderValues []string) []NoteID {
+	foundIds := make([]NoteID, len(orderValues))
 	// orderField value to noteId
 	foundNotes := make(map[string]int64, len(orderValues))
 	for _, note := range notes {
@@ -244,14 +243,15 @@ func confirmFoundNotes(notes []*ankiconnect.NoteInfo, orderField string, orderVa
 	for i, orderValue := range orderValues {
 		id, ok := foundNotes[orderValue]
 		if ok {
-			foundIds[i] = id
+			foundIds[i] = NoteID(id)
 		}
 	}
 	return foundIds
 }
 
-func (a *Anki) AddNote(ctx context.Context, note *AddNoteRequest) error {
-	return a.getClient().AddNote(ctx, note)
+func (a *Anki) AddNote(ctx context.Context, note *AddNoteRequest) (NoteID, error) {
+	id, err := a.getClient().AddNote(ctx, note)
+	return NoteID(id), err
 }
 
 func (a *Anki) Stop() {

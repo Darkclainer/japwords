@@ -48,6 +48,7 @@ func (this AnkiAddNoteDuplicateFound) GetMessage() string { return this.Message 
 func (AnkiAddNoteDuplicateFound) IsAnkiAddNoteError() {}
 
 type AnkiAddNoteResult struct {
+	NoteID    string           `json:"noteID"`
 	Error     AnkiAddNoteError `json:"error,omitempty"`
 	AnkiError AnkiError        `json:"ankiError,omitempty"`
 }

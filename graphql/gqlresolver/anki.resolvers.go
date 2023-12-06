@@ -181,7 +181,7 @@ func (r *mutationResolver) CreateDefaultAnkiNote(ctx context.Context, input *gql
 
 // AddAnkiNote is the resolver for the addAnkiNote field.
 func (r *mutationResolver) AddAnkiNote(ctx context.Context, request *anki.AddNoteRequest) (*gqlmodel.AnkiAddNoteResult, error) {
-	err := r.ankiClient.AddNote(ctx, request)
+	noteID, err := r.ankiClient.AddNote(ctx, request)
 	if err != nil {
 		if errors.Is(err, anki.ErrDuplicatedNoteFound) {
 			return &gqlmodel.AnkiAddNoteResult{
@@ -205,7 +205,9 @@ func (r *mutationResolver) AddAnkiNote(ctx context.Context, request *anki.AddNot
 		return nil, err
 
 	}
-	return &gqlmodel.AnkiAddNoteResult{}, nil
+	return &gqlmodel.AnkiAddNoteResult{
+		NoteID: noteID.String(),
+	}, nil
 }
 
 // Anki is the resolver for the Anki field.

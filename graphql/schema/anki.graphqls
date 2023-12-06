@@ -255,6 +255,7 @@ type AnkiAddNoteDuplicateFound implements Error {
 union AnkiAddNoteError = AnkiAddNoteDuplicateFound | AnkiIncompleteConfiguration
 
 type AnkiAddNoteResult {
+  noteID: String!
   error: AnkiAddNoteError
   ankiError: AnkiError
 }

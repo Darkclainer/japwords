@@ -48,16 +48,6 @@ function newBagFromLemma(lemma: LemmaNoteInfo): LemmaBag {
 function isLemmaFitBag(bag: LemmaBagHeader, lemma: Lemma): boolean {
   const properties: Array<keyof LemmaBagHeader> = ['slug', 'tags', 'forms', 'audio'];
   return properties.every((property) => {
-    console.log(
-      'bag',
-      bag,
-      'lemma',
-      lemma,
-      'property',
-      property,
-      'result',
-      isEqual(bag[property], lemma[property]),
-    );
     return isEqual(bag[property], lemma[property]);
   });
 }

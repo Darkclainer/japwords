@@ -296,7 +296,8 @@ func (sc *statefullClient) CreateDefaultNoteType(ctx context.Context, name strin
 	return err
 }
 
-func (sc *statefullClient) AddNote(ctx context.Context, note *AddNoteRequest) error {
+func (sc *statefullClient) AddNote(ctx context.Context, note *AddNoteRequest) (int64, error) {
+	var noteID int64
 	err := sc.withClient(func(client AnkiClient, config *Config, state *State) (*State, error) {
 		if !state.IsReadyToAddNote() {
 			return nil, ErrIncompleteConfiguration
@@ -307,7 +308,8 @@ func (sc *statefullClient) AddNote(ctx context.Context, note *AddNoteRequest) er
 			fields[note.Fields[i].Name] = note.Fields[i].Value
 		}
 
-		_, err := client.AddNote(ctx,
+		var err error
+		noteID, err = client.AddNote(ctx,
 			&ankiconnect.AddNoteParams{
 				Fields: fields,
 				// TODO:
@@ -327,7 +329,10 @@ func (sc *statefullClient) AddNote(ctx context.Context, note *AddNoteRequest) er
 		}
 		return nil, err
 	})
-	return err
+	if err != nil {
+		return 0, err
+	}
+	return noteID, nil
 }
 
 // QueryNotes get notes by query, it does FindNotes and NoteInfo.

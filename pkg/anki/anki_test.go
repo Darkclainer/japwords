@@ -479,12 +479,13 @@ func Test_Anki_AddNote(t *testing.T) {
 	}
 	anki := NewAnki(func(_ *Config) (StatefullClient, error) {
 		client := NewMockStatefullClient(t)
-		client.On("AddNote", mock.Anything, request).Return(errors.New("myerror")).Once()
+		client.On("AddNote", mock.Anything, request).Return(int64(32), errors.New("myerror")).Once()
 		return client, nil
 	})
 	err := anki.ReloadConfig(&Config{})
 	require.NoError(t, err)
-	err = anki.AddNote(context.Background(), request)
+	noteID, err := anki.AddNote(context.Background(), request)
+	assert.Equal(t, NoteID(32), noteID)
 	assert.ErrorContains(t, err, "myerror")
 }
 
@@ -638,7 +639,7 @@ func Test_Anki_SearchProjectedLemmas(t *testing.T) {
 			},
 		})
 		require.NoError(t, err)
-		assert.Equal(t, []int64{1, 2}, actual)
+		assert.Equal(t, []NoteID{1, 2}, actual)
 	})
 }
 
@@ -755,14 +756,14 @@ func Test_confirmFoundNotes(t *testing.T) {
 		Name        string
 		Notes       []*ankiconnect.NoteInfo
 		OrderValues []string
-		Expected    []int64
+		Expected    []NoteID
 	}{
 		{
 			Name: "wrong order field",
 			Notes: []*ankiconnect.NoteInfo{
 				{},
 			},
-			Expected: []int64{},
+			Expected: []NoteID{},
 		},
 		{
 			Name: "one for all",
@@ -777,7 +778,7 @@ func Test_confirmFoundNotes(t *testing.T) {
 				},
 			},
 			OrderValues: []string{"foo", "notfound", "foo"},
-			Expected:    []int64{1, 0, 1},
+			Expected:    []NoteID{1, 0, 1},
 		},
 		{
 			Name: "found",
@@ -808,7 +809,7 @@ func Test_confirmFoundNotes(t *testing.T) {
 				},
 			},
 			OrderValues: []string{"foobar", "bar", "foo", "notfound"},
-			Expected:    []int64{1, 2, 3, 0},
+			Expected:    []NoteID{1, 2, 3, 0},
 		},
 	}
 	for i := range testCases {

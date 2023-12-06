@@ -877,7 +877,8 @@ func Test_statefullClient_AddNote(t *testing.T) {
 		client, _, _ := newTestNormalStatefullClient(t, &Config{
 			NoteType: "noexists",
 		})
-		err := client.AddNote(context.Background(), &AddNoteRequest{})
+		noteID, err := client.AddNote(context.Background(), &AddNoteRequest{})
+		assert.Equal(t, int64(0), noteID)
 		assert.ErrorIs(t, err, ErrIncompleteConfiguration)
 	})
 	t.Run("duplicated note", func(t *testing.T) {
@@ -889,7 +890,8 @@ func Test_statefullClient_AddNote(t *testing.T) {
 					Message: "cannot create note because it is a duplicate",
 				}).
 			Once()
-		err := client.AddNote(context.Background(), &AddNoteRequest{})
+		noteID, err := client.AddNote(context.Background(), &AddNoteRequest{})
+		assert.Equal(t, int64(0), noteID)
 		assert.ErrorIs(t, err, ErrDuplicatedNoteFound)
 	})
 	t.Run("anki error", func(t *testing.T) {
@@ -901,7 +903,8 @@ func Test_statefullClient_AddNote(t *testing.T) {
 					Err: ankiconnect.ErrCollectionUnavailable,
 				}).
 			Once()
-		err := client.AddNote(context.Background(), &AddNoteRequest{})
+		noteID, err := client.AddNote(context.Background(), &AddNoteRequest{})
+		assert.Equal(t, int64(0), noteID)
 		assert.ErrorIs(t, err, ErrCollectionUnavailable)
 	})
 	t.Run("ok", func(t *testing.T) {
@@ -921,11 +924,11 @@ func Test_statefullClient_AddNote(t *testing.T) {
 			},
 		).
 			Return(
-				int64(1),
+				int64(912),
 				nil,
 			).
 			Once()
-		err := client.AddNote(context.Background(), &AddNoteRequest{
+		noteID, err := client.AddNote(context.Background(), &AddNoteRequest{
 			Fields: []AddNoteField{
 				{
 					Name:  "a",
@@ -937,6 +940,7 @@ func Test_statefullClient_AddNote(t *testing.T) {
 				},
 			},
 		})
+		assert.Equal(t, int64(912), noteID)
 		assert.NoError(t, err)
 	})
 }

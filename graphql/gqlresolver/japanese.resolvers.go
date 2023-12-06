@@ -6,7 +6,6 @@ package gqlresolver
 
 import (
 	"context"
-	"strconv"
 
 	"github.com/Darkclainer/japwords/graphql/gqlmodel"
 )
@@ -23,11 +22,7 @@ func (r *queryResolver) Lemmas(ctx context.Context, query string) (*gqlmodel.Lem
 	if err == nil {
 		noteIds = make([]string, len(exstingIds))
 		for i, intID := range exstingIds {
-			if intID == 0 {
-				noteIds[i] = ""
-				continue
-			}
-			noteIds[i] = strconv.FormatInt(intID, 10)
+			noteIds[i] = intID.String()
 		}
 	}
 	result := make([]*gqlmodel.LemmaNoteInfo, len(projectedLemmas))

@@ -59,6 +59,7 @@ export default function LemmaList({
 }) {
   // more propper way will be to modify cache, but because lemmas now returned from react-router-dom it's not possible
   const [lemmaNotes, setLemmaNotes] = useState(initialLemmaNotes);
+  console.log(lemmaNotes);
   const lemmaBags = useMemo(() => groupLemmaNotes(lemmaNotes), [lemmaNotes]);
   const [prepareLemma] = useLazyQuery(PREPARE_LEMMA, {
     fetchPolicy: 'network-only',
@@ -200,6 +201,7 @@ function AddNoteDialog({
 const ADD_ANKI_NOTE = gql(`
 mutation AddAnkiNote($note: AddNoteRequestInput!) {
   addAnkiNote(request: $note) {
+    noteID
     error {
       ... on AnkiIncompleteConfiguration {
         message
@@ -261,10 +263,29 @@ function AddNoteForm({ addLemmaRequest, setOpen, setLemmaNotes, toast }: AddNote
         apolloErrorToast(errors, `${AddNoteFailedActionTitle}: `, { toast: toast });
         return;
       }
+      if (data && data.addAnkiNote.noteID !== '') {
+        toast('Note added to Anki', { type: 'success' });
+        setOpen(false);
+        setLemmaNotes((lemmas) =>
+          lemmas.map((lemma) => {
+            if (lemma === addLemmaRequest.lemma) {
+              return {
+                lemma: lemma.lemma,
+                // must be defined if no errors
+                noteID: data.addAnkiNote.noteID,
+              };
+            }
+            {
+              return lemma;
+            }
+          }),
+        );
+      }
       if (data?.addAnkiNote.ankiError) {
         toast(`${AddNoteFailedActionTitle}: problems with anki-connect`, {
           type: 'error',
         });
+        return;
       }
       const userError = data?.addAnkiNote.error;
       if (userError) {
@@ -290,22 +311,6 @@ function AddNoteForm({ addLemmaRequest, setOpen, setLemmaNotes, toast }: AddNote
           }
         }
       }
-      toast('Note added to Anki', { type: 'success' });
-      setOpen(false);
-      setLemmaNotes((lemmas) =>
-        lemmas.map((lemma) => {
-          if (lemma === addLemmaRequest.lemma) {
-            return {
-              lemma: lemma.lemma,
-              // TODO: need to get ID from add note
-              noteID: 'new',
-            };
-          }
-          {
-            return lemma;
-          }
-        }),
-      );
     },
     [addLemmaRequest, setLemmaNotes, setOpen, toast],
   );
