@@ -32,11 +32,10 @@ func Test_DefaultUserConfig_AnkiFieldMapping(t *testing.T) {
 				Slug: lemma.ProjectedWord{
 					Word: "Hello",
 				},
-				SenseIndex:  5,
 				Definitions: []string{"world hello", "there"},
 			},
 			Expected: map[string]string{
-				"Sort": "Hello-world_hell-5",
+				"Sort": "Hello-world_hell",
 			},
 		},
 		{
@@ -48,7 +47,7 @@ func Test_DefaultUserConfig_AnkiFieldMapping(t *testing.T) {
 				Definitions: []string{"world"},
 			},
 			Expected: map[string]string{
-				"Sort": "Hello-world-0",
+				"Sort": "Hello-world",
 			},
 		},
 		{
@@ -59,7 +58,7 @@ func Test_DefaultUserConfig_AnkiFieldMapping(t *testing.T) {
 				},
 			},
 			Expected: map[string]string{
-				"Sort": "Hello--0",
+				"Sort": "Hello-",
 			},
 		},
 		{

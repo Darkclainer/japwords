@@ -688,10 +688,12 @@ func Test_generateQueryForNotes(t *testing.T) {
 			Lemmas: []*lemma.ProjectedLemma{
 				// need to fail on this note specifically
 				{
-					SenseIndex: 999,
+					Slug: lemma.ProjectedWord{
+						Word: "hello",
+					},
 				},
 			},
-			OrderTemplate: `{{ if  eq .SenseIndex 999 }}{{ fail "intended to fail" }}{{ end }}`,
+			OrderTemplate: `{{ if  eq .Slug.Word "hello" }}{{ fail "intended to fail" }}{{ end }}`,
 			ErrorAssert:   assert.Error,
 		},
 		{

@@ -70,7 +70,7 @@ func DefaultUserConfig() *UserConfig {
 	{{- $firstLen := int (min (len $first) 10) -}}
 	{{- $def = trim (substr 0 $firstLen (index .Definitions 0)) | replace " " "_" -}}
 {{- end -}}
-{{.Slug.Word}}-{{ $def }}-{{.SenseIndex}}`,
+{{.Slug.Word}}-{{ $def }}`,
 				"Kanji":    `{{.Slug.Word}}`,
 				"Furigana": `{{renderFurigana .Slug}}`,
 				"Kana":     `{{renderPitch .Slug "span" "border-u" "border-r" "border-d" "border-l"}}`,

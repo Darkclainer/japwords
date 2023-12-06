@@ -65,7 +65,6 @@ var DefaultExampleLemma = lemma.ProjectedLemma{
 			},
 		},
 	},
-	SenseIndex: 3,
 	Tags: []string{
 		"Common word",
 		"JLPT N5",

@@ -5,10 +5,9 @@ import "github.com/Darkclainer/japwords/pkg/lemma"
 func expandLemmas(lemmas []*lemma.Lemma) []*lemma.ProjectedLemma {
 	var projectedLemmas []*lemma.ProjectedLemma
 	for _, l := range lemmas {
-		for i, wordSense := range l.Senses {
+		for _, wordSense := range l.Senses {
 			projectedLemmas = append(projectedLemmas, &lemma.ProjectedLemma{
 				Slug:          expandWord(l.Slug),
-				SenseIndex:    i,
 				Tags:          l.Tags,
 				Forms:         expandWords(l.Forms),
 				Definitions:   wordSense.Definition,

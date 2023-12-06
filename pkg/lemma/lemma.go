@@ -103,7 +103,6 @@ type WordSense struct {
 // This structure include only one meaning.
 type ProjectedLemma struct {
 	Slug          ProjectedWord     `json:"Slug,omitempty"`
-	SenseIndex    int               `json:"SenseIndex,omitempty"`
 	Tags          []string          `json:"Tags,omitempty"`
 	Forms         []ProjectedWord   `json:"Forms,omitempty"`
 	Definitions   []string          `json:"Definitions,omitempty"`

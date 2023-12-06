@@ -1,7 +1,6 @@
 package gqlresolver
 
 import (
-	"strconv"
 	"testing"
 
 	"github.com/99designs/gqlgen/client"
@@ -41,15 +40,16 @@ func Test_queryResolver_RenderFields(t *testing.T) {
 			Name: "Pretty print template",
 			Query: `
 				query {
-					RenderFields(template: "{\"SenseIndex\": 5}") {
+					RenderFields(template: "{\"Slug\": {\"Word\": \"Hello\"}}") {
 						template
 					}
 
 				}`,
 			Expected: gqlmodel.RenderedFields{
 				Template: `{
-  "Slug": {},
-  "SenseIndex": 5
+  "Slug": {
+    "Word": "Hello"
+  }
 }`,
 			},
 		},
@@ -70,7 +70,7 @@ func Test_queryResolver_RenderFields(t *testing.T) {
 			Name: "Default template render",
 			Query: `
 				query {
-					RenderFields(fields: ["{{.Slug.Word}}", "{{.SenseIndex}}", "hello"]) {
+					RenderFields(fields: ["{{.Slug.Word}}", "hello"]) {
 						fields {
 							field
 							result
@@ -84,10 +84,6 @@ func Test_queryResolver_RenderFields(t *testing.T) {
 					{
 						Field:  "{{.Slug.Word}}",
 						Result: anki.DefaultExampleLemma.Slug.Word,
-					},
-					{
-						Field:  "{{.SenseIndex}}",
-						Result: strconv.Itoa(anki.DefaultExampleLemma.SenseIndex),
 					},
 					{
 						Field:  "hello",
@@ -123,7 +119,7 @@ func Test_queryResolver_RenderFields(t *testing.T) {
 			Name: "Render field with custom template",
 			Query: `
 				query {
-					RenderFields(template: "{\"SenseIndex\": 8}", fields: ["{{.SenseIndex}}"]) {
+					RenderFields(template: "{\"Slug\": {\"Word\": \"hello foo\"}}", fields: ["{{.Slug.Word}}"]) {
 						fields {
 							result
 							error
@@ -134,7 +130,7 @@ func Test_queryResolver_RenderFields(t *testing.T) {
 			Expected: gqlmodel.RenderedFields{
 				Fields: []*gqlmodel.RenderedField{
 					{
-						Result: "8",
+						Result: "hello foo",
 					},
 				},
 			},
