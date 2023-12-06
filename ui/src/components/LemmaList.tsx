@@ -59,7 +59,6 @@ export default function LemmaList({
 }) {
   // more propper way will be to modify cache, but because lemmas now returned from react-router-dom it's not possible
   const [lemmaNotes, setLemmaNotes] = useState(initialLemmaNotes);
-  console.log(lemmaNotes);
   const lemmaBags = useMemo(() => groupLemmaNotes(lemmaNotes), [lemmaNotes]);
   const [prepareLemma] = useLazyQuery(PREPARE_LEMMA, {
     fetchPolicy: 'network-only',

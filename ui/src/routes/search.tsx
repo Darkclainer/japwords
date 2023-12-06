@@ -137,7 +137,7 @@ export default function Search() {
       >
         {lemmas && lemmas.length != 0 ? (
           <div className="flex flex-1 flex-col">
-            <LemmaList lemmaNotes={lemmas} />
+            <LemmaList key={query} lemmaNotes={lemmas} />
           </div>
         ) : (
           <div className="flex flex-1 flex-col justify-center">
