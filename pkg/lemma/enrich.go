@@ -19,7 +19,7 @@ func Enrich(lemmas []*Lemma, pitchedLemmas []*PitchedLemma) {
 		}
 		words := wordMap[key]
 		for _, word := range words {
-			word.Pitches = pitched.Pitches
+			word.PitchShapes = pitched.PitchShapes
 		}
 	}
 }

@@ -62,7 +62,7 @@ models:
       - github.com/Darkclainer/japwords/pkg/lemma.ProjectedLemma
   Word:
     model:
-      - github.com/Darkclainer/japwords/pkg/lemma.ProjectedWord
+      - github.com/Darkclainer/japwords/pkg/lemma.Word
   Furigana:
     model:
       - github.com/Darkclainer/japwords/pkg/lemma.FuriganaChar
@@ -75,7 +75,7 @@ models:
       - github.com/Darkclainer/japwords/pkg/lemma.ProjectedLemma
   WordInput:
     model:
-      - github.com/Darkclainer/japwords/pkg/lemma.ProjectedWord
+      - github.com/Darkclainer/japwords/pkg/lemma.Word
   FuriganaInput:
     model:
       - github.com/Darkclainer/japwords/pkg/lemma.FuriganaChar

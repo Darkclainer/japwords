@@ -30,13 +30,8 @@ func (r *lemmaResolver) Audio(ctx context.Context, obj *lemma.ProjectedLemma) ([
 }
 
 // Furigana is the resolver for the furigana field.
-func (r *wordResolver) Furigana(ctx context.Context, obj *lemma.ProjectedWord) ([]*lemma.FuriganaChar, error) {
+func (r *wordResolver) Furigana(ctx context.Context, obj *lemma.Word) ([]*lemma.FuriganaChar, error) {
 	return sliceToPointers(obj.Furigana), nil
-}
-
-// PitchShapes is the resolver for the pitchShapes field.
-func (r *wordResolver) PitchShapes(ctx context.Context, obj *lemma.ProjectedWord) ([]*lemma.PitchShape, error) {
-	return sliceToPointers(obj.Pitches), nil
 }
 
 // Audio is the resolver for the audio field.
@@ -50,14 +45,8 @@ func (r *lemmaInputResolver) Audio(ctx context.Context, obj *lemma.ProjectedLemm
 }
 
 // Furigana is the resolver for the furigana field.
-func (r *wordInputResolver) Furigana(ctx context.Context, obj *lemma.ProjectedWord, data []*lemma.FuriganaChar) error {
+func (r *wordInputResolver) Furigana(ctx context.Context, obj *lemma.Word, data []*lemma.FuriganaChar) error {
 	obj.Furigana = sliceToValues(data)
-	return nil
-}
-
-// PitchShapes is the resolver for the pitchShapes field.
-func (r *wordInputResolver) PitchShapes(ctx context.Context, obj *lemma.ProjectedWord, data []*lemma.PitchShape) error {
-	obj.Pitches = sliceToValues(data)
 	return nil
 }
 

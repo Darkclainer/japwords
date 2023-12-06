@@ -15,8 +15,8 @@ import (
 )
 
 type reading struct {
-	Hiragana string
-	Pitches  []lemma.Pitch
+	Hiragana    string
+	PitchShapes []lemma.PitchShape
 }
 
 func parseHTMLBytes(html []byte) ([]*lemma.PitchedLemma, error) {
@@ -104,9 +104,9 @@ func parseRowResult(sel *goquery.Selection) ([]*lemma.PitchedLemma, error) {
 	lemmas := make([]*lemma.PitchedLemma, 0, len(japaneseVariants))
 	for _, variant := range japaneseVariants {
 		lemmas = append(lemmas, &lemma.PitchedLemma{
-			Slug:     variant,
-			Hiragana: reading.Hiragana,
-			Pitches:  reading.Pitches,
+			Slug:        variant,
+			Hiragana:    reading.Hiragana,
+			PitchShapes: reading.PitchShapes,
 		})
 	}
 	return lemmas, nil
@@ -160,32 +160,37 @@ func parseReading(sel *goquery.Selection) (*reading, error) {
 		return nil, nil
 	}
 	var (
-		buffer   strings.Builder
-		pitches  []lemma.Pitch
-		position = 0
+		buffer      strings.Builder
+		pitchShapes []lemma.PitchShape
 	)
 	accentParts.Each(func(_ int, s *goquery.Selection) {
 		readingPart := extractReading(s)
-		n, _ := buffer.WriteString(readingPart)
-		position += n
-		pitches = append(pitches, lemma.Pitch{
-			Position: position,
-			IsHigh:   s.HasClass("t"), // `t` stands for top
+		_, _ = buffer.WriteString(readingPart)
+		var directions []lemma.AccentDirection
+		if s.HasClass("t") { // t means top
+			directions = []lemma.AccentDirection{lemma.AccentDirectionUp}
+		} else {
+			directions = []lemma.AccentDirection{lemma.AccentDirectionDown}
+		}
+		pitchShapes = append(pitchShapes, lemma.PitchShape{
+			Hiragana:   readingPart,
+			Directions: directions,
 		})
 	})
+	for i := 1; i < len(pitchShapes); i++ {
+		pitchShapes[i].Directions = append(pitchShapes[i].Directions, lemma.AccentDirectionLeft)
+	}
 	if accentParts.Last().HasClass("r") {
-		pitches = append(pitches, lemma.Pitch{
-			Position: position,
-			IsHigh:   !pitches[len(pitches)-1].IsHigh,
-		})
+		index := len(pitchShapes) - 1
+		pitchShapes[index].Directions = append(pitchShapes[index].Directions, lemma.AccentDirectionRight)
 	}
 	if buffer.Len() == 0 {
 		// that means we wasn't able to extract actual reading, I see this as a bug
 		return nil, errors.New("no reading found despite section with accent was")
 	}
 	return &reading{
-		Hiragana: buffer.String(),
-		Pitches:  pitches,
+		Hiragana:    buffer.String(),
+		PitchShapes: pitchShapes,
 	}, nil
 }
 

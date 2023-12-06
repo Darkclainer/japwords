@@ -324,7 +324,7 @@ func Test_Multidict_QueryPitch(t *testing.T) {
 		Hiragana     string
 		InitHandlers func(t *testing.T, ctx context.Context, cancel context.CancelFunc) PitchDictTest
 		ErrorAssert  assert.ErrorAssertionFunc
-		Expected     []lemma.Pitch
+		Expected     []lemma.PitchShape
 	}{
 		{
 			Name:     "first result",
@@ -336,18 +336,24 @@ func Test_Multidict_QueryPitch(t *testing.T) {
 						{
 							Slug:     "hello",
 							Hiragana: "world",
-							Pitches: []lemma.Pitch{
+							PitchShapes: []lemma.PitchShape{
 								{
-									Position: 9,
+									Hiragana: "world",
+									Directions: []lemma.AccentDirection{
+										lemma.AccentDirectionDown,
+									},
 								},
 							},
 						},
 						{
 							Slug:     "hi",
 							Hiragana: "world",
-							Pitches: []lemma.Pitch{
+							PitchShapes: []lemma.PitchShape{
 								{
-									Position: 4,
+									Hiragana: "world",
+									Directions: []lemma.AccentDirection{
+										lemma.AccentDirectionUp,
+									},
 								},
 							},
 						},
@@ -356,9 +362,12 @@ func Test_Multidict_QueryPitch(t *testing.T) {
 				return pitchDict
 			},
 			ErrorAssert: assert.NoError,
-			Expected: []lemma.Pitch{
+			Expected: []lemma.PitchShape{
 				{
-					Position: 9,
+					Hiragana: "world",
+					Directions: []lemma.AccentDirection{
+						lemma.AccentDirectionDown,
+					},
 				},
 			},
 		},
@@ -372,18 +381,24 @@ func Test_Multidict_QueryPitch(t *testing.T) {
 						{
 							Slug:     "hello",
 							Hiragana: "world",
-							Pitches: []lemma.Pitch{
+							PitchShapes: []lemma.PitchShape{
 								{
-									Position: 9,
+									Hiragana: "world",
+									Directions: []lemma.AccentDirection{
+										lemma.AccentDirectionDown,
+									},
 								},
 							},
 						},
 						{
 							Slug:     "hi",
 							Hiragana: "world",
-							Pitches: []lemma.Pitch{
+							PitchShapes: []lemma.PitchShape{
 								{
-									Position: 4,
+									Hiragana: "world",
+									Directions: []lemma.AccentDirection{
+										lemma.AccentDirectionUp,
+									},
 								},
 							},
 						},
@@ -392,9 +407,12 @@ func Test_Multidict_QueryPitch(t *testing.T) {
 				return pitchDict
 			},
 			ErrorAssert: assert.NoError,
-			Expected: []lemma.Pitch{
+			Expected: []lemma.PitchShape{
 				{
-					Position: 4,
+					Hiragana: "world",
+					Directions: []lemma.AccentDirection{
+						lemma.AccentDirectionUp,
+					},
 				},
 			},
 		},
@@ -408,18 +426,24 @@ func Test_Multidict_QueryPitch(t *testing.T) {
 						{
 							Slug:     "hello",
 							Hiragana: "world",
-							Pitches: []lemma.Pitch{
+							PitchShapes: []lemma.PitchShape{
 								{
-									Position: 9,
+									Hiragana: "world",
+									Directions: []lemma.AccentDirection{
+										lemma.AccentDirectionDown,
+									},
 								},
 							},
 						},
 						{
 							Slug:     "hi",
 							Hiragana: "world",
-							Pitches: []lemma.Pitch{
+							PitchShapes: []lemma.PitchShape{
 								{
-									Position: 4,
+									Hiragana: "world",
+									Directions: []lemma.AccentDirection{
+										lemma.AccentDirectionUp,
+									},
 								},
 							},
 						},
@@ -428,9 +452,12 @@ func Test_Multidict_QueryPitch(t *testing.T) {
 				return pitchDict
 			},
 			ErrorAssert: assert.Error,
-			Expected: []lemma.Pitch{
+			Expected: []lemma.PitchShape{
 				{
-					Position: 4,
+					Hiragana: "world",
+					Directions: []lemma.AccentDirection{
+						lemma.AccentDirectionUp,
+					},
 				},
 			},
 		},
@@ -540,10 +567,12 @@ func getPitchedLemmasTest(query string) []*lemma.PitchedLemma {
 		{
 			Slug:     query,
 			Hiragana: query,
-			Pitches: []lemma.Pitch{
+			PitchShapes: []lemma.PitchShape{
 				{
-					Position: len(query),
-					IsHigh:   true,
+					Hiragana: query,
+					Directions: []lemma.AccentDirection{
+						lemma.AccentDirectionUp,
+					},
 				},
 			},
 		},
@@ -556,10 +585,12 @@ func getResultLemmasTest(query string) []*lemma.Lemma {
 			Slug: lemma.Word{
 				Word:     query,
 				Hiragana: query,
-				Pitches: []lemma.Pitch{
+				PitchShapes: []lemma.PitchShape{
 					{
-						Position: len(query),
-						IsHigh:   true,
+						Hiragana: query,
+						Directions: []lemma.AccentDirection{
+							lemma.AccentDirectionUp,
+						},
 					},
 				},
 			},

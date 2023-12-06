@@ -8,7 +8,7 @@ import (
 )
 
 var DefaultExampleLemma = lemma.ProjectedLemma{
-	Slug: lemma.ProjectedWord{
+	Slug: lemma.Word{
 		Word:     "一二わ三はい",
 		Hiragana: "いちにわさんはい",
 		Furigana: []lemma.FuriganaChar{
@@ -34,7 +34,7 @@ var DefaultExampleLemma = lemma.ProjectedLemma{
 				Hiragana: "い",
 			},
 		},
-		Pitches: []lemma.PitchShape{
+		PitchShapes: []lemma.PitchShape{
 			{
 				Hiragana: "いち",
 				Directions: []lemma.AccentDirection{
@@ -71,7 +71,7 @@ var DefaultExampleLemma = lemma.ProjectedLemma{
 		"Wanikani level 2",
 		"Test database",
 	},
-	Forms: []lemma.ProjectedWord{},
+	Forms: []lemma.Word{},
 	Definitions: []string{
 		"this is test lemma, it means nothing, just useful for tests",
 		"use it only for tests",

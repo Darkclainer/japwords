@@ -60,10 +60,12 @@ func Test_parseHTML(t *testing.T) {
 				{
 					Slug:     "hello",
 					Hiragana: "world",
-					Pitches: []lemma.Pitch{
+					PitchShapes: []lemma.PitchShape{
 						{
-							Position: 5,
-							IsHigh:   true,
+							Hiragana: "world",
+							Directions: []lemma.AccentDirection{
+								lemma.AccentDirectionUp,
+							},
 						},
 					},
 				},
@@ -118,10 +120,12 @@ func Test_parseContentSection(t *testing.T) {
 				{
 					Slug:     "hello",
 					Hiragana: "world",
-					Pitches: []lemma.Pitch{
+					PitchShapes: []lemma.PitchShape{
 						{
-							Position: 5,
-							IsHigh:   true,
+							Hiragana: "world",
+							Directions: []lemma.AccentDirection{
+								lemma.AccentDirectionUp,
+							},
 						},
 					},
 				},
@@ -165,20 +169,24 @@ func Test_parseContentSection(t *testing.T) {
 				{
 					Slug:     "hello",
 					Hiragana: "world",
-					Pitches: []lemma.Pitch{
+					PitchShapes: []lemma.PitchShape{
 						{
-							Position: 5,
-							IsHigh:   true,
+							Hiragana: "world",
+							Directions: []lemma.AccentDirection{
+								lemma.AccentDirectionUp,
+							},
 						},
 					},
 				},
 				{
 					Slug:     "greetings",
 					Hiragana: "world",
-					Pitches: []lemma.Pitch{
+					PitchShapes: []lemma.PitchShape{
 						{
-							Position: 5,
-							IsHigh:   true,
+							Hiragana: "world",
+							Directions: []lemma.AccentDirection{
+								lemma.AccentDirectionUp,
+							},
 						},
 					},
 				},
@@ -222,10 +230,12 @@ func Test_parseContentSection(t *testing.T) {
 				{
 					Slug:     "hello",
 					Hiragana: "world",
-					Pitches: []lemma.Pitch{
+					PitchShapes: []lemma.PitchShape{
 						{
-							Position: 5,
-							IsHigh:   true,
+							Hiragana: "world",
+							Directions: []lemma.AccentDirection{
+								lemma.AccentDirectionUp,
+							},
 						},
 					},
 				},
@@ -288,10 +298,12 @@ func Test_parseRowResult(t *testing.T) {
 				{
 					Slug:     "hello",
 					Hiragana: "world",
-					Pitches: []lemma.Pitch{
+					PitchShapes: []lemma.PitchShape{
 						{
-							Position: 5,
-							IsHigh:   true,
+							Hiragana: "world",
+							Directions: []lemma.AccentDirection{
+								lemma.AccentDirectionUp,
+							},
 						},
 					},
 				},
@@ -323,20 +335,24 @@ func Test_parseRowResult(t *testing.T) {
 				{
 					Slug:     "hello",
 					Hiragana: "world",
-					Pitches: []lemma.Pitch{
+					PitchShapes: []lemma.PitchShape{
 						{
-							Position: 5,
-							IsHigh:   true,
+							Hiragana: "world",
+							Directions: []lemma.AccentDirection{
+								lemma.AccentDirectionUp,
+							},
 						},
 					},
 				},
 				{
 					Slug:     "nothello",
 					Hiragana: "world",
-					Pitches: []lemma.Pitch{
+					PitchShapes: []lemma.PitchShape{
 						{
-							Position: 5,
-							IsHigh:   true,
+							Hiragana: "world",
+							Directions: []lemma.AccentDirection{
+								lemma.AccentDirectionUp,
+							},
 						},
 					},
 				},
@@ -557,10 +573,12 @@ func Test_parseReading(t *testing.T) {
 		</div>`,
 			Expected: &reading{
 				Hiragana: "hello",
-				Pitches: []lemma.Pitch{
+				PitchShapes: []lemma.PitchShape{
 					{
-						Position: 5,
-						IsHigh:   true,
+						Hiragana: "hello",
+						Directions: []lemma.AccentDirection{
+							lemma.AccentDirectionUp,
+						},
 					},
 				},
 			},
@@ -578,10 +596,12 @@ func Test_parseReading(t *testing.T) {
 		</div>`,
 			Expected: &reading{
 				Hiragana: "worlds",
-				Pitches: []lemma.Pitch{
+				PitchShapes: []lemma.PitchShape{
 					{
-						Position: 6,
-						IsHigh:   false,
+						Hiragana: "worlds",
+						Directions: []lemma.AccentDirection{
+							lemma.AccentDirectionDown,
+						},
 					},
 				},
 			},
@@ -602,14 +622,19 @@ func Test_parseReading(t *testing.T) {
 		</div>`,
 			Expected: &reading{
 				Hiragana: "hello",
-				Pitches: []lemma.Pitch{
+				PitchShapes: []lemma.PitchShape{
 					{
-						Position: 3,
-						IsHigh:   true,
+						Hiragana: "hel",
+						Directions: []lemma.AccentDirection{
+							lemma.AccentDirectionUp,
+						},
 					},
 					{
-						Position: 5,
-						IsHigh:   false,
+						Hiragana: "lo",
+						Directions: []lemma.AccentDirection{
+							lemma.AccentDirectionDown,
+							lemma.AccentDirectionLeft,
+						},
 					},
 				},
 			},
@@ -630,14 +655,19 @@ func Test_parseReading(t *testing.T) {
 		</div>`,
 			Expected: &reading{
 				Hiragana: "hello",
-				Pitches: []lemma.Pitch{
+				PitchShapes: []lemma.PitchShape{
 					{
-						Position: 3,
-						IsHigh:   false,
+						Hiragana: "hel",
+						Directions: []lemma.AccentDirection{
+							lemma.AccentDirectionDown,
+						},
 					},
 					{
-						Position: 5,
-						IsHigh:   true,
+						Hiragana: "lo",
+						Directions: []lemma.AccentDirection{
+							lemma.AccentDirectionUp,
+							lemma.AccentDirectionLeft,
+						},
 					},
 				},
 			},
@@ -658,18 +688,20 @@ func Test_parseReading(t *testing.T) {
 		</div>`,
 			Expected: &reading{
 				Hiragana: "hello",
-				Pitches: []lemma.Pitch{
+				PitchShapes: []lemma.PitchShape{
 					{
-						Position: 3,
-						IsHigh:   false,
+						Hiragana: "hel",
+						Directions: []lemma.AccentDirection{
+							lemma.AccentDirectionDown,
+						},
 					},
 					{
-						Position: 5,
-						IsHigh:   true,
-					},
-					{
-						Position: 5,
-						IsHigh:   false,
+						Hiragana: "lo",
+						Directions: []lemma.AccentDirection{
+							lemma.AccentDirectionUp,
+							lemma.AccentDirectionLeft,
+							lemma.AccentDirectionRight,
+						},
 					},
 				},
 			},
@@ -690,18 +722,20 @@ func Test_parseReading(t *testing.T) {
 		</div>`,
 			Expected: &reading{
 				Hiragana: "hello",
-				Pitches: []lemma.Pitch{
+				PitchShapes: []lemma.PitchShape{
 					{
-						Position: 3,
-						IsHigh:   true,
+						Hiragana: "hel",
+						Directions: []lemma.AccentDirection{
+							lemma.AccentDirectionUp,
+						},
 					},
 					{
-						Position: 5,
-						IsHigh:   false,
-					},
-					{
-						Position: 5,
-						IsHigh:   true,
+						Hiragana: "lo",
+						Directions: []lemma.AccentDirection{
+							lemma.AccentDirectionDown,
+							lemma.AccentDirectionLeft,
+							lemma.AccentDirectionRight,
+						},
 					},
 				},
 			},
@@ -720,18 +754,26 @@ func Test_parseReading(t *testing.T) {
 			Expected: &reading{
 				Hiragana: "いぬねこ",
 				// len(い) = len(ぬ) = len(ね) = len(こ) = 3
-				Pitches: []lemma.Pitch{
+				PitchShapes: []lemma.PitchShape{
 					{
-						Position: 3,
-						IsHigh:   false,
+						Hiragana: "い",
+						Directions: []lemma.AccentDirection{
+							lemma.AccentDirectionDown,
+						},
 					},
 					{
-						Position: 9,
-						IsHigh:   true,
+						Hiragana: "ぬね",
+						Directions: []lemma.AccentDirection{
+							lemma.AccentDirectionUp,
+							lemma.AccentDirectionLeft,
+						},
 					},
 					{
-						Position: 12,
-						IsHigh:   false,
+						Hiragana: "こ",
+						Directions: []lemma.AccentDirection{
+							lemma.AccentDirectionDown,
+							lemma.AccentDirectionLeft,
+						},
 					},
 				},
 			},

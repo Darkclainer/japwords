@@ -106,7 +106,7 @@ func checkTemplate(tmpl *template.Template) error {
 
 // renderFuriganaTemplate is template functions that return string representation of
 // furigana that can be understood by Anki.
-func renderFuriganaTemplate(word *lemma.ProjectedWord) string {
+func renderFuriganaTemplate(word *lemma.Word) string {
 	furigana := word.Furigana
 	var buffer strings.Builder
 	// previousPlain need to correctly delimit character with furigana and without:
@@ -135,7 +135,7 @@ func renderFuriganaTemplate(word *lemma.ProjectedWord) string {
 	return buffer.String()
 }
 
-func renderPitchTemplate(word *lemma.ProjectedWord, tag string, up string, right string, down string, left string) (string, error) {
+func renderPitchTemplate(word *lemma.Word, tag string, up string, right string, down string, left string) (string, error) {
 	return renderPitch(word, tag, []string{
 		up,
 		right,
@@ -144,14 +144,14 @@ func renderPitchTemplate(word *lemma.ProjectedWord, tag string, up string, right
 	})
 }
 
-func renderPitch(word *lemma.ProjectedWord, tag string, directionClasses []string) (string, error) {
+func renderPitch(word *lemma.Word, tag string, directionClasses []string) (string, error) {
 	if tag == "" {
 		return "", errors.New("tag should be non empty string")
 	}
 	if len(directionClasses) < 4 {
 		return "", errors.New("renderPitch should be called with 4 direction classes")
 	}
-	pitchShapes := word.Pitches
+	pitchShapes := word.PitchShapes
 	var buffer strings.Builder
 	for _, shape := range pitchShapes {
 		buffer.WriteByte('<')

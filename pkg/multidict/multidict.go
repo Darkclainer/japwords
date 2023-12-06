@@ -103,7 +103,7 @@ func (m *MultiDict) Query(ctx context.Context, query string) ([]*lemma.Lemma, er
 	return lemmas, combinedErr
 }
 
-func (m *MultiDict) QueryPitch(ctx context.Context, slug string, hiragana string) ([]lemma.Pitch, error) {
+func (m *MultiDict) QueryPitch(ctx context.Context, slug string, hiragana string) ([]lemma.PitchShape, error) {
 	ctx, cancel := m.defaultContext(ctx)
 	defer cancel()
 	pitchedLemmasChan, err := m.queryPitchAsync(ctx, slug)
@@ -121,7 +121,7 @@ func (m *MultiDict) QueryPitch(ctx context.Context, slug string, hiragana string
 	}
 	for _, reading := range pitchedLemmas {
 		if reading.Slug == slug && reading.Hiragana == hiragana {
-			return reading.Pitches, pitchedErr
+			return reading.PitchShapes, pitchedErr
 		}
 	}
 	return nil, pitchedErr

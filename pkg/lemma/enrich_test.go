@@ -49,10 +49,12 @@ func Test_Enrich(t *testing.T) {
 				{
 					Slug:     "hello",
 					Hiragana: "world",
-					Pitches: []Pitch{
+					PitchShapes: []PitchShape{
 						{
-							Position: 1,
-							IsHigh:   false,
+							Hiragana: "world",
+							Directions: []AccentDirection{
+								AccentDirectionDown,
+							},
 						},
 					},
 				},
@@ -62,10 +64,12 @@ func Test_Enrich(t *testing.T) {
 					Slug: Word{
 						Word:     "hello",
 						Hiragana: "world",
-						Pitches: []Pitch{
+						PitchShapes: []PitchShape{
 							{
-								Position: 1,
-								IsHigh:   false,
+								Hiragana: "world",
+								Directions: []AccentDirection{
+									AccentDirectionDown,
+								},
 							},
 						},
 					},
@@ -92,10 +96,12 @@ func Test_Enrich(t *testing.T) {
 				{
 					Slug:     "hello",
 					Hiragana: "world",
-					Pitches: []Pitch{
+					PitchShapes: []PitchShape{
 						{
-							Position: 1,
-							IsHigh:   false,
+							Hiragana: "world",
+							Directions: []AccentDirection{
+								AccentDirectionDown,
+							},
 						},
 					},
 				},
@@ -105,10 +111,12 @@ func Test_Enrich(t *testing.T) {
 					Slug: Word{
 						Word:     "hello",
 						Hiragana: "world",
-						Pitches: []Pitch{
+						PitchShapes: []PitchShape{
 							{
-								Position: 1,
-								IsHigh:   false,
+								Hiragana: "world",
+								Directions: []AccentDirection{
+									AccentDirectionDown,
+								},
 							},
 						},
 					},
@@ -117,10 +125,12 @@ func Test_Enrich(t *testing.T) {
 					Slug: Word{
 						Word:     "hello",
 						Hiragana: "world",
-						Pitches: []Pitch{
+						PitchShapes: []PitchShape{
 							{
-								Position: 1,
-								IsHigh:   false,
+								Hiragana: "world",
+								Directions: []AccentDirection{
+									AccentDirectionDown,
+								},
 							},
 						},
 					},
@@ -141,20 +151,24 @@ func Test_Enrich(t *testing.T) {
 				{
 					Slug:     "hello",
 					Hiragana: "world",
-					Pitches: []Pitch{
+					PitchShapes: []PitchShape{
 						{
-							Position: 1,
-							IsHigh:   false,
+							Hiragana: "world",
+							Directions: []AccentDirection{
+								AccentDirectionDown,
+							},
 						},
 					},
 				},
 				{
 					Slug:     "hello",
 					Hiragana: "world",
-					Pitches: []Pitch{
+					PitchShapes: []PitchShape{
 						{
-							Position: 1,
-							IsHigh:   true,
+							Hiragana: "world",
+							Directions: []AccentDirection{
+								AccentDirectionUp,
+							},
 						},
 					},
 				},
@@ -164,10 +178,12 @@ func Test_Enrich(t *testing.T) {
 					Slug: Word{
 						Word:     "hello",
 						Hiragana: "world",
-						Pitches: []Pitch{
+						PitchShapes: []PitchShape{
 							{
-								Position: 1,
-								IsHigh:   false,
+								Hiragana: "world",
+								Directions: []AccentDirection{
+									AccentDirectionDown,
+								},
 							},
 						},
 					},
@@ -175,7 +191,7 @@ func Test_Enrich(t *testing.T) {
 			},
 		},
 		{
-			Name: "readings form form",
+			Name: "readings from form",
 			Lemmas: []*Lemma{
 				{
 					Slug: Word{
@@ -194,18 +210,24 @@ func Test_Enrich(t *testing.T) {
 				{
 					Slug:     "hello",
 					Hiragana: "world",
-					Pitches: []Pitch{
+					PitchShapes: []PitchShape{
 						{
-							Position: 1,
+							Hiragana: "world",
+							Directions: []AccentDirection{
+								AccentDirectionDown,
+							},
 						},
 					},
 				},
 				{
 					Slug:     "greating",
 					Hiragana: "world",
-					Pitches: []Pitch{
+					PitchShapes: []PitchShape{
 						{
-							Position: 2,
+							Hiragana: "world",
+							Directions: []AccentDirection{
+								AccentDirectionUp,
+							},
 						},
 					},
 				},
@@ -215,9 +237,12 @@ func Test_Enrich(t *testing.T) {
 					Slug: Word{
 						Word:     "hello",
 						Hiragana: "world",
-						Pitches: []Pitch{
+						PitchShapes: []PitchShape{
 							{
-								Position: 1,
+								Hiragana: "world",
+								Directions: []AccentDirection{
+									AccentDirectionDown,
+								},
 							},
 						},
 					},
@@ -225,9 +250,12 @@ func Test_Enrich(t *testing.T) {
 						{
 							Word:     "greating",
 							Hiragana: "world",
-							Pitches: []Pitch{
+							PitchShapes: []PitchShape{
 								{
-									Position: 2,
+									Hiragana: "world",
+									Directions: []AccentDirection{
+										AccentDirectionUp,
+									},
 								},
 							},
 						},

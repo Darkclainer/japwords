@@ -22,7 +22,7 @@ func mustConvertMapping(t *testing.T, mapping map[string]string) TemplateMapping
 func Test_RenderRawTemplate(t *testing.T) {
 	t.Run("OK", func(t *testing.T) {
 		result, err := RenderRawTemplate("{{.Slug.Word}}-test", &lemma.ProjectedLemma{
-			Slug: lemma.ProjectedWord{
+			Slug: lemma.Word{
 				Word: "hello",
 			},
 		})
@@ -31,7 +31,7 @@ func Test_RenderRawTemplate(t *testing.T) {
 	})
 	t.Run("Error", func(t *testing.T) {
 		_, err := RenderRawTemplate("{{.NotExists}}-test", &lemma.ProjectedLemma{
-			Slug: lemma.ProjectedWord{
+			Slug: lemma.Word{
 				Word: "hello",
 			},
 		})
@@ -41,7 +41,7 @@ func Test_RenderRawTemplate(t *testing.T) {
 
 func Test_convertMapping(t *testing.T) {
 	testLemma := &lemma.ProjectedLemma{
-		Slug: lemma.ProjectedWord{
+		Slug: lemma.Word{
 			Word:     "hello",
 			Hiragana: "world",
 		},
@@ -161,7 +161,7 @@ func Test_initTemplate(t *testing.T) {
 		{
 			Name: "sprig functions imported",
 			Lemma: lemma.ProjectedLemma{
-				Slug: lemma.ProjectedWord{
+				Slug: lemma.Word{
 					Word: "hello",
 				},
 			},
@@ -172,7 +172,7 @@ func Test_initTemplate(t *testing.T) {
 		{
 			Name: "renderFurigana",
 			Lemma: lemma.ProjectedLemma{
-				Slug: lemma.ProjectedWord{
+				Slug: lemma.Word{
 					Furigana: lemma.Furigana{
 						{
 							Kanji:    "he",
@@ -192,9 +192,9 @@ func Test_initTemplate(t *testing.T) {
 		{
 			Name: "renderPitch",
 			Lemma: lemma.ProjectedLemma{
-				Slug: lemma.ProjectedWord{
+				Slug: lemma.Word{
 					Hiragana: "hello",
-					Pitches: []lemma.PitchShape{
+					PitchShapes: []lemma.PitchShape{
 						{
 							Hiragana: "h",
 							Directions: []lemma.AccentDirection{
@@ -408,7 +408,7 @@ func Test_renderFurigana(t *testing.T) {
 	for i := range testCases {
 		tc := testCases[i]
 		t.Run(t.Name(), func(t *testing.T) {
-			word := lemma.ProjectedWord{
+			word := lemma.Word{
 				Furigana: tc.Furigana,
 			}
 			actual := renderFuriganaTemplate(&word)
@@ -422,7 +422,7 @@ func Test_renderPitch(t *testing.T) {
 	directionClasses := []string{"u", "r", "d", "l"}
 	testCases := []struct {
 		Name             string
-		Word             lemma.ProjectedWord
+		Word             lemma.Word
 		Tag              string
 		DirectionClasses []string
 		Expected         string
@@ -434,9 +434,9 @@ func Test_renderPitch(t *testing.T) {
 		},
 		{
 			Name: "no pitch",
-			Word: lemma.ProjectedWord{
+			Word: lemma.Word{
 				Hiragana: "hello",
-				Pitches: []lemma.PitchShape{
+				PitchShapes: []lemma.PitchShape{
 					{
 						Hiragana: "hello",
 					},
@@ -448,9 +448,9 @@ func Test_renderPitch(t *testing.T) {
 		},
 		{
 			Name: "simple up",
-			Word: lemma.ProjectedWord{
+			Word: lemma.Word{
 				Hiragana: "hello",
-				Pitches: []lemma.PitchShape{
+				PitchShapes: []lemma.PitchShape{
 					{
 						Hiragana: "hello",
 						Directions: []lemma.AccentDirection{
@@ -465,9 +465,9 @@ func Test_renderPitch(t *testing.T) {
 		},
 		{
 			Name: "tail up down",
-			Word: lemma.ProjectedWord{
+			Word: lemma.Word{
 				Hiragana: "hello",
-				Pitches: []lemma.PitchShape{
+				PitchShapes: []lemma.PitchShape{
 					{
 						Hiragana: "hello",
 						Directions: []lemma.AccentDirection{
@@ -483,9 +483,9 @@ func Test_renderPitch(t *testing.T) {
 		},
 		{
 			Name: "head down up",
-			Word: lemma.ProjectedWord{
+			Word: lemma.Word{
 				Hiragana: "hello",
-				Pitches: []lemma.PitchShape{
+				PitchShapes: []lemma.PitchShape{
 					{
 						Hiragana: "hello",
 						Directions: []lemma.AccentDirection{
@@ -501,9 +501,9 @@ func Test_renderPitch(t *testing.T) {
 		},
 		{
 			Name: "middle down up",
-			Word: lemma.ProjectedWord{
+			Word: lemma.Word{
 				Hiragana: "hello",
-				Pitches: []lemma.PitchShape{
+				PitchShapes: []lemma.PitchShape{
 					{
 						Hiragana: "he",
 						Directions: []lemma.AccentDirection{
@@ -525,9 +525,9 @@ func Test_renderPitch(t *testing.T) {
 		},
 		{
 			Name: "middle up down",
-			Word: lemma.ProjectedWord{
+			Word: lemma.Word{
 				Hiragana: "hello",
-				Pitches: []lemma.PitchShape{
+				PitchShapes: []lemma.PitchShape{
 					{
 						Hiragana: "he",
 						Directions: []lemma.AccentDirection{
@@ -549,9 +549,9 @@ func Test_renderPitch(t *testing.T) {
 		},
 		{
 			Name: "incomplet",
-			Word: lemma.ProjectedWord{
+			Word: lemma.Word{
 				Hiragana: "hello",
-				Pitches: []lemma.PitchShape{
+				PitchShapes: []lemma.PitchShape{
 					{
 						Hiragana: "he",
 						Directions: []lemma.AccentDirection{
@@ -569,9 +569,9 @@ func Test_renderPitch(t *testing.T) {
 		},
 		{
 			Name: "all directions",
-			Word: lemma.ProjectedWord{
+			Word: lemma.Word{
 				Hiragana: "hello",
-				Pitches: []lemma.PitchShape{
+				PitchShapes: []lemma.PitchShape{
 					{
 						Hiragana: "he",
 						Directions: []lemma.AccentDirection{
@@ -594,9 +594,9 @@ func Test_renderPitch(t *testing.T) {
 		},
 		{
 			Name: "different tag",
-			Word: lemma.ProjectedWord{
+			Word: lemma.Word{
 				Hiragana: "hello",
-				Pitches: []lemma.PitchShape{
+				PitchShapes: []lemma.PitchShape{
 					{
 						Hiragana: "he",
 						Directions: []lemma.AccentDirection{
@@ -619,9 +619,9 @@ func Test_renderPitch(t *testing.T) {
 		},
 		{
 			Name: "different classes",
-			Word: lemma.ProjectedWord{
+			Word: lemma.Word{
 				Hiragana: "hello",
-				Pitches: []lemma.PitchShape{
+				PitchShapes: []lemma.PitchShape{
 					{
 						Hiragana: "he",
 						Directions: []lemma.AccentDirection{
@@ -644,9 +644,9 @@ func Test_renderPitch(t *testing.T) {
 		},
 		{
 			Name: "more classes than needed",
-			Word: lemma.ProjectedWord{
+			Word: lemma.Word{
 				Hiragana: "hello",
-				Pitches: []lemma.PitchShape{
+				PitchShapes: []lemma.PitchShape{
 					{
 						Hiragana: "he",
 						Directions: []lemma.AccentDirection{
@@ -706,7 +706,7 @@ func Test_renderPitch_error(t *testing.T) {
 	for i := range testCases {
 		tc := testCases[i]
 		t.Run(tc.Name, func(t *testing.T) {
-			_, err := renderPitch(&lemma.ProjectedWord{}, tc.Tag, tc.DirectionClasses)
+			_, err := renderPitch(&lemma.Word{}, tc.Tag, tc.DirectionClasses)
 			tc.ErrorAssert(t, err)
 		})
 	}

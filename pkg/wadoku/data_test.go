@@ -33,32 +33,39 @@ func TestParseFiles(t *testing.T) {
 				{
 					Slug:     "犬",
 					Hiragana: "いぬ",
-					Pitches: []lemma.Pitch{
+					PitchShapes: []lemma.PitchShape{
 						{
-							Position: 3,
-							IsHigh:   false,
+							Hiragana: "い",
+							Directions: []lemma.AccentDirection{
+								lemma.AccentDirectionDown,
+							},
 						},
 						{
-							Position: 6,
-							IsHigh:   true,
-						},
-						{
-							Position: 6,
-							IsHigh:   false,
+							Hiragana: "ぬ",
+							Directions: []lemma.AccentDirection{
+								lemma.AccentDirectionUp,
+								lemma.AccentDirectionLeft,
+								lemma.AccentDirectionRight,
+							},
 						},
 					},
 				},
 				{
 					Slug:     "犬走り",
 					Hiragana: "いぬばしり",
-					Pitches: []lemma.Pitch{
+					PitchShapes: []lemma.PitchShape{
 						{
-							Position: 3,
-							IsHigh:   false,
+							Hiragana: "い",
+							Directions: []lemma.AccentDirection{
+								lemma.AccentDirectionDown,
+							},
 						},
 						{
-							Position: 15,
-							IsHigh:   true,
+							Hiragana: "ぬばしり",
+							Directions: []lemma.AccentDirection{
+								lemma.AccentDirectionUp,
+								lemma.AccentDirectionLeft,
+							},
 						},
 					},
 				},

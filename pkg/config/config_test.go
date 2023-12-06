@@ -29,7 +29,7 @@ func Test_DefaultUserConfig_AnkiFieldMapping(t *testing.T) {
 		{
 			Name: "Sort full",
 			Lemma: lemma.ProjectedLemma{
-				Slug: lemma.ProjectedWord{
+				Slug: lemma.Word{
 					Word: "Hello",
 				},
 				Definitions: []string{"world hello", "there"},
@@ -41,7 +41,7 @@ func Test_DefaultUserConfig_AnkiFieldMapping(t *testing.T) {
 		{
 			Name: "Sort min len",
 			Lemma: lemma.ProjectedLemma{
-				Slug: lemma.ProjectedWord{
+				Slug: lemma.Word{
 					Word: "Hello",
 				},
 				Definitions: []string{"world"},
@@ -53,7 +53,7 @@ func Test_DefaultUserConfig_AnkiFieldMapping(t *testing.T) {
 		{
 			Name: "Sort no definitions",
 			Lemma: lemma.ProjectedLemma{
-				Slug: lemma.ProjectedWord{
+				Slug: lemma.Word{
 					Word: "Hello",
 				},
 			},
@@ -64,7 +64,7 @@ func Test_DefaultUserConfig_AnkiFieldMapping(t *testing.T) {
 		{
 			Name: "Kanji",
 			Lemma: lemma.ProjectedLemma{
-				Slug: lemma.ProjectedWord{
+				Slug: lemma.Word{
 					Word: "Hello",
 				},
 			},
@@ -75,7 +75,7 @@ func Test_DefaultUserConfig_AnkiFieldMapping(t *testing.T) {
 		{
 			Name: "Furigana",
 			Lemma: lemma.ProjectedLemma{
-				Slug: lemma.ProjectedWord{
+				Slug: lemma.Word{
 					Furigana: lemma.Furigana{
 						{
 							Kanji:    "he",
@@ -98,8 +98,8 @@ func Test_DefaultUserConfig_AnkiFieldMapping(t *testing.T) {
 		{
 			Name: "Kana",
 			Lemma: lemma.ProjectedLemma{
-				Slug: lemma.ProjectedWord{
-					Pitches: []lemma.PitchShape{
+				Slug: lemma.Word{
+					PitchShapes: []lemma.PitchShape{
 						{
 							Hiragana: "he",
 							Directions: []lemma.AccentDirection{

@@ -627,12 +627,12 @@ func Test_Anki_SearchProjectedLemmas(t *testing.T) {
 		require.NoError(t, err)
 		actual, err := anki.SearchProjectedLemmas(context.Background(), []*lemma.ProjectedLemma{
 			{
-				Slug: lemma.ProjectedWord{
+				Slug: lemma.Word{
 					Word: "hello",
 				},
 			},
 			{
-				Slug: lemma.ProjectedWord{
+				Slug: lemma.Word{
 					Word: "world",
 				},
 			},
@@ -688,7 +688,7 @@ func Test_generateQueryForNotes(t *testing.T) {
 			Lemmas: []*lemma.ProjectedLemma{
 				// need to fail on this note specifically
 				{
-					Slug: lemma.ProjectedWord{
+					Slug: lemma.Word{
 						Word: "hello",
 					},
 				},
@@ -712,12 +712,12 @@ func Test_generateQueryForNotes(t *testing.T) {
 			Name: "slug word",
 			Lemmas: []*lemma.ProjectedLemma{
 				{
-					Slug: lemma.ProjectedWord{
+					Slug: lemma.Word{
 						Word: "word1",
 					},
 				},
 				{
-					Slug: lemma.ProjectedWord{
+					Slug: lemma.Word{
 						Word: "word2",
 					},
 				},

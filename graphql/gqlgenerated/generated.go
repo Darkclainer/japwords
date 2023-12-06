@@ -299,16 +299,14 @@ type QueryResolver interface {
 	Lemmas(ctx context.Context, query string) (*gqlmodel.LemmasResult, error)
 }
 type WordResolver interface {
-	Furigana(ctx context.Context, obj *lemma.ProjectedWord) ([]*lemma.FuriganaChar, error)
-	PitchShapes(ctx context.Context, obj *lemma.ProjectedWord) ([]*lemma.PitchShape, error)
+	Furigana(ctx context.Context, obj *lemma.Word) ([]*lemma.FuriganaChar, error)
 }
 
 type LemmaInputResolver interface {
 	Audio(ctx context.Context, obj *lemma.ProjectedLemma, data []*gqlmodel.AudioInput) error
 }
 type WordInputResolver interface {
-	Furigana(ctx context.Context, obj *lemma.ProjectedWord, data []*lemma.FuriganaChar) error
-	PitchShapes(ctx context.Context, obj *lemma.ProjectedWord, data []*lemma.PitchShape) error
+	Furigana(ctx context.Context, obj *lemma.Word, data []*lemma.FuriganaChar) error
 }
 
 type executableSchema struct {
@@ -4213,9 +4211,9 @@ func (ec *executionContext) _Lemma_slug(ctx context.Context, field graphql.Colle
 		}
 		return graphql.Null
 	}
-	res := resTmp.(lemma.ProjectedWord)
+	res := resTmp.(lemma.Word)
 	fc.Result = res
-	return ec.marshalNWord2githubᚗcomᚋDarkclainerᚋjapwordsᚋpkgᚋlemmaᚐProjectedWord(ctx, field.Selections, res)
+	return ec.marshalNWord2githubᚗcomᚋDarkclainerᚋjapwordsᚋpkgᚋlemmaᚐWord(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Lemma_slug(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -4311,9 +4309,9 @@ func (ec *executionContext) _Lemma_forms(ctx context.Context, field graphql.Coll
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]lemma.ProjectedWord)
+	res := resTmp.([]lemma.Word)
 	fc.Result = res
-	return ec.marshalNWord2ᚕgithubᚗcomᚋDarkclainerᚋjapwordsᚋpkgᚋlemmaᚐProjectedWordᚄ(ctx, field.Selections, res)
+	return ec.marshalNWord2ᚕgithubᚗcomᚋDarkclainerᚋjapwordsᚋpkgᚋlemmaᚐWordᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Lemma_forms(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -6326,7 +6324,7 @@ func (ec *executionContext) fieldContext_ValidationError_message(ctx context.Con
 	return fc, nil
 }
 
-func (ec *executionContext) _Word_word(ctx context.Context, field graphql.CollectedField, obj *lemma.ProjectedWord) (ret graphql.Marshaler) {
+func (ec *executionContext) _Word_word(ctx context.Context, field graphql.CollectedField, obj *lemma.Word) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Word_word(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -6370,7 +6368,7 @@ func (ec *executionContext) fieldContext_Word_word(ctx context.Context, field gr
 	return fc, nil
 }
 
-func (ec *executionContext) _Word_hiragana(ctx context.Context, field graphql.CollectedField, obj *lemma.ProjectedWord) (ret graphql.Marshaler) {
+func (ec *executionContext) _Word_hiragana(ctx context.Context, field graphql.CollectedField, obj *lemma.Word) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Word_hiragana(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -6414,7 +6412,7 @@ func (ec *executionContext) fieldContext_Word_hiragana(ctx context.Context, fiel
 	return fc, nil
 }
 
-func (ec *executionContext) _Word_furigana(ctx context.Context, field graphql.CollectedField, obj *lemma.ProjectedWord) (ret graphql.Marshaler) {
+func (ec *executionContext) _Word_furigana(ctx context.Context, field graphql.CollectedField, obj *lemma.Word) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Word_furigana(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -6464,7 +6462,7 @@ func (ec *executionContext) fieldContext_Word_furigana(ctx context.Context, fiel
 	return fc, nil
 }
 
-func (ec *executionContext) _Word_pitchShapes(ctx context.Context, field graphql.CollectedField, obj *lemma.ProjectedWord) (ret graphql.Marshaler) {
+func (ec *executionContext) _Word_pitchShapes(ctx context.Context, field graphql.CollectedField, obj *lemma.Word) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Word_pitchShapes(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -6478,7 +6476,7 @@ func (ec *executionContext) _Word_pitchShapes(ctx context.Context, field graphql
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Word().PitchShapes(rctx, obj)
+		return obj.PitchShapes, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -6490,17 +6488,17 @@ func (ec *executionContext) _Word_pitchShapes(ctx context.Context, field graphql
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]*lemma.PitchShape)
+	res := resTmp.([]lemma.PitchShape)
 	fc.Result = res
-	return ec.marshalNPitchShape2ᚕᚖgithubᚗcomᚋDarkclainerᚋjapwordsᚋpkgᚋlemmaᚐPitchShapeᚄ(ctx, field.Selections, res)
+	return ec.marshalNPitchShape2ᚕgithubᚗcomᚋDarkclainerᚋjapwordsᚋpkgᚋlemmaᚐPitchShapeᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Word_pitchShapes(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Word",
 		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
+		IsMethod:   false,
+		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
 			case "hiragana":
@@ -8562,7 +8560,7 @@ func (ec *executionContext) unmarshalInputLemmaInput(ctx context.Context, obj in
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("slug"))
-			data, err := ec.unmarshalNWordInput2githubᚗcomᚋDarkclainerᚋjapwordsᚋpkgᚋlemmaᚐProjectedWord(ctx, v)
+			data, err := ec.unmarshalNWordInput2githubᚗcomᚋDarkclainerᚋjapwordsᚋpkgᚋlemmaᚐWord(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -8580,7 +8578,7 @@ func (ec *executionContext) unmarshalInputLemmaInput(ctx context.Context, obj in
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("forms"))
-			data, err := ec.unmarshalNWordInput2ᚕgithubᚗcomᚋDarkclainerᚋjapwordsᚋpkgᚋlemmaᚐProjectedWordᚄ(ctx, v)
+			data, err := ec.unmarshalNWordInput2ᚕgithubᚗcomᚋDarkclainerᚋjapwordsᚋpkgᚋlemmaᚐWordᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -8792,8 +8790,8 @@ func (ec *executionContext) unmarshalInputSetAnkiConfigNote(ctx context.Context,
 	return it, nil
 }
 
-func (ec *executionContext) unmarshalInputWordInput(ctx context.Context, obj interface{}) (lemma.ProjectedWord, error) {
-	var it lemma.ProjectedWord
+func (ec *executionContext) unmarshalInputWordInput(ctx context.Context, obj interface{}) (lemma.Word, error) {
+	var it lemma.Word
 	asMap := map[string]interface{}{}
 	for k, v := range obj.(map[string]interface{}) {
 		asMap[k] = v
@@ -8839,13 +8837,11 @@ func (ec *executionContext) unmarshalInputWordInput(ctx context.Context, obj int
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("pitchShapes"))
-			data, err := ec.unmarshalNPitchShapeInput2ᚕᚖgithubᚗcomᚋDarkclainerᚋjapwordsᚋpkgᚋlemmaᚐPitchShapeᚄ(ctx, v)
+			data, err := ec.unmarshalNPitchShapeInput2ᚕgithubᚗcomᚋDarkclainerᚋjapwordsᚋpkgᚋlemmaᚐPitchShapeᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			if err = ec.resolvers.WordInput().PitchShapes(ctx, &it, data); err != nil {
-				return it, err
-			}
+			it.PitchShapes = data
 		}
 	}
 
@@ -11093,7 +11089,7 @@ func (ec *executionContext) _ValidationError(ctx context.Context, sel ast.Select
 
 var wordImplementors = []string{"Word"}
 
-func (ec *executionContext) _Word(ctx context.Context, sel ast.SelectionSet, obj *lemma.ProjectedWord) graphql.Marshaler {
+func (ec *executionContext) _Word(ctx context.Context, sel ast.SelectionSet, obj *lemma.Word) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.OperationContext, sel, wordImplementors)
 
 	out := graphql.NewFieldSet(fields)
@@ -11149,41 +11145,10 @@ func (ec *executionContext) _Word(ctx context.Context, sel ast.SelectionSet, obj
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		case "pitchShapes":
-			field := field
-
-			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Word_pitchShapes(ctx, field, obj)
-				if res == graphql.Null {
-					atomic.AddUint32(&fs.Invalids, 1)
-				}
-				return res
+			out.Values[i] = ec._Word_pitchShapes(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
 			}
-
-			if field.Deferrable != nil {
-				dfs, ok := deferred[field.Deferrable.Label]
-				di := 0
-				if ok {
-					dfs.AddField(field)
-					di = len(dfs.Values) - 1
-				} else {
-					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
-					deferred[field.Deferrable.Label] = dfs
-				}
-				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
-					return innerFunc(ctx, dfs)
-				})
-
-				// don't run the out.Concurrently() call below
-				out.Values[i] = graphql.Null
-				continue
-			}
-
-			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -12132,7 +12097,11 @@ func (ec *executionContext) marshalNLemmaNoteInfo2ᚖgithubᚗcomᚋDarkclainer�
 	return ec._LemmaNoteInfo(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalNPitchShape2ᚕᚖgithubᚗcomᚋDarkclainerᚋjapwordsᚋpkgᚋlemmaᚐPitchShapeᚄ(ctx context.Context, sel ast.SelectionSet, v []*lemma.PitchShape) graphql.Marshaler {
+func (ec *executionContext) marshalNPitchShape2githubᚗcomᚋDarkclainerᚋjapwordsᚋpkgᚋlemmaᚐPitchShape(ctx context.Context, sel ast.SelectionSet, v lemma.PitchShape) graphql.Marshaler {
+	return ec._PitchShape(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNPitchShape2ᚕgithubᚗcomᚋDarkclainerᚋjapwordsᚋpkgᚋlemmaᚐPitchShapeᚄ(ctx context.Context, sel ast.SelectionSet, v []lemma.PitchShape) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -12156,7 +12125,7 @@ func (ec *executionContext) marshalNPitchShape2ᚕᚖgithubᚗcomᚋDarkclainer�
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNPitchShape2ᚖgithubᚗcomᚋDarkclainerᚋjapwordsᚋpkgᚋlemmaᚐPitchShape(ctx, sel, v[i])
+			ret[i] = ec.marshalNPitchShape2githubᚗcomᚋDarkclainerᚋjapwordsᚋpkgᚋlemmaᚐPitchShape(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -12176,36 +12145,26 @@ func (ec *executionContext) marshalNPitchShape2ᚕᚖgithubᚗcomᚋDarkclainer�
 	return ret
 }
 
-func (ec *executionContext) marshalNPitchShape2ᚖgithubᚗcomᚋDarkclainerᚋjapwordsᚋpkgᚋlemmaᚐPitchShape(ctx context.Context, sel ast.SelectionSet, v *lemma.PitchShape) graphql.Marshaler {
-	if v == nil {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
-		}
-		return graphql.Null
-	}
-	return ec._PitchShape(ctx, sel, v)
+func (ec *executionContext) unmarshalNPitchShapeInput2githubᚗcomᚋDarkclainerᚋjapwordsᚋpkgᚋlemmaᚐPitchShape(ctx context.Context, v interface{}) (lemma.PitchShape, error) {
+	res, err := ec.unmarshalInputPitchShapeInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) unmarshalNPitchShapeInput2ᚕᚖgithubᚗcomᚋDarkclainerᚋjapwordsᚋpkgᚋlemmaᚐPitchShapeᚄ(ctx context.Context, v interface{}) ([]*lemma.PitchShape, error) {
+func (ec *executionContext) unmarshalNPitchShapeInput2ᚕgithubᚗcomᚋDarkclainerᚋjapwordsᚋpkgᚋlemmaᚐPitchShapeᚄ(ctx context.Context, v interface{}) ([]lemma.PitchShape, error) {
 	var vSlice []interface{}
 	if v != nil {
 		vSlice = graphql.CoerceList(v)
 	}
 	var err error
-	res := make([]*lemma.PitchShape, len(vSlice))
+	res := make([]lemma.PitchShape, len(vSlice))
 	for i := range vSlice {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
-		res[i], err = ec.unmarshalNPitchShapeInput2ᚖgithubᚗcomᚋDarkclainerᚋjapwordsᚋpkgᚋlemmaᚐPitchShape(ctx, vSlice[i])
+		res[i], err = ec.unmarshalNPitchShapeInput2githubᚗcomᚋDarkclainerᚋjapwordsᚋpkgᚋlemmaᚐPitchShape(ctx, vSlice[i])
 		if err != nil {
 			return nil, err
 		}
 	}
 	return res, nil
-}
-
-func (ec *executionContext) unmarshalNPitchShapeInput2ᚖgithubᚗcomᚋDarkclainerᚋjapwordsᚋpkgᚋlemmaᚐPitchShape(ctx context.Context, v interface{}) (*lemma.PitchShape, error) {
-	res, err := ec.unmarshalInputPitchShapeInput(ctx, v)
-	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) marshalNPrepareLemmaResult2githubᚗcomᚋDarkclainerᚋjapwordsᚋgraphqlᚋgqlmodelᚐPrepareLemmaResult(ctx context.Context, sel ast.SelectionSet, v gqlmodel.PrepareLemmaResult) graphql.Marshaler {
@@ -12413,11 +12372,11 @@ func (ec *executionContext) marshalNString2ᚕstringᚄ(ctx context.Context, sel
 	return ret
 }
 
-func (ec *executionContext) marshalNWord2githubᚗcomᚋDarkclainerᚋjapwordsᚋpkgᚋlemmaᚐProjectedWord(ctx context.Context, sel ast.SelectionSet, v lemma.ProjectedWord) graphql.Marshaler {
+func (ec *executionContext) marshalNWord2githubᚗcomᚋDarkclainerᚋjapwordsᚋpkgᚋlemmaᚐWord(ctx context.Context, sel ast.SelectionSet, v lemma.Word) graphql.Marshaler {
 	return ec._Word(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNWord2ᚕgithubᚗcomᚋDarkclainerᚋjapwordsᚋpkgᚋlemmaᚐProjectedWordᚄ(ctx context.Context, sel ast.SelectionSet, v []lemma.ProjectedWord) graphql.Marshaler {
+func (ec *executionContext) marshalNWord2ᚕgithubᚗcomᚋDarkclainerᚋjapwordsᚋpkgᚋlemmaᚐWordᚄ(ctx context.Context, sel ast.SelectionSet, v []lemma.Word) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -12441,7 +12400,7 @@ func (ec *executionContext) marshalNWord2ᚕgithubᚗcomᚋDarkclainerᚋjapword
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNWord2githubᚗcomᚋDarkclainerᚋjapwordsᚋpkgᚋlemmaᚐProjectedWord(ctx, sel, v[i])
+			ret[i] = ec.marshalNWord2githubᚗcomᚋDarkclainerᚋjapwordsᚋpkgᚋlemmaᚐWord(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -12461,21 +12420,21 @@ func (ec *executionContext) marshalNWord2ᚕgithubᚗcomᚋDarkclainerᚋjapword
 	return ret
 }
 
-func (ec *executionContext) unmarshalNWordInput2githubᚗcomᚋDarkclainerᚋjapwordsᚋpkgᚋlemmaᚐProjectedWord(ctx context.Context, v interface{}) (lemma.ProjectedWord, error) {
+func (ec *executionContext) unmarshalNWordInput2githubᚗcomᚋDarkclainerᚋjapwordsᚋpkgᚋlemmaᚐWord(ctx context.Context, v interface{}) (lemma.Word, error) {
 	res, err := ec.unmarshalInputWordInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) unmarshalNWordInput2ᚕgithubᚗcomᚋDarkclainerᚋjapwordsᚋpkgᚋlemmaᚐProjectedWordᚄ(ctx context.Context, v interface{}) ([]lemma.ProjectedWord, error) {
+func (ec *executionContext) unmarshalNWordInput2ᚕgithubᚗcomᚋDarkclainerᚋjapwordsᚋpkgᚋlemmaᚐWordᚄ(ctx context.Context, v interface{}) ([]lemma.Word, error) {
 	var vSlice []interface{}
 	if v != nil {
 		vSlice = graphql.CoerceList(v)
 	}
 	var err error
-	res := make([]lemma.ProjectedWord, len(vSlice))
+	res := make([]lemma.Word, len(vSlice))
 	for i := range vSlice {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
-		res[i], err = ec.unmarshalNWordInput2githubᚗcomᚋDarkclainerᚋjapwordsᚋpkgᚋlemmaᚐProjectedWord(ctx, vSlice[i])
+		res[i], err = ec.unmarshalNWordInput2githubᚗcomᚋDarkclainerᚋjapwordsᚋpkgᚋlemmaᚐWord(ctx, vSlice[i])
 		if err != nil {
 			return nil, err
 		}
