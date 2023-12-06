@@ -87,9 +87,9 @@ var DefaultExampleLemma = lemma.ProjectedLemma{
 		"Nonsense",
 		"Usually written using kana alone",
 	},
-	Audio: map[string]string{
-		"mp3": "https://example.com/somelink/mp3",
-		"ogg": "https://example.com/somelink/ogg",
+	Audio: []lemma.Audio{
+		{Type: "mp3", Source: "https://example.com/somelink/mp3"},
+		{Type: "ogg", Source: "https://example.com/somelink/ogg"},
 	},
 }
 

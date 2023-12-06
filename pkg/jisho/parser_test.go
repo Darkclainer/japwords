@@ -348,9 +348,15 @@ func Test_parseConceptLight(t *testing.T) {
 						Tags:         []string{"Derogatory", "Usually"},
 					},
 				},
-				Audio: map[string]string{
-					"audio/mpeg": "audio1",
-					"audio/ogg":  "audio2",
+				Audio: []lemma.Audio{
+					{
+						Type:   "audio/mpeg",
+						Source: "audio1",
+					},
+					{
+						Type:   "audio/ogg",
+						Source: "audio2",
+					},
 				},
 			},
 			ErrorAssert: assert.NoError,
@@ -402,8 +408,11 @@ func Test_parseConceptLight(t *testing.T) {
 						PartOfSpeech: []string{"Noun"},
 					},
 				},
-				Audio: map[string]string{
-					"audio/mpeg": "audio1",
+				Audio: []lemma.Audio{
+					{
+						Type:   "audio/mpeg",
+						Source: "audio1",
+					},
 				},
 			},
 			ErrorAssert: assert.NoError,
@@ -526,7 +535,7 @@ func Test_parseStatus(t *testing.T) {
 	testCases := []struct {
 		Name  string
 		HTML  string
-		Audio map[string]string
+		Audio []lemma.Audio
 		Tags  []string
 	}{
 		{
@@ -557,9 +566,9 @@ func Test_parseStatus(t *testing.T) {
 			</audio>
 		
 		</div>`,
-			Audio: map[string]string{
-				"audio/mpeg": "https://example.com/file.mp3",
-				"audio/ogg":  "https://example.com/file.ogg",
+			Audio: []lemma.Audio{
+				{Type: "audio/mpeg", Source: "https://example.com/file.mp3"},
+				{Type: "audio/ogg", Source: "https://example.com/file.ogg"},
 			},
 		},
 		{
@@ -571,8 +580,8 @@ func Test_parseStatus(t *testing.T) {
 			</audio>
 		
 		</div>`,
-			Audio: map[string]string{
-				"unknown": "https://example.com/file.mp3",
+			Audio: []lemma.Audio{
+				{Type: "unknown", Source: "https://example.com/file.mp3"},
 			},
 		},
 		{
@@ -584,8 +593,8 @@ func Test_parseStatus(t *testing.T) {
 			</audio>
 		
 		</div>`,
-			Audio: map[string]string{
-				"unknown": "https://example.com/file.mp3",
+			Audio: []lemma.Audio{
+				{Type: "unknown", Source: "https://example.com/file.mp3"},
 			},
 		},
 	}

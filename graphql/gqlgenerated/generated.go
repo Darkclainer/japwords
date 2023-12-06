@@ -39,11 +39,9 @@ type Config struct {
 
 type ResolverRoot interface {
 	Anki() AnkiResolver
-	Lemma() LemmaResolver
 	Mutation() MutationResolver
 	Query() QueryResolver
 	Word() WordResolver
-	LemmaInput() LemmaInputResolver
 	WordInput() WordInputResolver
 }
 
@@ -278,9 +276,6 @@ type AnkiResolver interface {
 	Notes(ctx context.Context, obj *gqlmodel.Anki) (*gqlmodel.AnkiNotesResult, error)
 	NoteFields(ctx context.Context, obj *gqlmodel.Anki, name string) (*gqlmodel.AnkiNoteFieldsResult, error)
 }
-type LemmaResolver interface {
-	Audio(ctx context.Context, obj *lemma.ProjectedLemma) ([]*gqlmodel.Audio, error)
-}
 type MutationResolver interface {
 	SetAnkiConfigConnection(ctx context.Context, input gqlmodel.SetAnkiConfigConnectionInput) (*gqlmodel.SetAnkiConfigConnectionResult, error)
 	SetAnkiConfigDeck(ctx context.Context, input gqlmodel.SetAnkiConfigDeckInput) (*gqlmodel.SetAnkiConfigDeckResult, error)
@@ -302,9 +297,6 @@ type WordResolver interface {
 	Furigana(ctx context.Context, obj *lemma.Word) ([]*lemma.FuriganaChar, error)
 }
 
-type LemmaInputResolver interface {
-	Audio(ctx context.Context, obj *lemma.ProjectedLemma, data []*gqlmodel.AudioInput) error
-}
 type WordInputResolver interface {
 	Furigana(ctx context.Context, obj *lemma.Word, data []*lemma.FuriganaChar) error
 }
@@ -3757,7 +3749,7 @@ func (ec *executionContext) fieldContext_AnkiUnknownError_message(ctx context.Co
 	return fc, nil
 }
 
-func (ec *executionContext) _Audio_type(ctx context.Context, field graphql.CollectedField, obj *gqlmodel.Audio) (ret graphql.Marshaler) {
+func (ec *executionContext) _Audio_type(ctx context.Context, field graphql.CollectedField, obj *lemma.Audio) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Audio_type(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -3801,7 +3793,7 @@ func (ec *executionContext) fieldContext_Audio_type(ctx context.Context, field g
 	return fc, nil
 }
 
-func (ec *executionContext) _Audio_source(ctx context.Context, field graphql.CollectedField, obj *gqlmodel.Audio) (ret graphql.Marshaler) {
+func (ec *executionContext) _Audio_source(ctx context.Context, field graphql.CollectedField, obj *lemma.Audio) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Audio_source(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -4483,7 +4475,7 @@ func (ec *executionContext) _Lemma_audio(ctx context.Context, field graphql.Coll
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Lemma().Audio(rctx, obj)
+		return obj.Audio, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -4495,17 +4487,17 @@ func (ec *executionContext) _Lemma_audio(ctx context.Context, field graphql.Coll
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]*gqlmodel.Audio)
+	res := resTmp.([]lemma.Audio)
 	fc.Result = res
-	return ec.marshalNAudio2ᚕᚖgithubᚗcomᚋDarkclainerᚋjapwordsᚋgraphqlᚋgqlmodelᚐAudioᚄ(ctx, field.Selections, res)
+	return ec.marshalNAudio2ᚕgithubᚗcomᚋDarkclainerᚋjapwordsᚋpkgᚋlemmaᚐAudioᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Lemma_audio(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Lemma",
 		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
+		IsMethod:   false,
+		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
 			case "type":
@@ -8408,8 +8400,8 @@ func (ec *executionContext) unmarshalInputAnkiConfigMappingElementInput(ctx cont
 	return it, nil
 }
 
-func (ec *executionContext) unmarshalInputAudioInput(ctx context.Context, obj interface{}) (gqlmodel.AudioInput, error) {
-	var it gqlmodel.AudioInput
+func (ec *executionContext) unmarshalInputAudioInput(ctx context.Context, obj interface{}) (lemma.Audio, error) {
+	var it lemma.Audio
 	asMap := map[string]interface{}{}
 	for k, v := range obj.(map[string]interface{}) {
 		asMap[k] = v
@@ -8614,13 +8606,11 @@ func (ec *executionContext) unmarshalInputLemmaInput(ctx context.Context, obj in
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("audio"))
-			data, err := ec.unmarshalNAudioInput2ᚕᚖgithubᚗcomᚋDarkclainerᚋjapwordsᚋgraphqlᚋgqlmodelᚐAudioInputᚄ(ctx, v)
+			data, err := ec.unmarshalNAudioInput2ᚕgithubᚗcomᚋDarkclainerᚋjapwordsᚋpkgᚋlemmaᚐAudioᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			if err = ec.resolvers.LemmaInput().Audio(ctx, &it, data); err != nil {
-				return it, err
-			}
+			it.Audio = data
 		}
 	}
 
@@ -10030,7 +10020,7 @@ func (ec *executionContext) _AnkiUnknownError(ctx context.Context, sel ast.Selec
 
 var audioImplementors = []string{"Audio"}
 
-func (ec *executionContext) _Audio(ctx context.Context, sel ast.SelectionSet, obj *gqlmodel.Audio) graphql.Marshaler {
+func (ec *executionContext) _Audio(ctx context.Context, sel ast.SelectionSet, obj *lemma.Audio) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.OperationContext, sel, audioImplementors)
 
 	out := graphql.NewFieldSet(fields)
@@ -10284,69 +10274,38 @@ func (ec *executionContext) _Lemma(ctx context.Context, sel ast.SelectionSet, ob
 		case "slug":
 			out.Values[i] = ec._Lemma_slug(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&out.Invalids, 1)
+				out.Invalids++
 			}
 		case "tags":
 			out.Values[i] = ec._Lemma_tags(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&out.Invalids, 1)
+				out.Invalids++
 			}
 		case "forms":
 			out.Values[i] = ec._Lemma_forms(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&out.Invalids, 1)
+				out.Invalids++
 			}
 		case "definitions":
 			out.Values[i] = ec._Lemma_definitions(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&out.Invalids, 1)
+				out.Invalids++
 			}
 		case "partsOfSpeech":
 			out.Values[i] = ec._Lemma_partsOfSpeech(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&out.Invalids, 1)
+				out.Invalids++
 			}
 		case "senseTags":
 			out.Values[i] = ec._Lemma_senseTags(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&out.Invalids, 1)
+				out.Invalids++
 			}
 		case "audio":
-			field := field
-
-			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Lemma_audio(ctx, field, obj)
-				if res == graphql.Null {
-					atomic.AddUint32(&fs.Invalids, 1)
-				}
-				return res
+			out.Values[i] = ec._Lemma_audio(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
 			}
-
-			if field.Deferrable != nil {
-				dfs, ok := deferred[field.Deferrable.Label]
-				di := 0
-				if ok {
-					dfs.AddField(field)
-					di = len(dfs.Values) - 1
-				} else {
-					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
-					deferred[field.Deferrable.Label] = dfs
-				}
-				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
-					return innerFunc(ctx, dfs)
-				})
-
-				// don't run the out.Concurrently() call below
-				out.Values[i] = graphql.Null
-				continue
-			}
-
-			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -11823,7 +11782,11 @@ func (ec *executionContext) marshalNAnkiNotesResult2ᚖgithubᚗcomᚋDarkclaine
 	return ec._AnkiNotesResult(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalNAudio2ᚕᚖgithubᚗcomᚋDarkclainerᚋjapwordsᚋgraphqlᚋgqlmodelᚐAudioᚄ(ctx context.Context, sel ast.SelectionSet, v []*gqlmodel.Audio) graphql.Marshaler {
+func (ec *executionContext) marshalNAudio2githubᚗcomᚋDarkclainerᚋjapwordsᚋpkgᚋlemmaᚐAudio(ctx context.Context, sel ast.SelectionSet, v lemma.Audio) graphql.Marshaler {
+	return ec._Audio(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNAudio2ᚕgithubᚗcomᚋDarkclainerᚋjapwordsᚋpkgᚋlemmaᚐAudioᚄ(ctx context.Context, sel ast.SelectionSet, v []lemma.Audio) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -11847,7 +11810,7 @@ func (ec *executionContext) marshalNAudio2ᚕᚖgithubᚗcomᚋDarkclainerᚋjap
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNAudio2ᚖgithubᚗcomᚋDarkclainerᚋjapwordsᚋgraphqlᚋgqlmodelᚐAudio(ctx, sel, v[i])
+			ret[i] = ec.marshalNAudio2githubᚗcomᚋDarkclainerᚋjapwordsᚋpkgᚋlemmaᚐAudio(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -11867,36 +11830,26 @@ func (ec *executionContext) marshalNAudio2ᚕᚖgithubᚗcomᚋDarkclainerᚋjap
 	return ret
 }
 
-func (ec *executionContext) marshalNAudio2ᚖgithubᚗcomᚋDarkclainerᚋjapwordsᚋgraphqlᚋgqlmodelᚐAudio(ctx context.Context, sel ast.SelectionSet, v *gqlmodel.Audio) graphql.Marshaler {
-	if v == nil {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
-		}
-		return graphql.Null
-	}
-	return ec._Audio(ctx, sel, v)
+func (ec *executionContext) unmarshalNAudioInput2githubᚗcomᚋDarkclainerᚋjapwordsᚋpkgᚋlemmaᚐAudio(ctx context.Context, v interface{}) (lemma.Audio, error) {
+	res, err := ec.unmarshalInputAudioInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) unmarshalNAudioInput2ᚕᚖgithubᚗcomᚋDarkclainerᚋjapwordsᚋgraphqlᚋgqlmodelᚐAudioInputᚄ(ctx context.Context, v interface{}) ([]*gqlmodel.AudioInput, error) {
+func (ec *executionContext) unmarshalNAudioInput2ᚕgithubᚗcomᚋDarkclainerᚋjapwordsᚋpkgᚋlemmaᚐAudioᚄ(ctx context.Context, v interface{}) ([]lemma.Audio, error) {
 	var vSlice []interface{}
 	if v != nil {
 		vSlice = graphql.CoerceList(v)
 	}
 	var err error
-	res := make([]*gqlmodel.AudioInput, len(vSlice))
+	res := make([]lemma.Audio, len(vSlice))
 	for i := range vSlice {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
-		res[i], err = ec.unmarshalNAudioInput2ᚖgithubᚗcomᚋDarkclainerᚋjapwordsᚋgraphqlᚋgqlmodelᚐAudioInput(ctx, vSlice[i])
+		res[i], err = ec.unmarshalNAudioInput2githubᚗcomᚋDarkclainerᚋjapwordsᚋpkgᚋlemmaᚐAudio(ctx, vSlice[i])
 		if err != nil {
 			return nil, err
 		}
 	}
 	return res, nil
-}
-
-func (ec *executionContext) unmarshalNAudioInput2ᚖgithubᚗcomᚋDarkclainerᚋjapwordsᚋgraphqlᚋgqlmodelᚐAudioInput(ctx context.Context, v interface{}) (*gqlmodel.AudioInput, error) {
-	res, err := ec.unmarshalInputAudioInput(ctx, v)
-	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) unmarshalNBoolean2bool(ctx context.Context, v interface{}) (bool, error) {

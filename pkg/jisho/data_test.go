@@ -86,9 +86,15 @@ func TestParseFiles(t *testing.T) {
 							PartOfSpeech: []string{"Noun, used as a prefix"},
 						},
 					},
-					Audio: map[string]string{
-						"audio/mpeg": "https://d1vjc5dkcd3yh2.cloudfront.net/audio/10ce3f5eb7b4a9a03c4dafce2af60e28.mp3",
-						"audio/ogg":  "https://d1vjc5dkcd3yh2.cloudfront.net/audio_ogg/10ce3f5eb7b4a9a03c4dafce2af60e28.ogg",
+					Audio: []lemma.Audio{
+						{
+							Type:   "audio/mpeg",
+							Source: "https://d1vjc5dkcd3yh2.cloudfront.net/audio/10ce3f5eb7b4a9a03c4dafce2af60e28.mp3",
+						},
+						{
+							Type:   "audio/ogg",
+							Source: "https://d1vjc5dkcd3yh2.cloudfront.net/audio_ogg/10ce3f5eb7b4a9a03c4dafce2af60e28.ogg",
+						},
 					},
 				},
 				3: {

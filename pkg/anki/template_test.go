@@ -251,11 +251,6 @@ func Test_checkTemplate(t *testing.T) {
 			ErrorAssert: assert.NoError,
 		},
 		{
-			Name:        "Audio",
-			Tmpl:        `{{index .Audio "mp3"}}`,
-			ErrorAssert: assert.NoError,
-		},
-		{
 			Name:        "Not existing field",
 			Tmpl:        `{{.hello}}`,
 			ErrorAssert: assert.Error,

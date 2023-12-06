@@ -157,7 +157,7 @@ func parseRepresentation(sel *goquery.Selection) (lemma.Word, error) {
 
 var conceptLightTagMatcher = matcher(".concept_light-tag")
 
-func parseStatus(sel *goquery.Selection) (audio map[string]string, tags []string) {
+func parseStatus(sel *goquery.Selection) (audio []lemma.Audio, tags []string) {
 	tagSel := sel.ChildrenMatcher(conceptLightTagMatcher)
 	tagSel.Each(func(_ int, sel *goquery.Selection) {
 		tags = append(tags, strings.TrimSpace(sel.Text()))
@@ -166,7 +166,6 @@ func parseStatus(sel *goquery.Selection) (audio map[string]string, tags []string
 	if sourceSel.Length() == 0 {
 		return
 	}
-	audio = make(map[string]string)
 	for _, source := range sourceSel.Nodes {
 		var audioSrc, audioType string
 		for _, attr := range source.Attr {
@@ -189,7 +188,10 @@ func parseStatus(sel *goquery.Selection) (audio map[string]string, tags []string
 			if audioType == "" {
 				audioType = "unknown"
 			}
-			audio[audioType] = audioSrc
+			audio = append(audio, lemma.Audio{
+				Type:   audioType,
+				Source: audioSrc,
+			})
 		}
 	}
 	return

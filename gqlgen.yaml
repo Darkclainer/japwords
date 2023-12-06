@@ -63,6 +63,9 @@ models:
   Word:
     model:
       - github.com/Darkclainer/japwords/pkg/lemma.Word
+  Audio:
+    model:
+      - github.com/Darkclainer/japwords/pkg/lemma.Audio
   Furigana:
     model:
       - github.com/Darkclainer/japwords/pkg/lemma.FuriganaChar
@@ -76,6 +79,9 @@ models:
   WordInput:
     model:
       - github.com/Darkclainer/japwords/pkg/lemma.Word
+  AudioInput:
+    model:
+      - github.com/Darkclainer/japwords/pkg/lemma.Audio
   FuriganaInput:
     model:
       - github.com/Darkclainer/japwords/pkg/lemma.FuriganaChar

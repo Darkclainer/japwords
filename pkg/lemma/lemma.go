@@ -7,9 +7,7 @@ type Lemma struct {
 	Tags   []string    `json:"Tags,omitempty"`
 	Forms  []Word      `json:"Forms,omitempty"`
 	Senses []WordSense `json:"Senses,omitempty"`
-	// Audio is array of links to audio files.
-	// Key is format
-	Audio map[string]string `json:"Audio,omitempty"`
+	Audio  []Audio     `json:"Audio,omitempty"`
 }
 
 type Word struct {
@@ -22,6 +20,11 @@ type Word struct {
 	// (AccentDirectionUD1 AccentDirectionRight)-(AccentDirectionUD2 should be substitute by
 	// (AccentDirectionUD1)-(AccentDirectionUD2 AccentDirectionLeft)
 	PitchShapes []PitchShape `json:"Pitches,omitempty"`
+}
+
+type Audio struct {
+	Type   string `json:"Word,omitempty"`
+	Source string `json:"Source,omitempty"`
 }
 
 type Furigana []FuriganaChar
@@ -56,11 +59,11 @@ type WordSense struct {
 // ProjectedLemma is more specific variant of Lemma.
 // This structure include only one meaning.
 type ProjectedLemma struct {
-	Slug          Word              `json:"Slug,omitempty"`
-	Tags          []string          `json:"Tags,omitempty"`
-	Forms         []Word            `json:"Forms,omitempty"`
-	Definitions   []string          `json:"Definitions,omitempty"`
-	PartsOfSpeech []string          `json:"PartsOfSpeech,omitempty"`
-	SenseTags     []string          `json:"SenseTags,omitempty"`
-	Audio         map[string]string `json:"Audio,omitempty"`
+	Slug          Word     `json:"Slug,omitempty"`
+	Tags          []string `json:"Tags,omitempty"`
+	Forms         []Word   `json:"Forms,omitempty"`
+	Definitions   []string `json:"Definitions,omitempty"`
+	PartsOfSpeech []string `json:"PartsOfSpeech,omitempty"`
+	SenseTags     []string `json:"SenseTags,omitempty"`
+	Audio         []Audio  `json:"Audio,omitempty"`
 }

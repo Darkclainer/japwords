@@ -170,16 +170,6 @@ func (this AnkiUnknownError) GetMessage() string { return this.Message }
 
 func (AnkiUnknownError) IsAnkiError() {}
 
-type Audio struct {
-	Type   string `json:"type"`
-	Source string `json:"source"`
-}
-
-type AudioInput struct {
-	Type   string `json:"type"`
-	Source string `json:"source"`
-}
-
 type CreateAnkiDeckAlreadyExists struct {
 	Message string `json:"message"`
 }
