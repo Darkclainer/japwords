@@ -9,8 +9,7 @@ type Run mg.Namespace
 
 // UI run ui development server
 func (Run) UI() error {
-	return RunVDir(
-		"ui",
+	return UIRunV(
 		"npm",
 		"run",
 		"dev",

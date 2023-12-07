@@ -27,8 +27,7 @@ func (Graphql) GenerateServer(ctx context.Context) error {
 
 // Generate regenerates ui graphql code
 func (Graphql) GenerateUI(ctx context.Context) error {
-	return RunVDir(
-		"ui",
+	return UIRunV(
 		"npm",
 		"run",
 		"generate",
