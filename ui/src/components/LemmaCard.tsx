@@ -8,7 +8,7 @@ import {
   LemmaNoteInfo,
   Word,
 } from '../api/__generated__/graphql';
-import { LemmaBag } from '../lib/lemmas';
+import { LemmaBag } from '../lib/lemma-bag';
 import { ToastFunction } from '../lib/styled-toast';
 import PlayIcon from './Icons/PlayIcon';
 

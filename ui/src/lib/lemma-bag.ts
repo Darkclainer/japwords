@@ -45,7 +45,7 @@ function newBagFromLemma(lemma: LemmaNoteInfo): LemmaBag {
   };
 }
 
-function isLemmaFitBag(bag: LemmaBagHeader, lemma: Lemma): boolean {
+export function isLemmaFitBag(bag: LemmaBagHeader, lemma: Lemma): boolean {
   const properties: Array<keyof LemmaBagHeader> = ['slug', 'tags', 'forms', 'audio'];
   return properties.every((property) => {
     return isEqual(bag[property], lemma[property]);

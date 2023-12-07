@@ -8,7 +8,7 @@ import { Dispatch, SetStateAction, useCallback, useId, useMemo, useRef, useState
 import { gql } from '../api/__generated__';
 import { AddNoteRequest, LemmaNoteInfo } from '../api/__generated__/graphql';
 import { useToastify } from '../hooks/toastify';
-import { groupLemmaNotes } from '../lib/lemmas';
+import { groupLemmaNotes } from '../lib/lemma-bag';
 import { apolloErrorToast, ToastFunction } from '../lib/styled-toast';
 import Button, { ButtonVariant } from './Button';
 import { DialogModal, DialogWidth } from './DialogModal';
