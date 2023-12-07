@@ -80,6 +80,26 @@ func Test_Config_Equal(t *testing.T) {
 			Expected: false,
 		},
 		{
+			Name: "neq AudioField",
+			First: &Config{
+				AudioField: "a",
+			},
+			Second: &Config{
+				AudioField: "b",
+			},
+			Expected: false,
+		},
+		{
+			Name: "neq AudioPreferredType",
+			First: &Config{
+				AudioPreferredType: "a",
+			},
+			Second: &Config{
+				AudioPreferredType: "b",
+			},
+			Expected: false,
+		},
+		{
 			Name: "mapping eq nonempty",
 			First: &Config{
 				Mapping: map[string]*Template{
@@ -184,6 +204,10 @@ func Test_ConfigReloader_New(t *testing.T) {
 		APIKey:   "testapikey",
 		Deck:     "testdeck",
 		NoteType: "testnote",
+		Audio: config.AnkiAudio{
+			Field:         "testaudiofield",
+			PreferredType: "testaudiopreferredtype",
+		},
 	}
 	t.Run("OK", func(t *testing.T) {
 		configManager := configtest.New(t, &config.UserConfig{
@@ -196,6 +220,8 @@ func Test_ConfigReloader_New(t *testing.T) {
 			assert.Equal(t, ankiConfig.Addr, conf.Addr)
 			assert.Equal(t, ankiConfig.Deck, conf.Deck)
 			assert.Equal(t, ankiConfig.NoteType, conf.NoteType)
+			assert.Equal(t, ankiConfig.Audio.Field, conf.AudioField)
+			assert.Equal(t, ankiConfig.Audio.PreferredType, conf.AudioPreferredType)
 			return nil, nil
 		})
 		configReloader, err := NewConfigReloader(anki, configManager)
@@ -237,13 +263,19 @@ func Test_ConfigReloader_Config(t *testing.T) {
 					FieldMapping: map[string]string{
 						"mykey": "mymapping",
 					},
+					Audio: config.AnkiAudio{
+						Field:         "myaudiofield",
+						PreferredType: "mypreferredtype",
+					},
 				},
 			},
 			Expected: &Config{
-				Addr:     "testaddr:3030",
-				APIKey:   "testapikey",
-				Deck:     "testdeck",
-				NoteType: "testnote",
+				Addr:               "testaddr:3030",
+				APIKey:             "testapikey",
+				Deck:               "testdeck",
+				NoteType:           "testnote",
+				AudioField:         "myaudiofield",
+				AudioPreferredType: "mypreferredtype",
 				Mapping: TemplateMapping{
 					"mykey": &Template{
 						Src: "mymapping",
@@ -281,6 +313,19 @@ func Test_ConfigReloader_Config(t *testing.T) {
 					Addr:     "testaddr:3030",
 					Deck:     "testdeck",
 					NoteType: "test\"note",
+				},
+			},
+			ErrorAssert: assert.Error,
+		},
+		{
+			Name: "invalid audio field",
+			UserConfig: &config.UserConfig{
+				Anki: config.Anki{
+					Addr: "testaddr:3030",
+					Deck: "testdeck",
+					Audio: config.AnkiAudio{
+						Field: `wrong"field`,
+					},
 				},
 			},
 			ErrorAssert: assert.Error,
@@ -571,6 +616,47 @@ func Test_ConfigReloader_UpdateMapping(t *testing.T) {
 			initialConfig.Mapping = anki.client.Config().Mapping
 			assert.Equal(t, initialConfig, anki.client.Config())
 			assert.True(t, expectedMapping.Equal(anki.client.Config().Mapping))
+		})
+	}
+}
+
+func Test_ConfigReloader_UpdateAudio(t *testing.T) {
+	testCases := []struct {
+		Name               string
+		AudioField         string
+		AudioPreferredType string
+		ErrorAssert        assert.ErrorAssertionFunc
+	}{
+		{
+			Name:               "ok",
+			AudioField:         "newfield",
+			AudioPreferredType: "newtype",
+			ErrorAssert:        assert.NoError,
+		},
+		{
+			Name:       "invalid audio field",
+			AudioField: `invalid"audiofield`,
+			ErrorAssert: func(tt assert.TestingT, err error, i ...interface{}) bool {
+				var validationError *ValidationError
+				if !assert.ErrorAs(tt, err, &validationError, i...) {
+					return false
+				}
+				return assert.ErrorContains(tt, err, "contain ':', '\"'", i...)
+			},
+		},
+	}
+	for i := range testCases {
+		tc := testCases[i]
+		t.Run(tc.Name, func(t *testing.T) {
+			configReloader, anki, initialConfig := NewTestReloader(t)
+			err := configReloader.UpdateAudio(tc.AudioField, tc.AudioPreferredType)
+			tc.ErrorAssert(t, err)
+			if err != nil {
+				return
+			}
+			initialConfig.AudioField = tc.AudioField
+			initialConfig.AudioPreferredType = tc.AudioPreferredType
+			assert.Equal(t, initialConfig, anki.client.Config())
 		})
 	}
 }

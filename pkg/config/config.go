@@ -37,6 +37,16 @@ type Anki struct {
 	//
 	// Value should be valid go text/template. For more details see pkg/anki/template.go.
 	FieldMapping map[string]string `yaml:"fields" koanf:"fields"`
+
+	// Audio specifies how audio should be mapped to anki notes.
+	Audio AnkiAudio `yaml:"audio" koanf:"audio"`
+}
+
+type AnkiAudio struct {
+	// Field is name of field where audio should be added. If empty, audio will not be added.
+	Field string
+	// PreferredType is substring of audio type that will be selected if found.
+	PreferredType string
 }
 
 type Dictionary struct {
@@ -86,6 +96,10 @@ func DefaultUserConfig() *UserConfig {
 {{- range $index, $_ := .SenseTags -}}
 	<span class="sensetag">{{.}}</span>{{ ne $index $lastIndex | ternary " " ""  }}
 {{- end -}}`,
+			},
+			Audio: AnkiAudio{
+				Field:         "Audio",
+				PreferredType: "mp3",
 			},
 		},
 		Dictionary: Dictionary{

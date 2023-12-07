@@ -15,6 +15,9 @@ type Config struct {
 	Deck     string
 	NoteType string
 
+	AudioField         string
+	AudioPreferredType string
+
 	Mapping TemplateMapping
 }
 
@@ -33,7 +36,9 @@ func (c *Config) Equal(o any) bool {
 	scalarEq := c.Addr == oc.Addr &&
 		c.APIKey == oc.APIKey &&
 		c.Deck == oc.Deck &&
-		c.NoteType == oc.NoteType
+		c.NoteType == oc.NoteType &&
+		c.AudioField == oc.AudioField &&
+		c.AudioPreferredType == oc.AudioPreferredType
 	if !scalarEq {
 		return false
 	}
@@ -96,13 +101,22 @@ func (cr *ConfigReloader) Config(uc *config.UserConfig) (config.Part, error) {
 	for _, mappingErr := range mappingErrs {
 		errs = append(errs, mappingErr)
 	}
+	// if empty, it is disabled, so we don't need to check
+	if conf.Audio.Field != "" {
+		err = validateFieldName(conf.Audio.Field)
+		if err != nil {
+			errs = append(errs, fmt.Errorf("anki config Audio.Field validation failed: %w", err))
+		}
+	}
 
 	return &Config{
-		Addr:     uc.Anki.Addr,
-		APIKey:   uc.Anki.APIKey,
-		Deck:     uc.Anki.Deck,
-		NoteType: uc.Anki.NoteType,
-		Mapping:  mapping,
+		Addr:               uc.Anki.Addr,
+		APIKey:             uc.Anki.APIKey,
+		Deck:               uc.Anki.Deck,
+		NoteType:           uc.Anki.NoteType,
+		AudioField:         uc.Anki.Audio.Field,
+		AudioPreferredType: uc.Anki.Audio.PreferredType,
+		Mapping:            mapping,
 	}, errors.Join(errs...)
 }
 
@@ -157,6 +171,19 @@ func (cr *ConfigReloader) UpdateMapping(mapping map[string]string) error {
 	}
 	return cr.updateConfigFn(func(uc *config.UserConfig) error {
 		uc.Anki.FieldMapping = mapping
+		return nil
+	})
+}
+
+func (cr *ConfigReloader) UpdateAudio(field, preferredType string) error {
+	if field != "" {
+		if err := validateFieldName(field); err != nil {
+			return &ValidationError{Msg: err.Error()}
+		}
+	}
+	return cr.updateConfigFn(func(uc *config.UserConfig) error {
+		uc.Anki.Audio.Field = field
+		uc.Anki.Audio.PreferredType = preferredType
 		return nil
 	})
 }
