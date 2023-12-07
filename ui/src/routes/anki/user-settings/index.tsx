@@ -28,8 +28,8 @@ export default function AnkiUserSettings() {
   }
   return (
     <div className="flex flex-col items-center gap-5 text-xl my-8">
-      <div className="flex flex-row gap-3">
-        <StatusIcon kind={errorProps.iconKind} />
+      <div className="flex flex-row gap-3 items-center">
+        <StatusIcon className="w-10 h-10" kind={errorProps.iconKind} />
         <h1 className="text-3xl">{errorProps.head}</h1>
       </div>
       <div>{errorProps.body}</div>
