@@ -27,7 +27,12 @@ query PrepareLemma($lemma: LemmaInput) {
         value
       }
       tags
-      audioURL
+      audioAssets {
+        field
+        filename
+        url
+        data
+      }
     }
     error {
       ... on AnkiIncompleteConfiguration {
@@ -227,8 +232,15 @@ type AddNoteFormProps = {
 
 type Note = {
   fields: NoteField[];
-  audioURL: string;
   tags: string[];
+  audioAssets: AudioAsset[];
+};
+
+type AudioAsset = {
+  field: string;
+  filename: string;
+  data: string;
+  url: string;
 };
 
 type NoteField = {
@@ -243,7 +255,7 @@ function AddNoteForm({ addLemmaRequest, setOpen, setLemmaNotes, toast }: AddNote
         name: field.name,
         value: field.value,
       })),
-      audioURL: '',
+      audioAssets: [],
       tags: [],
     };
   }, [addLemmaRequest]);

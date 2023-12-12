@@ -907,6 +907,17 @@ func Test_statefullClient_AddNote(t *testing.T) {
 		assert.Equal(t, int64(0), noteID)
 		assert.ErrorIs(t, err, ErrCollectionUnavailable)
 	})
+	t.Run("audio error", func(t *testing.T) {
+		client, _, _ := newTestNormalStatefullClient(t, readyConfig)
+		_, err := client.AddNote(context.Background(), &AddNoteRequest{
+			AudioAssets: []AddNoteAudioAsset{
+				{
+					Data: "hello",
+				},
+			},
+		})
+		assert.Error(t, err, ErrCollectionUnavailable)
+	})
 	t.Run("ok", func(t *testing.T) {
 		client, ankiClient, _ := newTestNormalStatefullClient(t, readyConfig)
 		ankiClient.On("AddNote", mock.Anything,
@@ -914,6 +925,16 @@ func Test_statefullClient_AddNote(t *testing.T) {
 				Fields: map[string]string{
 					"a": "avalue",
 					"b": "bvalue",
+				},
+				Assets: []*ankiconnect.AddNoteAsset{
+					{
+						Asset: ankiconnect.MediaAssetRequest{
+							URL:      "linkaudio",
+							Filename: "audio.mp3",
+							Fields:   []string{"audiofield"},
+						},
+						Type: ankiconnect.MediaTypeAudio,
+					},
 				},
 			},
 			&ankiconnect.AddNoteOptions{
@@ -939,10 +960,133 @@ func Test_statefullClient_AddNote(t *testing.T) {
 					Value: "bvalue",
 				},
 			},
+			AudioAssets: []AddNoteAudioAsset{
+				{
+					Field:    "audiofield",
+					Filename: "audio.mp3",
+					URL:      "linkaudio",
+				},
+			},
 		})
 		assert.Equal(t, int64(912), noteID)
 		assert.NoError(t, err)
 	})
+}
+
+func Test_convertAddNoteAudioAssets(t *testing.T) {
+	testCases := []struct {
+		Name        string
+		NoteAssets  []AddNoteAudioAsset
+		Expected    []*ankiconnect.AddNoteAsset
+		AssertError assert.ErrorAssertionFunc
+	}{
+		{
+			Name:        "empty",
+			AssertError: assert.NoError,
+		},
+		{
+			Name: "url",
+			NoteAssets: []AddNoteAudioAsset{
+				{
+					Field:    "foo",
+					Filename: "bar",
+					URL:      "foourl",
+				},
+			},
+			Expected: []*ankiconnect.AddNoteAsset{
+				{
+					Asset: ankiconnect.MediaAssetRequest{
+						URL:      "foourl",
+						Filename: "bar",
+						Fields: []string{
+							"foo",
+						},
+						DeleteExisting: false,
+					},
+					Type: ankiconnect.MediaTypeAudio,
+				},
+			},
+			AssertError: assert.NoError,
+		},
+		{
+			Name: "data",
+			NoteAssets: []AddNoteAudioAsset{
+				{
+					Field:    "foo",
+					Filename: "bar",
+					Data:     "Zm9vYmFy",
+				},
+			},
+			Expected: []*ankiconnect.AddNoteAsset{
+				{
+					Asset: ankiconnect.MediaAssetRequest{
+						Filename: "bar",
+						Data:     "Zm9vYmFy",
+						Fields: []string{
+							"foo",
+						},
+						SkipHash: "3858f62230ac3c915f300c664312c63f",
+					},
+					Type: ankiconnect.MediaTypeAudio,
+				},
+			},
+			AssertError: assert.NoError,
+		},
+		{
+			Name: "error",
+			NoteAssets: []AddNoteAudioAsset{
+				{
+					Field:    "foo",
+					Filename: "bar",
+					Data:     "hello",
+				},
+			},
+			AssertError: assert.Error,
+		},
+	}
+	for i := range testCases {
+		tc := testCases[i]
+		t.Run(tc.Name, func(t *testing.T) {
+			actual, err := convertAddNoteAudioAssets(tc.NoteAssets)
+			tc.AssertError(t, err)
+			if err != nil {
+				return
+			}
+			assert.Equal(t, tc.Expected, actual)
+		})
+	}
+}
+
+func Test_md5OfEncodedData(t *testing.T) {
+	testCases := []struct {
+		Name        string
+		Src         string
+		Expected    string
+		AssertError assert.ErrorAssertionFunc
+	}{
+		{
+			Name:        "value: foobar",
+			Src:         "Zm9vYmFy",
+			Expected:    "3858f62230ac3c915f300c664312c63f",
+			AssertError: assert.NoError,
+		},
+		{
+			Name:        "error",
+			Src:         "hello",
+			AssertError: assert.Error,
+		},
+	}
+	for i := range testCases {
+		tc := testCases[i]
+		t.Run(tc.Name, func(t *testing.T) {
+			actual, err := md5OfEncodedData(tc.Src)
+			tc.AssertError(t, err)
+			if err != nil {
+				return
+			}
+			assert.Equal(t, tc.Expected, actual)
+		})
+	}
 }
 
 func Test_statefullClient_QueryNote(t *testing.T) {

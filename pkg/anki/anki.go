@@ -3,11 +3,13 @@ package anki
 import (
 	"bytes"
 	"context"
+	"strings"
 	"sync"
 
 	"github.com/Darkclainer/japwords/pkg/anki/ankiconnect"
 	"github.com/Darkclainer/japwords/pkg/anki/query"
 	"github.com/Darkclainer/japwords/pkg/lemma"
+	"github.com/Darkclainer/japwords/pkg/mediatypes"
 )
 
 //go:generate $MOCKERY_TOOL --name StatefullClient --testonly=true --inpackage=true
@@ -129,10 +131,20 @@ type AddNoteField struct {
 	Value string
 }
 
+type AddNoteAudioAsset struct {
+	Field    string
+	Filename string
+	URL      string
+	// Data is base64 encoded audio
+	Data string
+}
+
 type AddNoteRequest struct {
-	Fields   []AddNoteField
-	Tags     []string
-	AudioURL string
+	Fields []AddNoteField
+	Tags   []string
+	// AudioAssets is list of possible audio assets. Choice must be made between
+	// assets that have same Field value
+	AudioAssets []AddNoteAudioAsset
 }
 
 func (a *Anki) PrepareProjectedLemma(ctx context.Context, lemma *lemma.ProjectedLemma) (*AddNoteRequest, error) {
@@ -145,26 +157,106 @@ func (a *Anki) PrepareProjectedLemma(ctx context.Context, lemma *lemma.Projected
 		return nil, ErrIncompleteConfiguration
 	}
 	config := client.Config()
-	fields := make([]AddNoteField, len(state.CurrentFields))
+	fields, err := prepareFieldsForNoteRequest(lemma, state.CurrentFields, config.Mapping)
+	if err != nil {
+		// Probably best to leave as unexported error
+		return nil, err
+	}
+	audioAssets := prepareAudiosForNoteRequest(lemma, config)
+	return &AddNoteRequest{
+		Fields:      fields,
+		AudioAssets: audioAssets,
+		// TODO: add tags
+	}, nil
+}
+
+func prepareFieldsForNoteRequest(lemma *lemma.ProjectedLemma, currentFields []string, mapping TemplateMapping) ([]AddNoteField, error) {
+	fields := make([]AddNoteField, len(currentFields))
 	var buffer bytes.Buffer
-	for i, fieldName := range state.CurrentFields {
+	for i, fieldName := range currentFields {
 		fields[i].Name = fieldName
-		fieldTemplate, ok := config.Mapping[fieldName]
+		fieldTemplate, ok := mapping[fieldName]
 		if !ok {
 			continue
 		}
 		buffer.Reset()
 		err := fieldTemplate.Tmpl.Execute(&buffer, lemma)
 		if err != nil {
-			// Probably best to leave as unexported error
 			return nil, err
 		}
 		fields[i].Value = buffer.String()
 	}
-	return &AddNoteRequest{
-		Fields: fields,
-		// TODO: add audio and tags
-	}, nil
+	return fields, nil
+}
+
+func prepareAudiosForNoteRequest(lemma *lemma.ProjectedLemma, config *Config) []AddNoteAudioAsset {
+	if config.AudioField == "" {
+		return nil
+	}
+	audios := sortLemmaAudios(lemma.Audio, config.AudioPreferredType)
+	result := make([]AddNoteAudioAsset, len(audios))
+	baseFilename := generateLemmaAudioBasename(lemma)
+	for i := range audios {
+		extension := mediatypes.GetExtensionByMediaType(audios[i].MediaType)
+		result[i] = AddNoteAudioAsset{
+			Field:    config.AudioField,
+			Filename: baseFilename + extension,
+			URL:      audios[i].Source,
+		}
+	}
+	return result
+}
+
+func generateLemmaAudioBasename(lemma *lemma.ProjectedLemma) string {
+	var buffer strings.Builder
+	_, _ = buffer.WriteString(lemma.Slug.Word)
+	if lemma.Slug.Hiragana != "" {
+		_ = buffer.WriteByte('-')
+		_, _ = buffer.WriteString(lemma.Slug.Hiragana)
+	}
+	return buffer.String()
+}
+
+func sortLemmaAudios(audios []lemma.Audio, preferredType string) []lemma.Audio {
+	// we want stable sort, so this is more complicated then could be
+	result := make([]lemma.Audio, len(audios))
+	j := 0
+	for i := range audios {
+		if strings.Contains(audios[i].MediaType, preferredType) {
+			result[j] = audios[i]
+			j++
+		}
+	}
+	for i := range audios {
+		if !strings.Contains(audios[i].MediaType, preferredType) {
+			result[j] = audios[i]
+			j++
+		}
+	}
+	return result
+}
+
+// AddNote sends request to anki-connect to add specified note.
+// If there are assets with equal Field name, then only first of these asset is saved.
+func (a *Anki) AddNote(ctx context.Context, note *AddNoteRequest) (NoteID, error) {
+	// create copy with filtered out assets that has duplicated field
+	noteCopy := *note
+	var assets []AddNoteAudioAsset
+	usedFields := map[string]struct{}{}
+	for _, asset := range note.AudioAssets {
+		_, ok := usedFields[asset.Field]
+		if ok {
+			continue
+		}
+		usedFields[asset.Field] = struct{}{}
+		assets = append(assets, asset)
+	}
+	noteCopy.AudioAssets = assets
+	// TODO: we can also predownload resource ourselves, instead of passing this task to Anki
+	// probably we can do better caching and error handling, but it require to configure another
+	// http client.
+	id, err := a.getClient().AddNote(ctx, &noteCopy)
+	return NoteID(id), err
 }
 
 // SearchProjectedLemmas returns note id for specified lemmas, empty string means not found.
@@ -178,7 +270,7 @@ func (a *Anki) SearchProjectedLemmas(ctx context.Context, lemmas []*lemma.Projec
 	if !state.IsReadyToAddNote() {
 		return nil, ErrIncompleteConfiguration
 	}
-	// actually checks bellow redudant because "readiness" should include it
+	// actually checks bellow is redudant because "readiness" should include it
 	if len(state.CurrentFields) < 1 {
 		return nil, ErrIncompleteConfiguration
 	}
@@ -247,11 +339,6 @@ func confirmFoundNotes(notes []*ankiconnect.NoteInfo, orderField string, orderVa
 		}
 	}
 	return foundIds
-}
-
-func (a *Anki) AddNote(ctx context.Context, note *AddNoteRequest) (NoteID, error) {
-	id, err := a.getClient().AddNote(ctx, note)
-	return NoteID(id), err
 }
 
 func (a *Anki) Stop() {

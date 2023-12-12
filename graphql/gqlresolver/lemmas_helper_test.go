@@ -47,8 +47,8 @@ func Test_expandLemmas(t *testing.T) {
 			},
 			Audio: []lemma.Audio{
 				{
-					Type:   "hello",
-					Source: "world",
+					MediaType: "hello",
+					Source:    "world",
 				},
 			},
 		},
@@ -74,8 +74,8 @@ func Test_expandLemmas(t *testing.T) {
 			SenseTags:     []string{"sensetag"},
 			Audio: []lemma.Audio{
 				{
-					Type:   "hello",
-					Source: "world",
+					MediaType: "hello",
+					Source:    "world",
 				},
 			},
 		},
@@ -87,8 +87,8 @@ func Test_expandLemmas(t *testing.T) {
 			PartsOfSpeech: []string{"sop"},
 			Audio: []lemma.Audio{
 				{
-					Type:   "hello",
-					Source: "world",
+					MediaType: "hello",
+					Source:    "world",
 				},
 			},
 		},

@@ -88,12 +88,12 @@ func TestParseFiles(t *testing.T) {
 					},
 					Audio: []lemma.Audio{
 						{
-							Type:   "audio/mpeg",
-							Source: "https://d1vjc5dkcd3yh2.cloudfront.net/audio/10ce3f5eb7b4a9a03c4dafce2af60e28.mp3",
+							MediaType: "audio/mpeg",
+							Source:    "https://d1vjc5dkcd3yh2.cloudfront.net/audio/10ce3f5eb7b4a9a03c4dafce2af60e28.mp3",
 						},
 						{
-							Type:   "audio/ogg",
-							Source: "https://d1vjc5dkcd3yh2.cloudfront.net/audio_ogg/10ce3f5eb7b4a9a03c4dafce2af60e28.ogg",
+							MediaType: "audio/ogg",
+							Source:    "https://d1vjc5dkcd3yh2.cloudfront.net/audio_ogg/10ce3f5eb7b4a9a03c4dafce2af60e28.ogg",
 						},
 					},
 				},

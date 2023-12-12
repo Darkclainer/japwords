@@ -185,12 +185,9 @@ func parseStatus(sel *goquery.Selection) (audio []lemma.Audio, tags []string) {
 			}
 		}
 		if audioSrc != "" {
-			if audioType == "" {
-				audioType = "unknown"
-			}
 			audio = append(audio, lemma.Audio{
-				Type:   audioType,
-				Source: audioSrc,
+				MediaType: audioType,
+				Source:    audioSrc,
 			})
 		}
 	}

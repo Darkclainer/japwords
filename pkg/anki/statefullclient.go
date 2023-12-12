@@ -2,7 +2,10 @@ package anki
 
 import (
 	"context"
+	"crypto/md5"
+	"encoding/base64"
 	"errors"
+	"fmt"
 	"slices"
 	"strings"
 	"sync"
@@ -307,14 +310,17 @@ func (sc *statefullClient) AddNote(ctx context.Context, note *AddNoteRequest) (i
 		for i := range note.Fields {
 			fields[note.Fields[i].Name] = note.Fields[i].Value
 		}
+		assets, err := convertAddNoteAudioAssets(note.AudioAssets)
+		if err != nil {
+			return nil, err
+		}
 
-		var err error
 		noteID, err = client.AddNote(ctx,
 			&ankiconnect.AddNoteParams{
 				Fields: fields,
+				Assets: assets,
 				// TODO:
 				// Tags:   note.Tags,
-				// Assets: []*ankiconnect.AddNoteAsset{},
 			},
 			&ankiconnect.AddNoteOptions{
 				Deck:           config.Deck,
@@ -333,6 +339,45 @@ func (sc *statefullClient) AddNote(ctx context.Context, note *AddNoteRequest) (i
 		return 0, err
 	}
 	return noteID, nil
+}
+
+func convertAddNoteAudioAssets(noteAssets []AddNoteAudioAsset) ([]*ankiconnect.AddNoteAsset, error) {
+	var assets []*ankiconnect.AddNoteAsset
+	for _, asset := range noteAssets {
+		mediaAsset := &ankiconnect.MediaAssetRequest{
+			Filename: asset.Filename,
+			Fields: []string{
+				asset.Field,
+			},
+		}
+		switch {
+		case asset.Data != "":
+			md5Hash, err := md5OfEncodedData(asset.Data)
+			if err != nil {
+				return nil, err
+			}
+			mediaAsset.Data = asset.Data
+			mediaAsset.SkipHash = md5Hash
+		case asset.URL != "":
+			mediaAsset.URL = asset.URL
+		}
+		assets = append(assets, &ankiconnect.AddNoteAsset{
+			Asset: *mediaAsset,
+			Type:  ankiconnect.MediaTypeAudio,
+		})
+
+	}
+	return assets, nil
+}
+
+func md5OfEncodedData(src string) (string, error) {
+	decoded, err := base64.StdEncoding.DecodeString(src)
+	if err != nil {
+		return "", err
+	}
+	hash := md5.New()
+	_, _ = hash.Write(decoded)
+	return fmt.Sprintf("%x", hash.Sum(nil)), nil
 }
 
 // QueryNotes get notes by query, it does FindNotes and NoteInfo.

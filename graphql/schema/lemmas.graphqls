@@ -33,7 +33,7 @@ type PitchShape {
 }
 
 type Audio {
-  type: String!
+  mediaType: String!
   source: String!
 }
 
@@ -67,6 +67,6 @@ input PitchShapeInput {
 }
 
 input AudioInput {
-  type: String!
+  mediaType: String!
   source: String!
 }

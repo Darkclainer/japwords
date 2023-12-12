@@ -95,9 +95,15 @@ models:
   AddNoteField:
     model:
       - github.com/Darkclainer/japwords/pkg/anki.AddNoteField
+  AddNoteAudioAsset:
+    model:
+      - github.com/Darkclainer/japwords/pkg/anki.AddNoteAudioAsset
   AddNoteRequestInput:
     model:
       - github.com/Darkclainer/japwords/pkg/anki.AddNoteRequest
   AddNoteFieldInput:
     model:
       - github.com/Darkclainer/japwords/pkg/anki.AddNoteField
+  AddNoteAudioAssetInput:
+    model:
+      - github.com/Darkclainer/japwords/pkg/anki.AddNoteAudioAsset

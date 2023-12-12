@@ -50,7 +50,7 @@ const GET_LEMMAS = gql(`
           partsOfSpeech
           senseTags
           audio {
-            type
+            mediaType
             source
           }
         } 

@@ -110,7 +110,7 @@ describe('isLemmaFitBag', () => {
         lemma.audio = [
           {
             source: 'hello',
-            type: 'world',
+            mediaType: 'world',
           },
         ];
       }),

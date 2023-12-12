@@ -425,11 +425,9 @@ func Test_Anki_PrepareProjectedLemma(t *testing.T) {
 				client.On("Config").Return(conf)
 			},
 			Config: &Config{
-				Mapping: map[string]*Template{
-					"a": {
-						Tmpl: template.Must(template.New("").Parse("{{.Slug.Word}}")),
-					},
-				},
+				Mapping: mustConvertMapping(t, map[string]string{
+					"a": "{{.Slug.Word}}",
+				}),
 			},
 			AssertError: assert.NoError,
 			Expected: &AddNoteRequest{
@@ -441,6 +439,43 @@ func Test_Anki_PrepareProjectedLemma(t *testing.T) {
 					{
 						Name:  "b",
 						Value: "",
+					},
+				},
+			},
+		},
+		{
+			Name: "audio assets",
+			InitClient: func(conf *Config, client *MockStatefullClient) {
+				newState := *readyState
+				newState.CurrentFields = []string{"a", "b"}
+				client.On("GetState", mock.Anything).
+					Return(&newState, nil)
+				client.On("Config").Return(conf)
+			},
+			Config: &Config{
+				AudioField:         "Audio",
+				AudioPreferredType: "mpeg",
+			},
+			AssertError: assert.NoError,
+			Expected: &AddNoteRequest{
+				Fields: []AddNoteField{
+					{
+						Name: "a",
+					},
+					{
+						Name: "b",
+					},
+				},
+				AudioAssets: []AddNoteAudioAsset{
+					{
+						Field:    "Audio",
+						Filename: "一二わ三はい-いちにわさんはい.mp3",
+						URL:      "https://example.com/somelink/mp3",
+					},
+					{
+						Field:    "Audio",
+						Filename: "一二わ三はい-いちにわさんはい.oga",
+						URL:      "https://example.com/somelink/ogg",
 					},
 				},
 			},
@@ -466,27 +501,315 @@ func Test_Anki_PrepareProjectedLemma(t *testing.T) {
 	}
 }
 
-func Test_Anki_AddNote(t *testing.T) {
-	request := &AddNoteRequest{
-		Fields: []AddNoteField{
-			{
-				Name:  "hello",
-				Value: "world",
+func Test_prepareFieldsForNoteRequest(t *testing.T) {
+	testCases := []struct {
+		Name          string
+		CurrentFields []string
+		Mapping       TemplateMapping
+		Expected      []AddNoteField
+		AssertError   assert.ErrorAssertionFunc
+	}{
+		{
+			Name:        "empty",
+			Expected:    []AddNoteField{},
+			AssertError: assert.NoError,
+		},
+		{
+			Name:          "fields without mapping",
+			CurrentFields: []string{"foo", "bar"},
+			Expected: []AddNoteField{
+				{Name: "foo"},
+				{Name: "bar"},
+			},
+			AssertError: assert.NoError,
+		},
+		{
+			Name:          "field with mapping",
+			CurrentFields: []string{"foo"},
+			Mapping: mustConvertMapping(t, map[string]string{
+				"foo": "{{.Slug.Word}}",
+			}),
+			Expected: []AddNoteField{
+				{Name: "foo", Value: DefaultExampleLemma.Slug.Word},
+			},
+			AssertError: assert.NoError,
+		},
+		{
+			Name:          "error in template",
+			CurrentFields: []string{"foo"},
+			Mapping: mustConvertMapping(t, map[string]string{
+				"foo": `{{ if gt (len .Slug.Word) 0 }}{{ fail "intentional fail" }}{{ end }}`,
+			}),
+			AssertError: assert.Error,
+		},
+	}
+	for i := range testCases {
+		tc := testCases[i]
+		t.Run(tc.Name, func(t *testing.T) {
+			actual, err := prepareFieldsForNoteRequest(&DefaultExampleLemma, tc.CurrentFields, tc.Mapping)
+			tc.AssertError(t, err)
+			if err != nil {
+				return
+			}
+			assert.Equal(t, tc.Expected, actual)
+		})
+	}
+}
+
+func Test_prepareAudiosForNoteRequest(t *testing.T) {
+	assets := prepareAudiosForNoteRequest(
+		&lemma.ProjectedLemma{
+			Slug: lemma.Word{
+				Word:     "foo",
+				Hiragana: "bar",
+			},
+			Audio: []lemma.Audio{
+				{
+					MediaType: "audio/ogg",
+					Source:    "ogglink",
+				},
+				{
+					MediaType: "audio/mpeg",
+					Source:    "mpeglink",
+				},
+				{
+					MediaType: "",
+					Source:    "uknownlink",
+				},
 			},
 		},
-		Tags:     []string{"a", "b"},
-		AudioURL: "",
+		&Config{
+			AudioField:         "audiofield",
+			AudioPreferredType: "mpeg",
+		},
+	)
+	assert.Equal(
+		t,
+		[]AddNoteAudioAsset{
+			{
+				Field:    "audiofield",
+				Filename: "foo-bar.mp3",
+				URL:      "mpeglink",
+			},
+			{
+				Field:    "audiofield",
+				Filename: "foo-bar.oga",
+				URL:      "ogglink",
+			},
+			{
+				Field:    "audiofield",
+				Filename: "foo-bar",
+				URL:      "uknownlink",
+			},
+		},
+		assets,
+	)
+}
+
+func Test_generateLemmaAudioBasename(t *testing.T) {
+	testCases := []struct {
+		Name     string
+		Word     *lemma.Word
+		Expected string
+	}{
+		{
+			Name: "empty",
+			Word: &lemma.Word{},
+		},
+		{
+			Name: "word only",
+			Word: &lemma.Word{
+				Word: "foo",
+			},
+			Expected: "foo",
+		},
+		{
+			Name: "word and hiragana",
+			Word: &lemma.Word{
+				Word:     "foo",
+				Hiragana: "bar",
+			},
+			Expected: "foo-bar",
+		},
 	}
-	anki := NewAnki(func(_ *Config) (StatefullClient, error) {
-		client := NewMockStatefullClient(t)
-		client.On("AddNote", mock.Anything, request).Return(int64(32), errors.New("myerror")).Once()
-		return client, nil
+	for i := range testCases {
+		tc := testCases[i]
+		t.Run(tc.Name, func(t *testing.T) {
+			actual := generateLemmaAudioBasename(&lemma.ProjectedLemma{
+				Slug: *tc.Word,
+			})
+			assert.Equal(t, tc.Expected, actual)
+		})
+	}
+}
+
+func Test_sortLemmaAudios(t *testing.T) {
+	testCases := []struct {
+		Name          string
+		PreferredType string
+		Audios        []lemma.Audio
+		Expected      []lemma.Audio
+	}{
+		{
+			Name:     "empty",
+			Expected: []lemma.Audio{},
+		},
+		{
+			Name:          "no preferred",
+			PreferredType: "",
+			Audios: []lemma.Audio{
+				{
+					MediaType: "foo",
+					Source:    "a",
+				},
+				{
+					MediaType: "foo",
+					Source:    "b",
+				},
+				{
+					MediaType: "",
+					Source:    "c",
+				},
+				{
+					MediaType: "bar",
+					Source:    "d",
+				},
+			},
+			Expected: []lemma.Audio{
+				{
+					MediaType: "foo",
+					Source:    "a",
+				},
+				{
+					MediaType: "foo",
+					Source:    "b",
+				},
+				{
+					MediaType: "",
+					Source:    "c",
+				},
+				{
+					MediaType: "bar",
+					Source:    "d",
+				},
+			},
+		},
+		{
+			Name:          "preferred stable",
+			PreferredType: "bar",
+			Audios: []lemma.Audio{
+				{
+					MediaType: "foo",
+					Source:    "a",
+				},
+				{
+					MediaType: "bar",
+					Source:    "b",
+				},
+				{
+					MediaType: "foo",
+					Source:    "c",
+				},
+				{
+					MediaType: "bar",
+					Source:    "d",
+				},
+			},
+			Expected: []lemma.Audio{
+				{
+					MediaType: "bar",
+					Source:    "b",
+				},
+				{
+					MediaType: "bar",
+					Source:    "d",
+				},
+				{
+					MediaType: "foo",
+					Source:    "a",
+				},
+				{
+					MediaType: "foo",
+					Source:    "c",
+				},
+			},
+		},
+	}
+	for i := range testCases {
+		tc := testCases[i]
+		t.Run(tc.Name, func(t *testing.T) {
+			actual := sortLemmaAudios(tc.Audios, tc.PreferredType)
+			assert.Equal(t, tc.Expected, actual)
+		})
+	}
+}
+
+func Test_Anki_AddNote(t *testing.T) {
+	t.Run("simple", func(t *testing.T) {
+		request := &AddNoteRequest{
+			Fields: []AddNoteField{
+				{
+					Name:  "hello",
+					Value: "world",
+				},
+			},
+			Tags: []string{"a", "b"},
+		}
+		anki := NewAnki(func(_ *Config) (StatefullClient, error) {
+			client := NewMockStatefullClient(t)
+			client.On("AddNote", mock.Anything, request).Return(int64(32), errors.New("myerror")).Once()
+			return client, nil
+		})
+		err := anki.ReloadConfig(&Config{})
+		require.NoError(t, err)
+		noteID, err := anki.AddNote(context.Background(), request)
+		assert.Equal(t, NoteID(32), noteID)
+		assert.ErrorContains(t, err, "myerror")
 	})
-	err := anki.ReloadConfig(&Config{})
-	require.NoError(t, err)
-	noteID, err := anki.AddNote(context.Background(), request)
-	assert.Equal(t, NoteID(32), noteID)
-	assert.ErrorContains(t, err, "myerror")
+	t.Run("filter audio", func(t *testing.T) {
+		request := &AddNoteRequest{
+			AudioAssets: []AddNoteAudioAsset{
+				{
+					Field:    "foo",
+					Filename: "a",
+				},
+				{
+					Field:    "bar",
+					Filename: "b",
+				},
+				{
+					Field:    "foo",
+					Filename: "c",
+				},
+				{
+					Field:    "bar",
+					Filename: "d",
+				},
+			},
+		}
+		expectedRequest := &AddNoteRequest{
+			AudioAssets: []AddNoteAudioAsset{
+				{
+					Field:    "foo",
+					Filename: "a",
+				},
+				{
+					Field:    "bar",
+					Filename: "b",
+				},
+			},
+		}
+		anki := NewAnki(func(_ *Config) (StatefullClient, error) {
+			client := NewMockStatefullClient(t)
+			client.On("AddNote", mock.Anything, expectedRequest).Return(int64(32), nil).Once()
+			return client, nil
+		})
+		err := anki.ReloadConfig(&Config{})
+		require.NoError(t, err)
+		noteID, err := anki.AddNote(context.Background(), request)
+		assert.Equal(t, NoteID(32), noteID)
+		assert.NoError(t, err)
+	})
 }
 
 func Test_Anki_SearchProjectedLemmas(t *testing.T) {

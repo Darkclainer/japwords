@@ -109,10 +109,17 @@ extend type Query {
   PrepareLemma(lemma: LemmaInput): PrepareLemmaResult!
 }
 
-type AddNoteRequest {
+type AddNoteRequest{
   fields: [AddNoteField!]!
   tags: [String!]!
-  audioURL: String!
+	audioAssets: [AddNoteAudioAsset!]!
+}
+
+type AddNoteAudioAsset {
+	field: String!
+	filename: String!
+  url: String!
+  data: String!
 }
 
 type AddNoteField {
@@ -124,7 +131,6 @@ union PrepareLemmaError = AnkiIncompleteConfiguration
 
 type PrepareLemmaResult {
   request: AddNoteRequest
-  # TODO: can be something like not ready or render failed?
   error: PrepareLemmaError
   ankiError: AnkiError
 }
@@ -237,15 +243,22 @@ extend type Mutation {
   addAnkiNote(request: AddNoteRequestInput): AnkiAddNoteResult!
 }
 
-input AddNoteRequestInput {
+input AddNoteRequestInput{
   fields: [AddNoteFieldInput!]!
   tags: [String!]!
-  audioURL: String!
+	audioAssets: [AddNoteAudioAssetInput!]!
 }
 
 input AddNoteFieldInput {
   name: String!
   value: String!
+}
+
+input AddNoteAudioAssetInput {
+	field: String!
+	filename: String!
+  url: String!
+  data: String!
 }
 
 type AnkiAddNoteDuplicateFound implements Error {

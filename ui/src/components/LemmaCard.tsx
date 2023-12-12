@@ -253,7 +253,7 @@ function AudioControls({ audios }: { audios: Audio[] }) {
        */}
       <audio ref={audio}>
         {audios.map((audio, index) => {
-          return <source key={index} src={audio.source} type={audio.type} />;
+          return <source key={index} src={audio.source} type={audio.mediaType} />;
         })}
       </audio>
     </div>

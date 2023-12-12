@@ -350,12 +350,12 @@ func Test_parseConceptLight(t *testing.T) {
 				},
 				Audio: []lemma.Audio{
 					{
-						Type:   "audio/mpeg",
-						Source: "audio1",
+						MediaType: "audio/mpeg",
+						Source:    "audio1",
 					},
 					{
-						Type:   "audio/ogg",
-						Source: "audio2",
+						MediaType: "audio/ogg",
+						Source:    "audio2",
 					},
 				},
 			},
@@ -410,8 +410,8 @@ func Test_parseConceptLight(t *testing.T) {
 				},
 				Audio: []lemma.Audio{
 					{
-						Type:   "audio/mpeg",
-						Source: "audio1",
+						MediaType: "audio/mpeg",
+						Source:    "audio1",
 					},
 				},
 			},
@@ -567,8 +567,8 @@ func Test_parseStatus(t *testing.T) {
 		
 		</div>`,
 			Audio: []lemma.Audio{
-				{Type: "audio/mpeg", Source: "https://example.com/file.mp3"},
-				{Type: "audio/ogg", Source: "https://example.com/file.ogg"},
+				{MediaType: "audio/mpeg", Source: "https://example.com/file.mp3"},
+				{MediaType: "audio/ogg", Source: "https://example.com/file.ogg"},
 			},
 		},
 		{
@@ -581,7 +581,7 @@ func Test_parseStatus(t *testing.T) {
 		
 		</div>`,
 			Audio: []lemma.Audio{
-				{Type: "unknown", Source: "https://example.com/file.mp3"},
+				{MediaType: "", Source: "https://example.com/file.mp3"},
 			},
 		},
 		{
@@ -594,7 +594,7 @@ func Test_parseStatus(t *testing.T) {
 		
 		</div>`,
 			Audio: []lemma.Audio{
-				{Type: "unknown", Source: "https://example.com/file.mp3"},
+				{MediaType: "", Source: "https://example.com/file.mp3"},
 			},
 		},
 	}

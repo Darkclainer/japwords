@@ -23,8 +23,10 @@ type Word struct {
 }
 
 type Audio struct {
-	Type   string `json:"Word,omitempty"`
-	Source string `json:"Source,omitempty"`
+	// MediaType is one of the specified audo media types by iana:
+	// https://www.iana.org/assignments/media-types/media-types.xhtml#audio
+	MediaType string `json:"Format,omitempty"`
+	Source    string `json:"Source,omitempty"`
 }
 
 type Furigana []FuriganaChar

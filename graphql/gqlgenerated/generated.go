@@ -49,15 +49,22 @@ type DirectiveRoot struct {
 }
 
 type ComplexityRoot struct {
+	AddNoteAudioAsset struct {
+		Data     func(childComplexity int) int
+		Field    func(childComplexity int) int
+		Filename func(childComplexity int) int
+		URL      func(childComplexity int) int
+	}
+
 	AddNoteField struct {
 		Name  func(childComplexity int) int
 		Value func(childComplexity int) int
 	}
 
 	AddNoteRequest struct {
-		AudioURL func(childComplexity int) int
-		Fields   func(childComplexity int) int
-		Tags     func(childComplexity int) int
+		AudioAssets func(childComplexity int) int
+		Fields      func(childComplexity int) int
+		Tags        func(childComplexity int) int
 	}
 
 	Anki struct {
@@ -155,8 +162,8 @@ type ComplexityRoot struct {
 	}
 
 	Audio struct {
-		Source func(childComplexity int) int
-		Type   func(childComplexity int) int
+		MediaType func(childComplexity int) int
+		Source    func(childComplexity int) int
 	}
 
 	CreateAnkiDeckAlreadyExists struct {
@@ -317,6 +324,34 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 	_ = ec
 	switch typeName + "." + field {
 
+	case "AddNoteAudioAsset.data":
+		if e.complexity.AddNoteAudioAsset.Data == nil {
+			break
+		}
+
+		return e.complexity.AddNoteAudioAsset.Data(childComplexity), true
+
+	case "AddNoteAudioAsset.field":
+		if e.complexity.AddNoteAudioAsset.Field == nil {
+			break
+		}
+
+		return e.complexity.AddNoteAudioAsset.Field(childComplexity), true
+
+	case "AddNoteAudioAsset.filename":
+		if e.complexity.AddNoteAudioAsset.Filename == nil {
+			break
+		}
+
+		return e.complexity.AddNoteAudioAsset.Filename(childComplexity), true
+
+	case "AddNoteAudioAsset.url":
+		if e.complexity.AddNoteAudioAsset.URL == nil {
+			break
+		}
+
+		return e.complexity.AddNoteAudioAsset.URL(childComplexity), true
+
 	case "AddNoteField.name":
 		if e.complexity.AddNoteField.Name == nil {
 			break
@@ -331,12 +366,12 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.AddNoteField.Value(childComplexity), true
 
-	case "AddNoteRequest.audioURL":
-		if e.complexity.AddNoteRequest.AudioURL == nil {
+	case "AddNoteRequest.audioAssets":
+		if e.complexity.AddNoteRequest.AudioAssets == nil {
 			break
 		}
 
-		return e.complexity.AddNoteRequest.AudioURL(childComplexity), true
+		return e.complexity.AddNoteRequest.AudioAssets(childComplexity), true
 
 	case "AddNoteRequest.fields":
 		if e.complexity.AddNoteRequest.Fields == nil {
@@ -637,19 +672,19 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.AnkiUnknownError.Message(childComplexity), true
 
+	case "Audio.mediaType":
+		if e.complexity.Audio.MediaType == nil {
+			break
+		}
+
+		return e.complexity.Audio.MediaType(childComplexity), true
+
 	case "Audio.source":
 		if e.complexity.Audio.Source == nil {
 			break
 		}
 
 		return e.complexity.Audio.Source(childComplexity), true
-
-	case "Audio.type":
-		if e.complexity.Audio.Type == nil {
-			break
-		}
-
-		return e.complexity.Audio.Type(childComplexity), true
 
 	case "CreateAnkiDeckAlreadyExists.message":
 		if e.complexity.CreateAnkiDeckAlreadyExists.Message == nil {
@@ -1073,6 +1108,7 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 	rc := graphql.GetOperationContext(ctx)
 	ec := executionContext{rc, e, 0, 0, make(chan graphql.DeferredResult)}
 	inputUnmarshalMap := graphql.BuildUnmarshalerMap(
+		ec.unmarshalInputAddNoteAudioAssetInput,
 		ec.unmarshalInputAddNoteFieldInput,
 		ec.unmarshalInputAddNoteRequestInput,
 		ec.unmarshalInputAnkiConfigMappingElementInput,
@@ -1295,10 +1331,17 @@ extend type Query {
   PrepareLemma(lemma: LemmaInput): PrepareLemmaResult!
 }
 
-type AddNoteRequest {
+type AddNoteRequest{
   fields: [AddNoteField!]!
   tags: [String!]!
-  audioURL: String!
+	audioAssets: [AddNoteAudioAsset!]!
+}
+
+type AddNoteAudioAsset {
+	field: String!
+	filename: String!
+  url: String!
+  data: String!
 }
 
 type AddNoteField {
@@ -1310,7 +1353,6 @@ union PrepareLemmaError = AnkiIncompleteConfiguration
 
 type PrepareLemmaResult {
   request: AddNoteRequest
-  # TODO: can be something like not ready or render failed?
   error: PrepareLemmaError
   ankiError: AnkiError
 }
@@ -1423,15 +1465,22 @@ extend type Mutation {
   addAnkiNote(request: AddNoteRequestInput): AnkiAddNoteResult!
 }
 
-input AddNoteRequestInput {
+input AddNoteRequestInput{
   fields: [AddNoteFieldInput!]!
   tags: [String!]!
-  audioURL: String!
+	audioAssets: [AddNoteAudioAssetInput!]!
 }
 
 input AddNoteFieldInput {
   name: String!
   value: String!
+}
+
+input AddNoteAudioAssetInput {
+	field: String!
+	filename: String!
+  url: String!
+  data: String!
 }
 
 type AnkiAddNoteDuplicateFound implements Error {
@@ -1521,7 +1570,7 @@ type PitchShape {
 }
 
 type Audio {
-  type: String!
+  mediaType: String!
   source: String!
 }
 
@@ -1555,7 +1604,7 @@ input PitchShapeInput {
 }
 
 input AudioInput {
-  type: String!
+  mediaType: String!
   source: String!
 }
 `, BuiltIn: false},
@@ -1793,6 +1842,182 @@ func (ec *executionContext) field___Type_fields_args(ctx context.Context, rawArg
 
 // region    **************************** field.gotpl *****************************
 
+func (ec *executionContext) _AddNoteAudioAsset_field(ctx context.Context, field graphql.CollectedField, obj *anki.AddNoteAudioAsset) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_AddNoteAudioAsset_field(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Field, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_AddNoteAudioAsset_field(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "AddNoteAudioAsset",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _AddNoteAudioAsset_filename(ctx context.Context, field graphql.CollectedField, obj *anki.AddNoteAudioAsset) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_AddNoteAudioAsset_filename(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Filename, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_AddNoteAudioAsset_filename(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "AddNoteAudioAsset",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _AddNoteAudioAsset_url(ctx context.Context, field graphql.CollectedField, obj *anki.AddNoteAudioAsset) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_AddNoteAudioAsset_url(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.URL, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_AddNoteAudioAsset_url(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "AddNoteAudioAsset",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _AddNoteAudioAsset_data(ctx context.Context, field graphql.CollectedField, obj *anki.AddNoteAudioAsset) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_AddNoteAudioAsset_data(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Data, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_AddNoteAudioAsset_data(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "AddNoteAudioAsset",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _AddNoteField_name(ctx context.Context, field graphql.CollectedField, obj *anki.AddNoteField) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_AddNoteField_name(ctx, field)
 	if err != nil {
@@ -1975,8 +2200,8 @@ func (ec *executionContext) fieldContext_AddNoteRequest_tags(ctx context.Context
 	return fc, nil
 }
 
-func (ec *executionContext) _AddNoteRequest_audioURL(ctx context.Context, field graphql.CollectedField, obj *anki.AddNoteRequest) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_AddNoteRequest_audioURL(ctx, field)
+func (ec *executionContext) _AddNoteRequest_audioAssets(ctx context.Context, field graphql.CollectedField, obj *anki.AddNoteRequest) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_AddNoteRequest_audioAssets(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -1989,7 +2214,7 @@ func (ec *executionContext) _AddNoteRequest_audioURL(ctx context.Context, field 
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.AudioURL, nil
+		return obj.AudioAssets, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2001,19 +2226,29 @@ func (ec *executionContext) _AddNoteRequest_audioURL(ctx context.Context, field 
 		}
 		return graphql.Null
 	}
-	res := resTmp.(string)
+	res := resTmp.([]anki.AddNoteAudioAsset)
 	fc.Result = res
-	return ec.marshalNString2string(ctx, field.Selections, res)
+	return ec.marshalNAddNoteAudioAsset2ᚕgithubᚗcomᚋDarkclainerᚋjapwordsᚋpkgᚋankiᚐAddNoteAudioAssetᚄ(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_AddNoteRequest_audioURL(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_AddNoteRequest_audioAssets(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "AddNoteRequest",
 		Field:      field,
 		IsMethod:   false,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
+			switch field.Name {
+			case "field":
+				return ec.fieldContext_AddNoteAudioAsset_field(ctx, field)
+			case "filename":
+				return ec.fieldContext_AddNoteAudioAsset_filename(ctx, field)
+			case "url":
+				return ec.fieldContext_AddNoteAudioAsset_url(ctx, field)
+			case "data":
+				return ec.fieldContext_AddNoteAudioAsset_data(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type AddNoteAudioAsset", field.Name)
 		},
 	}
 	return fc, nil
@@ -3802,8 +4037,8 @@ func (ec *executionContext) fieldContext_AnkiUnknownError_message(ctx context.Co
 	return fc, nil
 }
 
-func (ec *executionContext) _Audio_type(ctx context.Context, field graphql.CollectedField, obj *lemma.Audio) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Audio_type(ctx, field)
+func (ec *executionContext) _Audio_mediaType(ctx context.Context, field graphql.CollectedField, obj *lemma.Audio) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Audio_mediaType(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -3816,7 +4051,7 @@ func (ec *executionContext) _Audio_type(ctx context.Context, field graphql.Colle
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Type, nil
+		return obj.MediaType, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -3833,7 +4068,7 @@ func (ec *executionContext) _Audio_type(ctx context.Context, field graphql.Colle
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Audio_type(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Audio_mediaType(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Audio",
 		Field:      field,
@@ -4553,8 +4788,8 @@ func (ec *executionContext) fieldContext_Lemma_audio(ctx context.Context, field 
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
-			case "type":
-				return ec.fieldContext_Audio_type(ctx, field)
+			case "mediaType":
+				return ec.fieldContext_Audio_mediaType(ctx, field)
 			case "source":
 				return ec.fieldContext_Audio_source(ctx, field)
 			}
@@ -5267,8 +5502,8 @@ func (ec *executionContext) fieldContext_PrepareLemmaResult_request(ctx context.
 				return ec.fieldContext_AddNoteRequest_fields(ctx, field)
 			case "tags":
 				return ec.fieldContext_AddNoteRequest_tags(ctx, field)
-			case "audioURL":
-				return ec.fieldContext_AddNoteRequest_audioURL(ctx, field)
+			case "audioAssets":
+				return ec.fieldContext_AddNoteRequest_audioAssets(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type AddNoteRequest", field.Name)
 		},
@@ -8332,6 +8567,62 @@ func (ec *executionContext) fieldContext___Type_specifiedByURL(ctx context.Conte
 
 // region    **************************** input.gotpl *****************************
 
+func (ec *executionContext) unmarshalInputAddNoteAudioAssetInput(ctx context.Context, obj interface{}) (anki.AddNoteAudioAsset, error) {
+	var it anki.AddNoteAudioAsset
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"field", "filename", "url", "data"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "field":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("field"))
+			data, err := ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Field = data
+		case "filename":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("filename"))
+			data, err := ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Filename = data
+		case "url":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("url"))
+			data, err := ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.URL = data
+		case "data":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("data"))
+			data, err := ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Data = data
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputAddNoteFieldInput(ctx context.Context, obj interface{}) (anki.AddNoteField, error) {
 	var it anki.AddNoteField
 	asMap := map[string]interface{}{}
@@ -8377,7 +8668,7 @@ func (ec *executionContext) unmarshalInputAddNoteRequestInput(ctx context.Contex
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"fields", "tags", "audioURL"}
+	fieldsInOrder := [...]string{"fields", "tags", "audioAssets"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -8402,15 +8693,15 @@ func (ec *executionContext) unmarshalInputAddNoteRequestInput(ctx context.Contex
 				return it, err
 			}
 			it.Tags = data
-		case "audioURL":
+		case "audioAssets":
 			var err error
 
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("audioURL"))
-			data, err := ec.unmarshalNString2string(ctx, v)
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("audioAssets"))
+			data, err := ec.unmarshalNAddNoteAudioAssetInput2ᚕgithubᚗcomᚋDarkclainerᚋjapwordsᚋpkgᚋankiᚐAddNoteAudioAssetᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.AudioURL = data
+			it.AudioAssets = data
 		}
 	}
 
@@ -8462,22 +8753,22 @@ func (ec *executionContext) unmarshalInputAudioInput(ctx context.Context, obj in
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"type", "source"}
+	fieldsInOrder := [...]string{"mediaType", "source"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
 			continue
 		}
 		switch k {
-		case "type":
+		case "mediaType":
 			var err error
 
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("type"))
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("mediaType"))
 			data, err := ec.unmarshalNString2string(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.Type = data
+			it.MediaType = data
 		case "source":
 			var err error
 
@@ -9116,6 +9407,60 @@ func (ec *executionContext) _PrepareLemmaError(ctx context.Context, sel ast.Sele
 
 // region    **************************** object.gotpl ****************************
 
+var addNoteAudioAssetImplementors = []string{"AddNoteAudioAsset"}
+
+func (ec *executionContext) _AddNoteAudioAsset(ctx context.Context, sel ast.SelectionSet, obj *anki.AddNoteAudioAsset) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, addNoteAudioAssetImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("AddNoteAudioAsset")
+		case "field":
+			out.Values[i] = ec._AddNoteAudioAsset_field(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "filename":
+			out.Values[i] = ec._AddNoteAudioAsset_filename(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "url":
+			out.Values[i] = ec._AddNoteAudioAsset_url(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "data":
+			out.Values[i] = ec._AddNoteAudioAsset_data(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
 var addNoteFieldImplementors = []string{"AddNoteField"}
 
 func (ec *executionContext) _AddNoteField(ctx context.Context, sel ast.SelectionSet, obj *anki.AddNoteField) graphql.Marshaler {
@@ -9181,8 +9526,8 @@ func (ec *executionContext) _AddNoteRequest(ctx context.Context, sel ast.Selecti
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
-		case "audioURL":
-			out.Values[i] = ec._AddNoteRequest_audioURL(ctx, field, obj)
+		case "audioAssets":
+			out.Values[i] = ec._AddNoteRequest_audioAssets(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
@@ -10089,8 +10434,8 @@ func (ec *executionContext) _Audio(ctx context.Context, sel ast.SelectionSet, ob
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("Audio")
-		case "type":
-			out.Values[i] = ec._Audio_type(ctx, field, obj)
+		case "mediaType":
+			out.Values[i] = ec._Audio_mediaType(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
@@ -11586,6 +11931,76 @@ func (ec *executionContext) marshalNAccentDirection2ᚕgithubᚗcomᚋDarkclaine
 	}
 
 	return ret
+}
+
+func (ec *executionContext) marshalNAddNoteAudioAsset2githubᚗcomᚋDarkclainerᚋjapwordsᚋpkgᚋankiᚐAddNoteAudioAsset(ctx context.Context, sel ast.SelectionSet, v anki.AddNoteAudioAsset) graphql.Marshaler {
+	return ec._AddNoteAudioAsset(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNAddNoteAudioAsset2ᚕgithubᚗcomᚋDarkclainerᚋjapwordsᚋpkgᚋankiᚐAddNoteAudioAssetᚄ(ctx context.Context, sel ast.SelectionSet, v []anki.AddNoteAudioAsset) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNAddNoteAudioAsset2githubᚗcomᚋDarkclainerᚋjapwordsᚋpkgᚋankiᚐAddNoteAudioAsset(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) unmarshalNAddNoteAudioAssetInput2githubᚗcomᚋDarkclainerᚋjapwordsᚋpkgᚋankiᚐAddNoteAudioAsset(ctx context.Context, v interface{}) (anki.AddNoteAudioAsset, error) {
+	res, err := ec.unmarshalInputAddNoteAudioAssetInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalNAddNoteAudioAssetInput2ᚕgithubᚗcomᚋDarkclainerᚋjapwordsᚋpkgᚋankiᚐAddNoteAudioAssetᚄ(ctx context.Context, v interface{}) ([]anki.AddNoteAudioAsset, error) {
+	var vSlice []interface{}
+	if v != nil {
+		vSlice = graphql.CoerceList(v)
+	}
+	var err error
+	res := make([]anki.AddNoteAudioAsset, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalNAddNoteAudioAssetInput2githubᚗcomᚋDarkclainerᚋjapwordsᚋpkgᚋankiᚐAddNoteAudioAsset(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
 }
 
 func (ec *executionContext) marshalNAddNoteField2githubᚗcomᚋDarkclainerᚋjapwordsᚋpkgᚋankiᚐAddNoteField(ctx context.Context, sel ast.SelectionSet, v anki.AddNoteField) graphql.Marshaler {
