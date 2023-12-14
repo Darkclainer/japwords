@@ -26,6 +26,7 @@ import SuspenseLoading from '../../../components/SuspenseLoading';
 import Tooltip from '../../../components/Tooltip';
 import { useToastify } from '../../../hooks/toastify';
 import { apolloErrorToast } from '../../../lib/styled-toast';
+import { GET_NOTE_FIELDS_AND_MAPPING } from './api';
 
 export function MappingEdit({ currentNote }: { currentNote?: string }) {
   return (
@@ -58,27 +59,6 @@ function MappingWithFields({ currentNote }: { currentNote: string }) {
 function Unavailable() {
   return <p className="text-xl">Mapping unavailable</p>;
 }
-
-const GET_NOTE_FIELDS_AND_MAPPING = gql(`
-  query GetAnkiNoteFieldsAndMapping($noteName: String!) {
-    AnkiConfig {
-      mapping {
-        key
-        value
-      }
-    }
-    Anki {
-      noteFields(name: $noteName) {
-        noteFields 
-        error {
-          ... on Error {
-            message
-          }
-        }
-      }
-    }
-  }
-`);
 
 const GET_RENDERED_FIELDS = gql(`
   query RenderFields($fields: [String!]!) {

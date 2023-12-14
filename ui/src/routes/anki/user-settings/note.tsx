@@ -9,7 +9,7 @@ import SelectCreate from '../../../components/SelectCreate';
 import SuspenseLoading from '../../../components/SuspenseLoading';
 import { useToastify } from '../../../hooks/toastify';
 import { validateNoteType } from '../../../lib/validate';
-import { GET_CURRENT_NOTE } from './api';
+import { GET_CURRENT_NOTE, GET_NOTE_FIELDS_AND_MAPPING } from './api';
 
 export function NoteSelect({ currentNote }: { currentNote: string }) {
   const noteTriggerId = useId();
@@ -78,7 +78,7 @@ function NoteSelectBody({ triggerId, currentNote }: { triggerId: string; current
     awaitRefetchQueries: true,
   });
   const [createNote] = useMutation(CREATE_DEFAULT_NOTE, {
-    refetchQueries: [GET_ANKI_NOTES],
+    refetchQueries: [GET_ANKI_NOTES, GET_CURRENT_NOTE, GET_NOTE_FIELDS_AND_MAPPING],
     awaitRefetchQueries: true,
   });
   const { data: notesResp } = useSuspenseQuery(GET_ANKI_NOTES, {
