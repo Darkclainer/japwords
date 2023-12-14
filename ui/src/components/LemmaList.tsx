@@ -1,12 +1,18 @@
 import { useLazyQuery, useMutation } from '@apollo/client';
 import * as Dialog from '@radix-ui/react-dialog';
 import * as Label from '@radix-ui/react-label';
+import * as Select from '@radix-ui/react-select';
 import { clsx } from 'clsx';
 import { FieldArray, Form, Formik, FormikHelpers } from 'formik';
 import { Dispatch, SetStateAction, useCallback, useId, useMemo, useRef, useState } from 'react';
 
 import { gql } from '../api/__generated__';
-import { AddNoteRequest, LemmaNoteInfo } from '../api/__generated__/graphql';
+import {
+  AddNoteAudioAsset,
+  AddNoteAudioAssetInput,
+  AddNoteRequest,
+  LemmaNoteInfo,
+} from '../api/__generated__/graphql';
 import { useToastify } from '../hooks/toastify';
 import { groupLemmaNotes } from '../lib/lemma-bag';
 import { apolloErrorToast, ToastFunction } from '../lib/styled-toast';
@@ -14,6 +20,8 @@ import Button, { ButtonVariant } from './Button';
 import { DialogModal, DialogWidth } from './DialogModal';
 import { LoadingIcon } from './Icons/StatusIcon';
 import LemmaCard from './LemmaCard';
+import { SelectItem } from './Select';
+import SelectField from './SelectField';
 import TextField, { TextFieldProps } from './TextField';
 
 const AddNoteFailedActionTitle = 'Add note failed';
@@ -233,11 +241,10 @@ type AddNoteFormProps = {
 type Note = {
   fields: NoteField[];
   tags: string[];
-  audioAssets: AudioAsset[];
+  audioChoices: AudioChoices;
 };
 
-type AudioAsset = {
-  field: string;
+type AudioVariant = {
   filename: string;
   data: string;
   url: string;
@@ -249,15 +256,21 @@ type NoteField = {
 };
 
 function AddNoteForm({ addLemmaRequest, setOpen, setLemmaNotes, toast }: AddNoteFormProps) {
-  const note: Note = useMemo(() => {
-    return {
-      fields: addLemmaRequest.note.fields.map((field) => ({
-        name: field.name,
-        value: field.value,
-      })),
-      audioAssets: [],
-      tags: [],
-    };
+  const [note, audioPerField] = useMemo(() => {
+    const [audioPerField, audioChoices] = groupAudioAssetsPerField(
+      addLemmaRequest.note.audioAssets,
+    );
+    return [
+      {
+        fields: addLemmaRequest.note.fields.map((field) => ({
+          name: field.name,
+          value: field.value,
+        })),
+        tags: [],
+        audioChoices: audioChoices,
+      },
+      audioPerField,
+    ];
   }, [addLemmaRequest]);
   const [addNote] = useMutation(ADD_ANKI_NOTE, {
     // we passe empty onError because in this case apollo will not throw in case if network error for some reason
@@ -265,9 +278,30 @@ function AddNoteForm({ addLemmaRequest, setOpen, setLemmaNotes, toast }: AddNote
   });
   const handleSubmit = useCallback(
     async (values: Note, helpers: FormikHelpers<Note>) => {
+      const audioAssets: AddNoteAudioAssetInput[] = Object.entries(values.audioChoices)
+        .map(([field, choice]) => {
+          if (choice === undefined) {
+            return undefined;
+          }
+          const asset = audioPerField[field]?.[Number(choice)];
+          if (asset === undefined) {
+            return undefined;
+          }
+          return {
+            field: field,
+            url: asset.url,
+            data: asset.data,
+            filename: asset.filename,
+          };
+        })
+        .filter(<T,>(item: T | undefined): item is T => item !== undefined);
       const { data, errors } = await addNote({
         variables: {
-          note: values,
+          note: {
+            fields: values.fields,
+            tags: values.tags,
+            audioAssets: audioAssets,
+          },
         },
       });
       if (errors) {
@@ -337,6 +371,7 @@ function AddNoteForm({ addLemmaRequest, setOpen, setLemmaNotes, toast }: AddNote
               ))
             }
           />
+          <AudioChoiceGroups audioPerField={audioPerField} />
           <div className="flex flex-row gap-8 mt-4">
             <Button type="submit" className="basis-52" disabled={props.isSubmitting}>
               Add Note
@@ -355,6 +390,78 @@ function AddNoteForm({ addLemmaRequest, setOpen, setLemmaNotes, toast }: AddNote
       )}
     </Formik>
   );
+}
+
+function AudioChoiceGroups({ audioPerField }: { audioPerField: AudioPerField }) {
+  return (
+    <>
+      {Object.entries(audioPerField).map(
+        ([field, audios]) => audios && <AudioChoices key={field} field={field} audios={audios} />,
+      )}
+    </>
+  );
+}
+
+function AudioChoices({ field, audios }: { field: string; audios: AudioVariant[] }) {
+  const groupId = useId();
+  const audioResources = useMemo(() => {
+    return audios.map((audio) => {
+      const audioResource = new Audio(audio.url);
+      audioResource.preload = 'none';
+      return audioResource;
+    });
+  }, [audios]);
+  const playAudio = (strIndex: string) => {
+    const audio = audioResources[Number(strIndex)];
+    if (audio !== undefined) {
+      audio.play();
+    }
+  };
+  return (
+    <div className={clsx('flex flex-col gap-1.5 text-xl')}>
+      <Label.Root htmlFor={groupId}>Audio asset for field: {field}</Label.Root>
+      <SelectField
+        id={groupId}
+        name={`audioChoices.${field}`}
+        placeholderLabel={'hello'}
+        onValueChange={playAudio}
+      >
+        <SelectItem value="none">
+          <Select.ItemText>None</Select.ItemText>
+        </SelectItem>
+        {audios.map((audio, index) => (
+          <SelectItem key={index} value={index.toString()}>
+            <Select.ItemText>{audio.filename}</Select.ItemText>
+          </SelectItem>
+        ))}
+      </SelectField>
+    </div>
+  );
+}
+
+type AudioPerField = Record<string, AudioVariant[] | undefined>;
+type AudioChoices = Record<string, string | undefined>;
+
+// returns possible audio assets per field and default choices for these assets (first one if exists)
+function groupAudioAssetsPerField(audios: AddNoteAudioAsset[]): [AudioPerField, AudioChoices] {
+  const audioPerField: AudioPerField = {};
+  audios.forEach((audio) => {
+    let variants = audioPerField[audio.field];
+    if (variants === undefined) {
+      variants = [];
+      audioPerField[audio.field] = variants;
+    }
+    variants.push({
+      filename: audio.filename,
+      url: audio.url,
+      data: audio.data,
+    });
+  });
+  const audioChoices: AudioChoices = {};
+  Object.entries(audioPerField).forEach(([field, assets]) => {
+    audioChoices[field] = assets && assets.length > 0 ? '0' : '';
+  });
+  return [audioPerField, audioChoices];
 }
 
 type FormTextFieldProps = TextFieldProps & { label: string };
