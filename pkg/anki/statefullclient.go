@@ -196,7 +196,11 @@ func (sc *statefullClient) Stop() {
 
 func (sc *statefullClient) getNewState(ctx context.Context) *State {
 	client, config := sc.client, sc.config
-	state := &State{}
+	state := &State{
+		AnkiState: AnkiState{
+			NoteFields: map[string][]string{},
+		},
+	}
 	errorState := func(err error) *State {
 		convertedErr, _ := convertAnkiError(err)
 		return &State{
@@ -229,9 +233,7 @@ func (sc *statefullClient) getNewState(ctx context.Context) *State {
 			return errorState(err)
 		}
 	} else {
-		state.NoteFields = map[string][]string{
-			config.NoteType: noteFields,
-		}
+		state.NoteFields[config.NoteType] = noteFields
 	}
 	state.updateFromAnkiState(config)
 	return state

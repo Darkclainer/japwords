@@ -129,6 +129,9 @@ func Test_statefullClient_getState(t *testing.T) {
 				Permission: ankiconnect.PermissionGranted,
 			},
 			Expected: &State{
+				AnkiState: AnkiState{
+					NoteFields: map[string][]string{},
+				},
 				DeckExists: false,
 			},
 			AssertError: assert.NoError,
@@ -144,7 +147,8 @@ func Test_statefullClient_getState(t *testing.T) {
 			DeckNames: []string{"mydeck", "testdeck"},
 			Expected: &State{
 				AnkiState: AnkiState{
-					Decks: []string{"mydeck", "testdeck"},
+					Decks:      []string{"mydeck", "testdeck"},
+					NoteFields: map[string][]string{},
 				},
 				DeckExists: true,
 			},
