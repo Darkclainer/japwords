@@ -5,6 +5,13 @@ const defaultTheme = require('tailwindcss/defaultTheme');
 export default {
   content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
   theme: {
+    data: {
+      error: 'error',
+      // for radix
+      disabled: 'disabled',
+      'side-top': 'side="top"',
+      'state-open': 'state="open"',
+    },
     fontFamily: {
       sans: ['Inter', ...defaultTheme.fontFamily.sans],
       mono: ['"Roboto mono"', ...defaultTheme.fontFamily.mono],

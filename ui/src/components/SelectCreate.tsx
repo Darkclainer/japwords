@@ -1,23 +1,23 @@
 import * as Dialog from '@radix-ui/react-dialog';
-import {
-  CheckIcon,
-  ChevronDownIcon,
-  ChevronUpIcon,
-  PlusIcon,
-  TriangleDownIcon,
-} from '@radix-ui/react-icons';
+import { PlusIcon } from '@radix-ui/react-icons';
 import * as Label from '@radix-ui/react-label';
-import type * as Radix from '@radix-ui/react-primitive';
-import * as Select from '@radix-ui/react-select';
-import { clsx } from 'clsx';
+import * as RSelect from '@radix-ui/react-select';
 import { ErrorMessage, Form, Formik, FormikHelpers } from 'formik';
-import React, { forwardRef, useCallback, useId, useMemo, useRef, useState } from 'react';
+import { useCallback, useId, useMemo, useRef, useState } from 'react';
 import { Result } from 'true-myth';
 import * as yup from 'yup';
 
 import { COLORS } from '../colors';
 import Button from './Button';
 import { DialogModal } from './DialogModal';
+import {
+  SelectContent,
+  SelectItem,
+  SelectScrollDownButton,
+  SelectScrollUpButton,
+  SelectSeparator,
+  SelectTrigger,
+} from './Select';
 import TextField from './TextField';
 
 export type SelectItem = {
@@ -76,12 +76,6 @@ export default function SelectCreate({
 }: SelectCreateProps) {
   const [state, setState] = useState(State.Enabled);
   const actualState = isDisabled ? State.Disabled : state;
-  const stateColor = (element: string, defaultColor?: string) =>
-    actualState != State.Enabled
-      ? `${element}-dark-gray`
-      : hasError
-      ? `${element}-error-red`
-      : `${element}-${defaultColor ?? 'blue'}`;
 
   const triggerRef = useRef<HTMLButtonElement>(null);
   const validationSchema = useMemo(
@@ -143,76 +137,39 @@ export default function SelectCreate({
 
   return (
     <>
-      <Select.Root
+      <RSelect.Root
         disabled={actualState !== State.Enabled}
         value={selectedValue || ''}
         onValueChange={onValueChangeImpl}
       >
-        <Select.Trigger
-          id={id}
-          className={clsx(
-            'py-1 px-2',
-            'bg-white ring-1',
-            stateColor('ring'),
-            'text-xl',
-            stateColor('text', 'black'),
-            'group',
-            'flex flex-row justify-between',
-            'overflow-x-hidden',
-            triggerClassName,
-          )}
-          ref={triggerRef}
-        >
-          <Select.Value placeholder={placeholderLabel} asChild>
+        <SelectTrigger hasError={hasError} id={id} className={triggerClassName} ref={triggerRef}>
+          <RSelect.Value placeholder={placeholderLabel} asChild>
             <span>{selectedValue}</span>
-          </Select.Value>
-          <Select.Icon className="">
-            <TriangleDownIcon
-              className={clsx('inline group-radix-state-open:rotate-180', stateColor('text'))}
-            />
-          </Select.Icon>
-        </Select.Trigger>
-        <Select.Portal>
-          <Select.Content
-            className={clsx(
-              'bg-white',
-              'ring-1 ring-blue',
-              'text-xl',
-              'w-radix-select-trigger-width',
-              'max-h-radix-select-content-available-height',
-              'group',
-            )}
-            sideOffset={5}
-            position="popper"
-          >
-            <Select.Group className="group-radix-side-top:order-3">
+          </RSelect.Value>
+        </SelectTrigger>
+        <RSelect.Portal>
+          <SelectContent>
+            <RSelect.Group className="group-data-side-top/content:order-3">
               <SelectItem value={createPlaceholder}>
-                <Select.ItemText>{createLabel}</Select.ItemText>
+                <RSelect.ItemText>{createLabel}</RSelect.ItemText>
                 <PlusIcon className="inline" color={COLORS.blue} />
               </SelectItem>
-            </Select.Group>
-            <Select.Separator className="h-px bg-blue mx-2 group-radix-side-top:order-2" />
-            <Select.ScrollUpButton className="flex items-center justify-center">
-              <ChevronUpIcon color={COLORS.blue} />
-            </Select.ScrollUpButton>
-            <Select.Viewport>
-              <Select.Group className="order-1">
+            </RSelect.Group>
+            <SelectSeparator className="group-data-side-top/content:order-2" />
+            <SelectScrollUpButton />
+            <RSelect.Viewport>
+              <RSelect.Group className="order-1">
                 {items.map((item) => (
                   <SelectItem key={item.value} value={item.value}>
-                    <Select.ItemText>{item.label ?? item.value}</Select.ItemText>
-                    <Select.ItemIndicator className="">
-                      <CheckIcon color={COLORS.blue} />
-                    </Select.ItemIndicator>
+                    <RSelect.ItemText>{item.label ?? item.value}</RSelect.ItemText>
                   </SelectItem>
                 ))}
-              </Select.Group>
-            </Select.Viewport>
-            <Select.ScrollDownButton className="flex items-center justify-center">
-              <ChevronDownIcon color={COLORS.blue} />
-            </Select.ScrollDownButton>
-          </Select.Content>
-        </Select.Portal>
-      </Select.Root>
+              </RSelect.Group>
+            </RSelect.Viewport>
+            <SelectScrollDownButton />
+          </SelectContent>
+        </RSelect.Portal>
+      </RSelect.Root>
       <DialogModal
         open={state === State.Creating}
         onOpenChange={(open) => setState(open ? State.Creating : State.Enabled)}
@@ -253,25 +210,3 @@ export default function SelectCreate({
     </>
   );
 }
-
-const SelectItem = forwardRef<
-  React.ElementRef<typeof Select.Item>,
-  Radix.ComponentPropsWithoutRef<typeof Select.Item>
->(function SelectItem({ children, className, ...props }, forwardedRef) {
-  return (
-    <Select.Item
-      className={clsx(
-        'flex flex-row items-center justify-between',
-        'radix-highlighted:text-blue',
-        'm-1',
-        'px-1',
-        'oveflow-x-hidden',
-        className,
-      )}
-      {...props}
-      ref={forwardedRef}
-    >
-      {children}
-    </Select.Item>
-  );
-});
