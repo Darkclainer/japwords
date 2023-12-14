@@ -177,7 +177,8 @@ func defaultCreateModelRequest() *ankiconnect.CreateModelRequest {
 </div>
 <div class="example-block">
 {{furigana:Example}}
-</div>`,
+</div>
+{{Audio}}`,
 			},
 			{
 				Name: "Recall",
@@ -200,7 +201,7 @@ func defaultCreateModelRequest() *ankiconnect.CreateModelRequest {
 </div>
 <div class="example-block">
 {{furigana:Example}}
-</div>`,
+{{Audio}}`,
 			},
 		},
 	}
