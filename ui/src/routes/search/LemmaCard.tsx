@@ -7,10 +7,10 @@ import {
   Furigana,
   LemmaNoteInfo,
   Word,
-} from '../api/__generated__/graphql';
-import { LemmaBag } from '../lib/lemma-bag';
-import { ToastFunction } from '../lib/styled-toast';
-import PlayIcon from './Icons/PlayIcon';
+} from '../../api/__generated__/graphql';
+import { LemmaBag } from '../../lib/lemma-bag';
+import { ToastFunction } from '../../lib/styled-toast';
+import PlayIcon from '../../components/Icons/PlayIcon';
 
 export type LemmaCardProps = {
   lemmaBag: LemmaBag;

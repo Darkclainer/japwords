@@ -8,12 +8,12 @@ import {
   useNavigation,
 } from 'react-router-dom';
 
-import { gql } from '../api/__generated__/gql';
-import { LemmaNoteInfo } from '../api/__generated__/graphql';
-import apolloClient from '../apollo-client';
-import LensIcon from '../components/Icons/LensIcon';
-import LemmaList from '../components/LemmaList';
-import { LoaderData } from '../loader-type';
+import { gql } from '../../api/__generated__/gql';
+import { LemmaNoteInfo } from '../../api/__generated__/graphql';
+import apolloClient from '../../apollo-client';
+import LensIcon from '../../components/Icons/LensIcon';
+import LemmaList from './LemmaList';
+import { LoaderData } from '../../loader-type';
 
 const GET_LEMMAS = gql(`
   query GetLemmas($query: String!) {

@@ -1,177 +1,31 @@
-import { useLazyQuery, useMutation } from '@apollo/client';
+import { useMutation } from '@apollo/client';
 import * as Dialog from '@radix-ui/react-dialog';
 import * as Label from '@radix-ui/react-label';
 import * as Select from '@radix-ui/react-select';
 import { clsx } from 'clsx';
 import { FieldArray, Form, Formik, FormikHelpers } from 'formik';
-import { Dispatch, SetStateAction, useCallback, useId, useMemo, useRef, useState } from 'react';
+import { Dispatch, SetStateAction, useCallback, useId, useMemo } from 'react';
 
-import { gql } from '../api/__generated__';
+import { gql } from '../../api/__generated__';
 import {
   AddNoteAudioAsset,
   AddNoteAudioAssetInput,
   AddNoteRequest,
   LemmaNoteInfo,
-} from '../api/__generated__/graphql';
-import { useToastify } from '../hooks/toastify';
-import { groupLemmaNotes } from '../lib/lemma-bag';
-import { apolloErrorToast, ToastFunction } from '../lib/styled-toast';
-import Button, { ButtonVariant } from './Button';
-import { DialogModal, DialogWidth } from './DialogModal';
-import { LoadingIcon } from './Icons/StatusIcon';
-import LemmaCard from './LemmaCard';
-import { SelectItem } from './Select';
-import SelectField from './SelectField';
-import TextField, { TextFieldProps } from './TextField';
+} from '../../api/__generated__/graphql';
+import { apolloErrorToast, ToastFunction } from '../../lib/styled-toast';
+import Button, { ButtonVariant } from '../../components/Button';
+import { DialogModal, DialogWidth } from '../../components/DialogModal';
+import { LoadingIcon } from '../../components/Icons/StatusIcon';
+import { SelectItem } from '../../components/Select';
+import SelectField from '../../components/SelectField';
 
-const AddNoteFailedActionTitle = 'Add note failed';
+import TextField, { TextFieldProps } from '../../components/TextField';
 
-const PREPARE_LEMMA = gql(`
-query PrepareLemma($lemma: LemmaInput) {
-  PrepareLemma(lemma: $lemma) {
-    request {
-      fields {
-        name
-        value
-      }
-      tags
-      audioAssets {
-        field
-        filename
-        url
-        data
-      }
-    }
-    error {
-      ... on AnkiIncompleteConfiguration {
-        message
-      }
-      ... on Error {
-        message
-      }
-    }
-    ankiError {
-      __typename
-      ... on Error {
-        message
-      }
-    }
-  }
-}
-`);
-
-type AddLemmaRequest = {
+export type AddLemmaRequest = {
   note: AddNoteRequest;
   lemma: LemmaNoteInfo;
 };
-
-export default function LemmaList({
-  lemmaNotes: initialLemmaNotes,
-}: {
-  lemmaNotes: LemmaNoteInfo[];
-}) {
-  // more propper way will be to modify cache, but because lemmas now returned from react-router-dom it's not possible
-  const [lemmaNotes, setLemmaNotes] = useState(initialLemmaNotes);
-  const lemmaBags = useMemo(() => groupLemmaNotes(lemmaNotes), [lemmaNotes]);
-  const [prepareLemma] = useLazyQuery(PREPARE_LEMMA, {
-    fetchPolicy: 'network-only',
-  });
-  const [openAddNote, setOpenAddNote] = useState(false);
-  const [addLemmaRequest, setAddLemmaRequest] = useState<AddLemmaRequest>();
-  const abortReset = useAbortRef();
-  const toast = useToastify({
-    autoClose: 2000,
-    type: 'info',
-  });
-  const previewLemma = useCallback(
-    async (lemmaNote: LemmaNoteInfo) => {
-      const currentAbortController = abortReset();
-      setAddLemmaRequest(undefined);
-      setOpenAddNote(true);
-      const now = new Date().valueOf();
-      const { data, error } = await prepareLemma({
-        variables: {
-          lemma: lemmaNote.lemma,
-        },
-        context: {
-          fetchOptions: {
-            signal: currentAbortController.signal,
-          },
-        },
-      });
-      // if request is to fast, display loading for minimum 400ms
-      // Better, to show window if request is longer then 200ms for example?
-      const waitTime = Math.max(0, -(new Date().valueOf() - now) + 400);
-      if (waitTime > 0) {
-        await new Promise((resolve) => setTimeout(resolve, waitTime));
-      }
-      if (error) {
-        setOpenAddNote(false);
-        apolloErrorToast(error, `${AddNoteFailedActionTitle}: `, {
-          toast,
-        });
-        return;
-      }
-      const ankiError = data?.PrepareLemma.ankiError;
-      if (ankiError) {
-        setOpenAddNote(false);
-        toast(`${AddNoteFailedActionTitle}: problems with anki-connect`, {
-          type: 'error',
-        });
-        return;
-      }
-      const userError = data?.PrepareLemma.error;
-      if (userError) {
-        setOpenAddNote(false);
-        let message = `${AddNoteFailedActionTitle}: `;
-        if (userError.__typename == 'AnkiIncompleteConfiguration') {
-          message += 'anki configuration unfinished';
-        } else {
-          message += 'uknown reason';
-        }
-        toast(message, {
-          type: 'error',
-        });
-        return;
-      }
-      if (!currentAbortController.signal.aborted) {
-        if (!data?.PrepareLemma.request) {
-          throw 'unreachable';
-        }
-        setAddLemmaRequest({
-          note: data.PrepareLemma.request,
-          lemma: lemmaNote,
-        });
-      }
-    },
-    [setOpenAddNote, toast, prepareLemma],
-  );
-
-  return (
-    <>
-      {lemmaBags.map((lemmaBag, index) => (
-        <LemmaCard
-          key={lemmaBag.slug.word + '-' + index}
-          lemmaBag={lemmaBag}
-          toast={toast}
-          previewLemma={previewLemma}
-        />
-      ))}
-      <AddNoteDialog
-        open={openAddNote}
-        setOpen={(value: boolean) => {
-          if (!value) {
-            abortReset();
-          }
-          return setOpenAddNote(value);
-        }}
-        addLemmaRequest={addLemmaRequest}
-        toast={toast}
-        setLemmaNotes={setLemmaNotes}
-      />
-    </>
-  );
-}
 
 type AddNoteDialogProps = {
   open: boolean;
@@ -181,7 +35,7 @@ type AddNoteDialogProps = {
   setLemmaNotes: Dispatch<SetStateAction<LemmaNoteInfo[]>>;
 };
 
-function AddNoteDialog({
+export default function AddNoteDialog({
   open,
   setOpen,
   addLemmaRequest,
@@ -254,6 +108,9 @@ type NoteField = {
   name: string;
   value: string;
 };
+
+type AudioPerField = Record<string, AudioVariant[] | undefined>;
+type AudioChoices = Record<string, string | undefined>;
 
 function AddNoteForm({ addLemmaRequest, setOpen, setLemmaNotes, toast }: AddNoteFormProps) {
   const [note, audioPerField] = useMemo(() => {
@@ -371,7 +228,7 @@ function AddNoteForm({ addLemmaRequest, setOpen, setLemmaNotes, toast }: AddNote
               ))
             }
           />
-          <AudioChoiceGroups audioPerField={audioPerField} />
+          <AudioSelectPerField audioPerField={audioPerField} />
           <div className="flex flex-row gap-8 mt-4">
             <Button type="submit" className="basis-52" disabled={props.isSubmitting}>
               Add Note
@@ -392,17 +249,17 @@ function AddNoteForm({ addLemmaRequest, setOpen, setLemmaNotes, toast }: AddNote
   );
 }
 
-function AudioChoiceGroups({ audioPerField }: { audioPerField: AudioPerField }) {
+function AudioSelectPerField({ audioPerField }: { audioPerField: AudioPerField }) {
   return (
     <>
       {Object.entries(audioPerField).map(
-        ([field, audios]) => audios && <AudioChoices key={field} field={field} audios={audios} />,
+        ([field, audios]) => audios && <AudioSelect key={field} field={field} audios={audios} />,
       )}
     </>
   );
 }
 
-function AudioChoices({ field, audios }: { field: string; audios: AudioVariant[] }) {
+function AudioSelect({ field, audios }: { field: string; audios: AudioVariant[] }) {
   const groupId = useId();
   const audioResources = useMemo(() => {
     return audios.map((audio) => {
@@ -439,8 +296,19 @@ function AudioChoices({ field, audios }: { field: string; audios: AudioVariant[]
   );
 }
 
-type AudioPerField = Record<string, AudioVariant[] | undefined>;
-type AudioChoices = Record<string, string | undefined>;
+type FormTextFieldProps = TextFieldProps & { label: string };
+
+function FormTextField({ name, label, ...rest }: FormTextFieldProps) {
+  const inputId = useId();
+  return (
+    <div className={clsx('flex flex-col gap-1.5 text-xl')}>
+      {label && <Label.Root htmlFor={inputId}>{label}:</Label.Root>}
+      <div className="flex  flex-col  gap-2.5">
+        <TextField id={inputId} name={name} {...rest} />
+      </div>
+    </div>
+  );
+}
 
 // returns possible audio assets per field and default choices for these assets (first one if exists)
 function groupAudioAssetsPerField(audios: AddNoteAudioAsset[]): [AudioPerField, AudioChoices] {
@@ -462,32 +330,4 @@ function groupAudioAssetsPerField(audios: AddNoteAudioAsset[]): [AudioPerField, 
     audioChoices[field] = assets && assets.length > 0 ? '0' : '';
   });
   return [audioPerField, audioChoices];
-}
-
-type FormTextFieldProps = TextFieldProps & { label: string };
-
-function FormTextField({ name, label, ...rest }: FormTextFieldProps) {
-  const inputId = useId();
-  return (
-    <div className={clsx('flex flex-col gap-1.5 text-xl')}>
-      {label && <Label.Root htmlFor={inputId}>{label}:</Label.Root>}
-      <div className="flex  flex-col  gap-2.5">
-        <TextField id={inputId} name={name} {...rest} />
-      </div>
-    </div>
-  );
-}
-
-function useAbortRef() {
-  const abortRef = useRef<AbortController>();
-  const abortReset = useCallback(() => {
-    const previousController = abortRef.current;
-    if (previousController) {
-      previousController.abort();
-    }
-    const newController = new AbortController();
-    abortRef.current = newController;
-    return newController;
-  }, []);
-  return abortReset;
 }
