@@ -6,8 +6,9 @@ import { LemmaNoteInfo } from '../../api/__generated__/graphql';
 import { useToastify } from '../../hooks/toastify';
 import { groupLemmaNotes } from '../../lib/lemma-bag';
 import { apolloErrorToast } from '../../lib/styled-toast';
-import LemmaCard from './LemmaCard';
 import AddNoteDialog, { AddLemmaRequest } from './AddNoteDialog';
+import LemmaCard from './LemmaCard';
+import { AddNoteFailedActionTitle } from './model';
 
 const PREPARE_LEMMA = gql(`
 query PrepareLemma($lemma: LemmaInput) {

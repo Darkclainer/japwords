@@ -12,8 +12,8 @@ import { gql } from '../../api/__generated__/gql';
 import { LemmaNoteInfo } from '../../api/__generated__/graphql';
 import apolloClient from '../../apollo-client';
 import LensIcon from '../../components/Icons/LensIcon';
-import LemmaList from './LemmaList';
 import { LoaderData } from '../../loader-type';
+import LemmaList from './LemmaList';
 
 const GET_LEMMAS = gql(`
   query GetLemmas($query: String!) {

@@ -13,14 +13,14 @@ import {
   AddNoteRequest,
   LemmaNoteInfo,
 } from '../../api/__generated__/graphql';
-import { apolloErrorToast, ToastFunction } from '../../lib/styled-toast';
 import Button, { ButtonVariant } from '../../components/Button';
 import { DialogModal, DialogWidth } from '../../components/DialogModal';
 import { LoadingIcon } from '../../components/Icons/StatusIcon';
 import { SelectItem } from '../../components/Select';
 import SelectField from '../../components/SelectField';
-
 import TextField, { TextFieldProps } from '../../components/TextField';
+import { apolloErrorToast, ToastFunction } from '../../lib/styled-toast';
+import { AddNoteFailedActionTitle } from './model';
 
 export type AddLemmaRequest = {
   note: AddNoteRequest;

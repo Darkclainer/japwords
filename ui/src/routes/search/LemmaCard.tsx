@@ -8,9 +8,9 @@ import {
   LemmaNoteInfo,
   Word,
 } from '../../api/__generated__/graphql';
+import PlayIcon from '../../components/Icons/PlayIcon';
 import { LemmaBag } from '../../lib/lemma-bag';
 import { ToastFunction } from '../../lib/styled-toast';
-import PlayIcon from '../../components/Icons/PlayIcon';
 
 export type LemmaCardProps = {
   lemmaBag: LemmaBag;

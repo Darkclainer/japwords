@@ -1,1 +1,1 @@
-const AddNoteFailedActionTitle = 'Add note failed';
+export const AddNoteFailedActionTitle = 'Add note failed';
