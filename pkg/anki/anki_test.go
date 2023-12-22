@@ -343,6 +343,7 @@ func Test_Anki_PrepareProjectedLemma(t *testing.T) {
 		NoteTypeExists:   true,
 		NoteHasAllFields: true,
 		OrderDefined:     true,
+		AudioFieldExists: true,
 	}
 	testCases := []struct {
 		Name        string
@@ -872,6 +873,7 @@ func Test_Anki_SearchProjectedLemmas(t *testing.T) {
 		NoteHasAllFields: true,
 		OrderDefined:     true,
 		CurrentFields:    []string{"of"},
+		AudioFieldExists: true,
 	}
 	t.Run("generate query returns error", func(t *testing.T) {
 		anki := NewAnki(func(_ *Config) (StatefullClient, error) {

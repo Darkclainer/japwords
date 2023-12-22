@@ -74,6 +74,7 @@ type StateResult struct {
 	NoteTypeExists   bool
 	NoteHasAllFields bool
 	OrderDefined     bool
+	AudioFieldExists bool
 }
 
 // FullStateCheck checks that anki is available, decks and note types exists, also FieldMapping is possible
@@ -88,6 +89,7 @@ func (a *Anki) FullStateCheck(ctx context.Context) (*StateResult, error) {
 		NoteTypeExists:   state.NoteTypeExists,
 		NoteHasAllFields: state.NoteHasAllFields,
 		OrderDefined:     state.OrderDefined,
+		AudioFieldExists: state.AudioFieldExists,
 	}, nil
 }
 

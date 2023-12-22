@@ -134,6 +134,17 @@ func (r *mutationResolver) SetAnkiConfigMapping(ctx context.Context, input gqlmo
 	return &gqlmodel.SetAnkiConfigMappingResult{}, nil
 }
 
+// SetAnkiConfigAudio is the resolver for the setAnkiConfigAudio field.
+func (r *mutationResolver) SetAnkiConfigAudio(ctx context.Context, input gqlmodel.SetAnkiConfigAudioInput) (*gqlmodel.SetAnkiConfigAudioResult, error) {
+	err := r.ankiConfig.UpdateAudio(input.AudioField, input.AudioPreferredType)
+	if validationErr, _ := convertAnkiValidationError(ctx, err); validationErr != nil {
+		return &gqlmodel.SetAnkiConfigAudioResult{
+			Error: validationErr,
+		}, nil
+	}
+	return &gqlmodel.SetAnkiConfigAudioResult{}, err
+}
+
 // CreateAnkiDeck is the resolver for the createAnkiDeck field.
 func (r *mutationResolver) CreateAnkiDeck(ctx context.Context, input *gqlmodel.CreateAnkiDeckInput) (*gqlmodel.CreateAnkiDeckResult, error) {
 	err := r.ankiClient.CreateDeck(ctx, input.Name)
@@ -232,6 +243,7 @@ func (r *queryResolver) AnkiConfigState(ctx context.Context) (*gqlmodel.AnkiConf
 		NoteTypeExists:   state.NoteTypeExists,
 		NoteHasAllFields: state.NoteHasAllFields,
 		OrderDefined:     state.OrderDefined,
+		AudioFieldExists: state.AudioFieldExists,
 	}
 	return &gqlmodel.AnkiConfigStateResult{
 		AnkiConfigState: result,
@@ -242,11 +254,13 @@ func (r *queryResolver) AnkiConfigState(ctx context.Context) (*gqlmodel.AnkiConf
 func (r *queryResolver) AnkiConfig(ctx context.Context) (*gqlmodel.AnkiConfig, error) {
 	ankiConfig := r.configManager.Current().Anki
 	result := &gqlmodel.AnkiConfig{
-		Addr:     ankiConfig.Addr,
-		APIKey:   ankiConfig.APIKey,
-		Deck:     ankiConfig.Deck,
-		NoteType: ankiConfig.NoteType,
-		Mapping:  nil,
+		Addr:               ankiConfig.Addr,
+		APIKey:             ankiConfig.APIKey,
+		Deck:               ankiConfig.Deck,
+		NoteType:           ankiConfig.NoteType,
+		Mapping:            nil,
+		AudioField:         ankiConfig.Audio.Field,
+		AudioPreferredType: ankiConfig.Audio.PreferredType,
 	}
 	mapping := make([]*gqlmodel.AnkiMappingElement, 0, len(ankiConfig.FieldMapping))
 	for key, value := range ankiConfig.FieldMapping {

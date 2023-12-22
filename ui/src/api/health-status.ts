@@ -11,6 +11,7 @@ export const GET_HEALTH_STATUS = gql(`
         noteTypeExists
         noteHasAllFields
         orderDefined
+        audioFieldExists
       }
       error {
         ... on AnkiConnectionError {

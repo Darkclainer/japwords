@@ -70,6 +70,7 @@ type AnkiConfigState {
   noteTypeExists: Boolean!
   noteHasAllFields: Boolean!
   orderDefined: Boolean!
+  audioFieldExists: Boolean!
 }
 
 extend type Query {
@@ -82,6 +83,8 @@ type AnkiConfig {
   deck: String!
   noteType: String!
   mapping: [AnkiMappingElement!]!
+  audioField: String!
+  audioPreferredType: String!
 }
 
 type AnkiMappingElement {
@@ -199,6 +202,19 @@ type AnkiConfigMappingElementError {
 
 type SetAnkiConfigMappingResult {
   error: AnkiConfigMappingError
+}
+
+extend type Mutation {
+  setAnkiConfigAudio(input: SetAnkiConfigAudioInput!): SetAnkiConfigAudioResult!
+}
+
+input SetAnkiConfigAudioInput {
+  audioField: String!
+  audioPreferredType: String!
+}
+
+type SetAnkiConfigAudioResult {
+  error: ValidationError
 }
 
 extend type Mutation {

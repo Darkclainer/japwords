@@ -64,11 +64,13 @@ func (this AnkiCollectionUnavailable) GetMessage() string { return this.Message 
 func (AnkiCollectionUnavailable) IsAnkiError() {}
 
 type AnkiConfig struct {
-	Addr     string                `json:"addr"`
-	APIKey   string                `json:"apiKey"`
-	Deck     string                `json:"deck"`
-	NoteType string                `json:"noteType"`
-	Mapping  []*AnkiMappingElement `json:"mapping"`
+	Addr               string                `json:"addr"`
+	APIKey             string                `json:"apiKey"`
+	Deck               string                `json:"deck"`
+	NoteType           string                `json:"noteType"`
+	Mapping            []*AnkiMappingElement `json:"mapping"`
+	AudioField         string                `json:"audioField"`
+	AudioPreferredType string                `json:"audioPreferredType"`
 }
 
 type AnkiConfigMappingElementError struct {
@@ -96,6 +98,7 @@ type AnkiConfigState struct {
 	NoteTypeExists   bool `json:"noteTypeExists"`
 	NoteHasAllFields bool `json:"noteHasAllFields"`
 	OrderDefined     bool `json:"orderDefined"`
+	AudioFieldExists bool `json:"audioFieldExists"`
 }
 
 type AnkiConfigStateResult struct {
@@ -232,6 +235,15 @@ type RenderedFields struct {
 	Template      string           `json:"template"`
 	TemplateError *string          `json:"templateError,omitempty"`
 	Fields        []*RenderedField `json:"fields"`
+}
+
+type SetAnkiConfigAudioInput struct {
+	AudioField         string `json:"audioField"`
+	AudioPreferredType string `json:"audioPreferredType"`
+}
+
+type SetAnkiConfigAudioResult struct {
+	Error *ValidationError `json:"error,omitempty"`
 }
 
 type SetAnkiConfigConnectionInput struct {

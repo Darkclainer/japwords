@@ -46,10 +46,11 @@ type State struct {
 	NoteTypeExists   bool
 	NoteHasAllFields bool
 	OrderDefined     bool
+	AudioFieldExists bool
 }
 
 func (s *State) IsReadyToAddNote() bool {
-	return s.LastError == nil && s.DeckExists && s.NoteTypeExists && s.NoteHasAllFields && s.OrderDefined
+	return s.LastError == nil && s.DeckExists && s.NoteTypeExists && s.NoteHasAllFields && s.OrderDefined && s.AudioFieldExists
 }
 
 func (state *State) updateFromAnkiState(config *Config) {
@@ -63,13 +64,13 @@ func (state *State) updateFromAnkiState(config *Config) {
 	state.NoteTypeExists = noteTypeExists
 	if noteTypeExists {
 		state.CurrentFields = fields
-		setFields := map[string]struct{}{}
+		fieldsSet := map[string]struct{}{}
 		for _, field := range fields {
-			setFields[field] = struct{}{}
+			fieldsSet[field] = struct{}{}
 		}
 		hasAllFieds := true
 		for field := range config.Mapping {
-			_, ok := setFields[field]
+			_, ok := fieldsSet[field]
 			if !ok {
 				hasAllFieds = false
 				break
@@ -80,6 +81,14 @@ func (state *State) updateFromAnkiState(config *Config) {
 			state.OrderDefined = ok
 		}
 		state.NoteHasAllFields = hasAllFieds
+
+		if config.AudioField == "" {
+			// if audio field is not defined, it's ok
+			state.AudioFieldExists = true
+		} else {
+			_, ok := fieldsSet[config.AudioField]
+			state.AudioFieldExists = ok
+		}
 	}
 }
 
