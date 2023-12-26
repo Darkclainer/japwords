@@ -17,7 +17,7 @@ const documents = {
     "\n  query GetConnectionConfig {\n    AnkiConfig {\n      addr\n      apiKey\n    }\n  }\n": types.GetConnectionConfigDocument,
     "\n  mutation UpdateConnectionConfig($addr: String!, $apiKey: String!) {\n    setAnkiConfigConnection(input: { addr: $addr, apiKey: $apiKey }) {\n      error {\n          ... on ValidationError {\n            paths\n            message\n          }\n        }\n      }\n  }\n": types.UpdateConnectionConfigDocument,
     "\n  query GetAnkiConfigCurrentNote {\n    AnkiConfig {\n      noteType\n    }\n  }\n": types.GetAnkiConfigCurrentNoteDocument,
-    "\n  query GetAnkiNoteFieldsAndMapping($noteName: String!) {\n    AnkiConfig {\n      mapping {\n        key\n        value\n      }\n    }\n    Anki {\n      noteFields(name: $noteName) {\n        noteFields \n        error {\n          ... on Error {\n            message\n          }\n        }\n      }\n    }\n  }\n": types.GetAnkiNoteFieldsAndMappingDocument,
+    "\n  query GetAnkiNoteFieldsAndMapping {\n    AnkiConfig {\n      mapping {\n        key\n        value\n      }\n    }\n    Anki {\n      noteFields {\n        noteFields \n        error {\n          ... on Error {\n            message\n          }\n        }\n      }\n    }\n  }\n": types.GetAnkiNoteFieldsAndMappingDocument,
     "\n  query GetAnkiConfigCurrentDeck {\n    AnkiConfig {\n      deck\n    }\n  }\n": types.GetAnkiConfigCurrentDeckDocument,
     "\n  query GetAnkiDecks {\n    Anki {\n      decks {\n        decks\n        error {\n          __typename\n        }\n      }\n    }\n  }\n": types.GetAnkiDecksDocument,
     "\n  mutation SetAnkiConfigCurrentDeck($name: String!) {\n    setAnkiConfigDeck(input: { name: $name }) {\n      error {\n          message\n      }\n    }\n  }\n": types.SetAnkiConfigCurrentDeckDocument,
@@ -65,7 +65,7 @@ export function gql(source: "\n  query GetAnkiConfigCurrentNote {\n    AnkiConfi
 /**
  * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
-export function gql(source: "\n  query GetAnkiNoteFieldsAndMapping($noteName: String!) {\n    AnkiConfig {\n      mapping {\n        key\n        value\n      }\n    }\n    Anki {\n      noteFields(name: $noteName) {\n        noteFields \n        error {\n          ... on Error {\n            message\n          }\n        }\n      }\n    }\n  }\n"): (typeof documents)["\n  query GetAnkiNoteFieldsAndMapping($noteName: String!) {\n    AnkiConfig {\n      mapping {\n        key\n        value\n      }\n    }\n    Anki {\n      noteFields(name: $noteName) {\n        noteFields \n        error {\n          ... on Error {\n            message\n          }\n        }\n      }\n    }\n  }\n"];
+export function gql(source: "\n  query GetAnkiNoteFieldsAndMapping {\n    AnkiConfig {\n      mapping {\n        key\n        value\n      }\n    }\n    Anki {\n      noteFields {\n        noteFields \n        error {\n          ... on Error {\n            message\n          }\n        }\n      }\n    }\n  }\n"): (typeof documents)["\n  query GetAnkiNoteFieldsAndMapping {\n    AnkiConfig {\n      mapping {\n        key\n        value\n      }\n    }\n    Anki {\n      noteFields {\n        noteFields \n        error {\n          ... on Error {\n            message\n          }\n        }\n      }\n    }\n  }\n"];
 /**
  * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */

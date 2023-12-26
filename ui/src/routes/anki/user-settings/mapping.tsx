@@ -34,7 +34,7 @@ export function MappingEdit({ currentNote }: { currentNote?: string }) {
       <Label.Root className="text-2xl">Mapping:</Label.Root>
       {currentNote ? (
         <SuspenseLoading>
-          <MappingWithFields key={currentNote} currentNote={currentNote} />
+          <MappingWithFields key={currentNote} />
         </SuspenseLoading>
       ) : (
         <Unavailable />
@@ -43,12 +43,9 @@ export function MappingEdit({ currentNote }: { currentNote?: string }) {
   );
 }
 
-function MappingWithFields({ currentNote }: { currentNote: string }) {
+function MappingWithFields() {
   const { data: fieldAndMappingResp } = useSuspenseQuery(GET_NOTE_FIELDS_AND_MAPPING, {
     fetchPolicy: 'network-only',
-    variables: {
-      noteName: currentNote,
-    },
   });
   if (fieldAndMappingResp.Anki.noteFields.error) {
     return <Unavailable />;

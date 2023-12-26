@@ -9,7 +9,7 @@ export const GET_CURRENT_NOTE = gql(`
 `);
 
 export const GET_NOTE_FIELDS_AND_MAPPING = gql(`
-  query GetAnkiNoteFieldsAndMapping($noteName: String!) {
+  query GetAnkiNoteFieldsAndMapping {
     AnkiConfig {
       mapping {
         key
@@ -17,7 +17,7 @@ export const GET_NOTE_FIELDS_AND_MAPPING = gql(`
       }
     }
     Anki {
-      noteFields(name: $noteName) {
+      noteFields {
         noteFields 
         error {
           ... on Error {

@@ -36,7 +36,7 @@ extend type Query {
 type Anki {
   decks: AnkiDecksResult! @goField(forceResolver: true)
   notes: AnkiNotesResult! @goField(forceResolver: true)
-  noteFields(name: String!): AnkiNoteFieldsResult! @goField(forceResolver: true)
+  noteFields: AnkiNoteFieldsResult! @goField(forceResolver: true)
 }
 
 type AnkiDecksResult {

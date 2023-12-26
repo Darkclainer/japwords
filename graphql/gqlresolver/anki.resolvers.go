@@ -50,7 +50,7 @@ func (r *ankiResolver) Notes(ctx context.Context, obj *gqlmodel.Anki) (*gqlmodel
 }
 
 // NoteFields is the resolver for the noteFields field.
-func (r *ankiResolver) NoteFields(ctx context.Context, obj *gqlmodel.Anki, name string) (*gqlmodel.AnkiNoteFieldsResult, error) {
+func (r *ankiResolver) NoteFields(ctx context.Context, obj *gqlmodel.Anki) (*gqlmodel.AnkiNoteFieldsResult, error) {
 	fields, err := r.ankiClient.NoteTypeFields(ctx)
 	if err != nil {
 		if ankiErr, _ := convertAnkiError(err); ankiErr != nil {

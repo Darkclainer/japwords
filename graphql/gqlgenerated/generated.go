@@ -69,7 +69,7 @@ type ComplexityRoot struct {
 
 	Anki struct {
 		Decks      func(childComplexity int) int
-		NoteFields func(childComplexity int, name string) int
+		NoteFields func(childComplexity int) int
 		Notes      func(childComplexity int) int
 	}
 
@@ -290,7 +290,7 @@ type ComplexityRoot struct {
 type AnkiResolver interface {
 	Decks(ctx context.Context, obj *gqlmodel.Anki) (*gqlmodel.AnkiDecksResult, error)
 	Notes(ctx context.Context, obj *gqlmodel.Anki) (*gqlmodel.AnkiNotesResult, error)
-	NoteFields(ctx context.Context, obj *gqlmodel.Anki, name string) (*gqlmodel.AnkiNoteFieldsResult, error)
+	NoteFields(ctx context.Context, obj *gqlmodel.Anki) (*gqlmodel.AnkiNoteFieldsResult, error)
 }
 type MutationResolver interface {
 	SetAnkiConfigConnection(ctx context.Context, input gqlmodel.SetAnkiConfigConnectionInput) (*gqlmodel.SetAnkiConfigConnectionResult, error)
@@ -408,12 +408,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			break
 		}
 
-		args, err := ec.field_Anki_noteFields_args(context.TODO(), rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Anki.NoteFields(childComplexity, args["name"].(string)), true
+		return e.complexity.Anki.NoteFields(childComplexity), true
 
 	case "Anki.notes":
 		if e.complexity.Anki.Notes == nil {
@@ -1308,7 +1303,7 @@ extend type Query {
 type Anki {
   decks: AnkiDecksResult! @goField(forceResolver: true)
   notes: AnkiNotesResult! @goField(forceResolver: true)
-  noteFields(name: String!): AnkiNoteFieldsResult! @goField(forceResolver: true)
+  noteFields: AnkiNoteFieldsResult! @goField(forceResolver: true)
 }
 
 type AnkiDecksResult {
@@ -1680,21 +1675,6 @@ var parsedSchema = gqlparser.MustLoadSchema(sources...)
 // endregion ************************** generated!.gotpl **************************
 
 // region    ***************************** args.gotpl *****************************
-
-func (ec *executionContext) field_Anki_noteFields_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
-	var err error
-	args := map[string]interface{}{}
-	var arg0 string
-	if tmp, ok := rawArgs["name"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
-		arg0, err = ec.unmarshalNString2string(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["name"] = arg0
-	return args, nil
-}
 
 func (ec *executionContext) field_Mutation_addAnkiNote_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
@@ -2449,7 +2429,7 @@ func (ec *executionContext) _Anki_noteFields(ctx context.Context, field graphql.
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Anki().NoteFields(rctx, obj, fc.Args["name"].(string))
+		return ec.resolvers.Anki().NoteFields(rctx, obj)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2481,17 +2461,6 @@ func (ec *executionContext) fieldContext_Anki_noteFields(ctx context.Context, fi
 			}
 			return nil, fmt.Errorf("no field named %q was found under type AnkiNoteFieldsResult", field.Name)
 		},
-	}
-	defer func() {
-		if r := recover(); r != nil {
-			err = ec.Recover(ctx, r)
-			ec.Error(ctx, err)
-		}
-	}()
-	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Anki_noteFields_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
-		ec.Error(ctx, err)
-		return fc, err
 	}
 	return fc, nil
 }
