@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useSuspenseQuery } from '@apollo/client';
+import { useMutation, useQuery } from '@apollo/client';
 import * as Dialog from '@radix-ui/react-dialog';
 import { Cross2Icon, Pencil2Icon } from '@radix-ui/react-icons';
 import * as Label from '@radix-ui/react-label';
@@ -15,42 +15,34 @@ import {
 import { useDebounce } from 'use-debounce';
 
 import { gql } from '../../../api/__generated__';
-import { GetAnkiNoteFieldsAndMappingQuery } from '../../../api/__generated__/graphql';
+import { AnkiMappingElement } from '../../../api/__generated__/graphql';
 import { GET_HEALTH_STATUS } from '../../../api/health-status';
 import { COLORS } from '../../../colors';
 import Button, { ButtonVariant } from '../../../components/Button';
 import CodeEditor from '../../../components/CodeEditor';
 import { DialogModal, DialogWidth } from '../../../components/DialogModal';
 import { LoadingIcon } from '../../../components/Icons/StatusIcon';
-import SuspenseLoading from '../../../components/SuspenseLoading';
 import Tooltip from '../../../components/Tooltip';
 import { useToastify } from '../../../hooks/toastify';
 import { apolloErrorToast } from '../../../lib/styled-toast';
-import { GET_NOTE_FIELDS_AND_MAPPING } from './api';
+import { GET_ANKI_CONFIG } from './api';
 
-export function MappingEdit({ currentNote }: { currentNote?: string }) {
+type MappingEditProps = {
+  ankiNoteFields: string[] | null;
+  mapping: AnkiMappingElement[];
+};
+
+export function MappingEdit(props: MappingEditProps) {
   return (
     <div className="flex flex-col gap-2.5">
       <Label.Root className="text-2xl">Mapping:</Label.Root>
-      {currentNote ? (
-        <SuspenseLoading>
-          <MappingWithFields key={currentNote} />
-        </SuspenseLoading>
+      {props.ankiNoteFields ? (
+        <Mapping ankiNoteFields={props.ankiNoteFields} mapping={props.mapping} />
       ) : (
         <Unavailable />
       )}
     </div>
   );
-}
-
-function MappingWithFields() {
-  const { data: fieldAndMappingResp } = useSuspenseQuery(GET_NOTE_FIELDS_AND_MAPPING, {
-    fetchPolicy: 'network-only',
-  });
-  if (fieldAndMappingResp.Anki.noteFields.error) {
-    return <Unavailable />;
-  }
-  return <Mapping fieldAndMappingResp={fieldAndMappingResp} />;
 }
 
 function Unavailable() {
@@ -85,14 +77,16 @@ const SET_ANKI_CONFIG_MAPPING = gql(`
 `);
 
 function Mapping({
-  fieldAndMappingResp,
+  ankiNoteFields,
+  mapping,
 }: {
-  fieldAndMappingResp: GetAnkiNoteFieldsAndMappingQuery;
+  ankiNoteFields: string[];
+  mapping: AnkiMappingElement[];
 }) {
   // we get useful state form response
   const [fields, missingFields] = useMemo(
-    () => extractFields(fieldAndMappingResp),
-    [fieldAndMappingResp],
+    () => extractFields(ankiNoteFields, mapping),
+    [ankiNoteFields, mapping],
   );
   // caching would be nice, but it's not clear how to implement it with apollo
   // easy way to make many requests, but obviously it's not great solution for different reason
@@ -110,7 +104,7 @@ function Mapping({
   const [setAnkiConfigMapping, { loading: updateInProccess }] = useMutation(
     SET_ANKI_CONFIG_MAPPING,
     {
-      refetchQueries: [GET_HEALTH_STATUS, GET_NOTE_FIELDS_AND_MAPPING],
+      refetchQueries: [GET_HEALTH_STATUS, GET_ANKI_CONFIG],
       awaitRefetchQueries: true,
       // we passe empty onError because in this case apollo will not throw in case if network error for some reason
       onError: () => {},
@@ -415,18 +409,16 @@ function FieldColumn({ children, className }: { children: ReactNode; className?:
 }
 
 function extractFields(
-  resp: GetAnkiNoteFieldsAndMappingQuery,
+  ankiNoteFields: string[],
+  mapping: AnkiMappingElement[],
 ): [Array<MappingField>, Array<MappingField>] {
-  if (!resp.Anki.noteFields.noteFields) {
-    return [[], []];
-  }
-  const fields: Array<MappingField> = resp.Anki.noteFields.noteFields.map((e) => {
+  const fields: Array<MappingField> = ankiNoteFields.map((e) => {
     return {
       name: e,
     };
   });
   const missingFields: Array<MappingField> = [];
-  resp.AnkiConfig.mapping.forEach((e) => {
+  mapping.forEach((e) => {
     const foundField = fields.find((field) => field.name == e.key);
     if (foundField) {
       foundField.value = e.value;

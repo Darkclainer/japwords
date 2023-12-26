@@ -7,7 +7,7 @@ import StatusIcon, { StatusIconKind } from '../../../components/Icons/StatusIcon
 import SuspenseLoading from '../../../components/SuspenseLoading';
 import { HealthStatusContext } from '../../../contexts/health-status';
 import { AnkiStateOk, throwErrorHealthStatus } from '../../../model/health-status';
-import { GET_CURRENT_NOTE } from './api';
+import { GET_ANKI_CONFIG, GET_ANKI_STATE } from './api';
 import { DeckSelect } from './deck';
 import { MappingEdit } from './mapping';
 import { NoteSelect } from './note';
@@ -18,9 +18,8 @@ export default function AnkiUserSettings() {
     return (
       <div className="flex flex-col gap-8">
         <Notice />
-        <DeckSelect />
         <SuspenseLoading>
-          <NoteMappingSettings />
+          <AnkiUserSettingsControls />
         </SuspenseLoading>
         <StatusBox ankiState={ankiState} />
       </div>
@@ -34,6 +33,29 @@ export default function AnkiUserSettings() {
       </div>
       <div>{errorProps.body}</div>
     </div>
+  );
+}
+
+function AnkiUserSettingsControls() {
+  const { data: config } = useSuspenseQuery(GET_ANKI_CONFIG, {
+    fetchPolicy: 'network-only',
+  });
+  const { data: state } = useSuspenseQuery(GET_ANKI_STATE, {
+    fetchPolicy: 'network-only',
+  });
+  config.AnkiConfig.mapping;
+  return (
+    <>
+      <DeckSelect currentDeck={config.AnkiConfig.deck} ankiDecks={state.Anki.decks.decks ?? null} />
+      <NoteSelect
+        currentNote={config.AnkiConfig.noteType}
+        ankiNotes={state.Anki.notes.notes ?? null}
+      />
+      <MappingEdit
+        mapping={config.AnkiConfig.mapping}
+        ankiNoteFields={state.Anki.noteFields.noteFields ?? null}
+      />
+    </>
   );
 }
 
@@ -67,19 +89,6 @@ function Notice() {
         were used.
       </p>
     </div>
-  );
-}
-
-function NoteMappingSettings() {
-  const { data: currentNoteResp } = useSuspenseQuery(GET_CURRENT_NOTE, {
-    fetchPolicy: 'network-only',
-  });
-  const currentNote = currentNoteResp.AnkiConfig.noteType;
-  return (
-    <>
-      <NoteSelect currentNote={currentNote} />
-      <MappingEdit currentNote={currentNote} />
-    </>
   );
 }
 

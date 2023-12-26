@@ -1,4 +1,4 @@
-import { useMutation, useSuspenseQuery } from '@apollo/client';
+import { useMutation } from '@apollo/client';
 import { Label } from '@radix-ui/react-label';
 import { useId, useMemo } from 'react';
 import { err, ok } from 'true-myth/result';
@@ -9,9 +9,14 @@ import SelectCreate from '../../../components/SelectCreate';
 import SuspenseLoading from '../../../components/SuspenseLoading';
 import { useToastify } from '../../../hooks/toastify';
 import { validateNoteType } from '../../../lib/validate';
-import { GET_CURRENT_NOTE, GET_NOTE_FIELDS_AND_MAPPING } from './api';
+import { GET_ANKI_CONFIG, GET_ANKI_STATE } from './api';
 
-export function NoteSelect({ currentNote }: { currentNote: string }) {
+type NoteSelectProps = {
+  currentNote: string;
+  ankiNotes: string[] | null;
+};
+
+export function NoteSelect(props: NoteSelectProps) {
   const noteTriggerId = useId();
   return (
     <div className="flex flex-col gap-2.5">
@@ -19,24 +24,11 @@ export function NoteSelect({ currentNote }: { currentNote: string }) {
         Choose a note type:
       </Label>
       <SuspenseLoading>
-        <NoteSelectBody triggerId={noteTriggerId} currentNote={currentNote} />
+        <NoteSelectBody triggerId={noteTriggerId} {...props} />
       </SuspenseLoading>
     </div>
   );
 }
-
-const GET_ANKI_NOTES = gql(`
-  query GetAnkiNotes {
-    Anki {
-      notes {
-        notes
-        error {
-          __typename
-        }
-      }
-    }
-  }
-`);
 
 const SET_CURRENT_NOTE = gql(`
   mutation SetAnkiConfigCurrentNote($name: String!) {
@@ -72,29 +64,30 @@ const CREATE_DEFAULT_NOTE = gql(`
   }
 `);
 
-function NoteSelectBody({ triggerId, currentNote }: { triggerId: string; currentNote: string }) {
+function NoteSelectBody({
+  triggerId,
+  currentNote,
+  ankiNotes,
+}: { triggerId: string } & NoteSelectProps) {
   const [setCurrentNote] = useMutation(SET_CURRENT_NOTE, {
-    refetchQueries: [GET_CURRENT_NOTE, GET_HEALTH_STATUS],
+    refetchQueries: [GET_HEALTH_STATUS, GET_ANKI_CONFIG, GET_ANKI_STATE],
     awaitRefetchQueries: true,
   });
   const [createNote] = useMutation(CREATE_DEFAULT_NOTE, {
-    refetchQueries: [GET_ANKI_NOTES, GET_CURRENT_NOTE, GET_NOTE_FIELDS_AND_MAPPING],
+    refetchQueries: [GET_HEALTH_STATUS, GET_ANKI_STATE],
     awaitRefetchQueries: true,
   });
-  const { data: notesResp } = useSuspenseQuery(GET_ANKI_NOTES, {
-    fetchPolicy: 'network-only',
-  });
   const notes = useMemo(() => {
-    if (!notesResp.Anki.notes.notes) {
+    if (!ankiNotes) {
       return null;
     }
-    const notes = [...notesResp.Anki.notes.notes];
+    const notes = [...ankiNotes];
     return notes.sort().map((item) => {
       return {
         value: item,
       };
     });
-  }, [notesResp]);
+  }, [ankiNotes]);
   const toast = useToastify({
     type: 'success',
   });

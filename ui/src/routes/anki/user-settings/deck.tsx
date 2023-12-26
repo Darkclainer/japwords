@@ -1,4 +1,4 @@
-import { useMutation, useSuspenseQuery } from '@apollo/client';
+import { useMutation } from '@apollo/client';
 import { Label } from '@radix-ui/react-label';
 import { useId, useMemo } from 'react';
 import { err, ok } from 'true-myth/result';
@@ -6,30 +6,9 @@ import { err, ok } from 'true-myth/result';
 import { gql } from '../../../api/__generated__';
 import { GET_HEALTH_STATUS } from '../../../api/health-status';
 import SelectCreate from '../../../components/SelectCreate';
-import SuspenseLoading from '../../../components/SuspenseLoading';
 import { useToastify } from '../../../hooks/toastify';
 import { validateDeck } from '../../../lib/validate';
-
-const GET_CURRENT_DECK = gql(`
-  query GetAnkiConfigCurrentDeck {
-    AnkiConfig {
-      deck
-    }
-  }
-`);
-
-const GET_ANKI_DECKS = gql(`
-  query GetAnkiDecks {
-    Anki {
-      decks {
-        decks
-        error {
-          __typename
-        }
-      }
-    }
-  }
-`);
+import { GET_ANKI_CONFIG, GET_ANKI_STATE } from './api';
 
 const SET_CURRENT_DECK = gql(`
   mutation SetAnkiConfigCurrentDeck($name: String!) {
@@ -65,47 +44,47 @@ const CREATE_DECK = gql(`
   }
 `);
 
-export function DeckSelect() {
+type DeckSelectProps = {
+  currentDeck: string;
+  ankiDecks: string[] | null;
+};
+
+export function DeckSelect(props: DeckSelectProps) {
   const deckTriggerId = useId();
   return (
     <div className="flex flex-col gap-2.5">
       <Label className="text-2xl" htmlFor={deckTriggerId}>
         Choose a deck:
       </Label>
-      <SuspenseLoading>
-        <DeckSelectBody triggerId={deckTriggerId} />
-      </SuspenseLoading>
+      <DeckSelectBody triggerId={deckTriggerId} {...props} />
     </div>
   );
 }
 
-function DeckSelectBody({ triggerId }: { triggerId: string }) {
+function DeckSelectBody({
+  triggerId,
+  currentDeck,
+  ankiDecks,
+}: { triggerId: string } & DeckSelectProps) {
   const [setCurrentDeck] = useMutation(SET_CURRENT_DECK, {
-    refetchQueries: [GET_CURRENT_DECK, GET_HEALTH_STATUS],
+    refetchQueries: [GET_HEALTH_STATUS, GET_ANKI_CONFIG],
     awaitRefetchQueries: true,
   });
   const [createDeck] = useMutation(CREATE_DECK, {
-    refetchQueries: [GET_ANKI_DECKS],
+    refetchQueries: [GET_ANKI_STATE],
     awaitRefetchQueries: true,
   });
-  const { data: currentDeckResp } = useSuspenseQuery(GET_CURRENT_DECK, {
-    fetchPolicy: 'network-only',
-  });
-  const currentDeck = currentDeckResp.AnkiConfig.deck;
-  const { data: decksResp } = useSuspenseQuery(GET_ANKI_DECKS, {
-    fetchPolicy: 'network-only',
-  });
   const decks = useMemo(() => {
-    if (!decksResp.Anki.decks.decks) {
+    if (!ankiDecks) {
       return null;
     }
-    const decks = [...decksResp.Anki.decks.decks];
+    const decks = [...ankiDecks];
     return decks.sort().map((item) => {
       return {
         value: item,
       };
     });
-  }, [decksResp]);
+  }, [ankiDecks]);
   const toast = useToastify({
     type: 'success',
   });
