@@ -620,18 +620,16 @@ func Test_ConfigReloader_UpdateMapping(t *testing.T) {
 	}
 }
 
-func Test_ConfigReloader_UpdateAudio(t *testing.T) {
+func Test_ConfigReloader_UpdateAudioField(t *testing.T) {
 	testCases := []struct {
-		Name               string
-		AudioField         string
-		AudioPreferredType string
-		ErrorAssert        assert.ErrorAssertionFunc
+		Name        string
+		AudioField  string
+		ErrorAssert assert.ErrorAssertionFunc
 	}{
 		{
-			Name:               "ok",
-			AudioField:         "newfield",
-			AudioPreferredType: "newtype",
-			ErrorAssert:        assert.NoError,
+			Name:        "ok",
+			AudioField:  "newfield",
+			ErrorAssert: assert.NoError,
 		},
 		{
 			Name:       "invalid audio field",
@@ -649,12 +647,38 @@ func Test_ConfigReloader_UpdateAudio(t *testing.T) {
 		tc := testCases[i]
 		t.Run(tc.Name, func(t *testing.T) {
 			configReloader, anki, initialConfig := NewTestReloader(t)
-			err := configReloader.UpdateAudio(tc.AudioField, tc.AudioPreferredType)
+			err := configReloader.UpdateAudioField(tc.AudioField)
 			tc.ErrorAssert(t, err)
 			if err != nil {
 				return
 			}
 			initialConfig.AudioField = tc.AudioField
+			assert.Equal(t, initialConfig, anki.client.Config())
+		})
+	}
+}
+
+func Test_ConfigReloader_UpdateAudioPreferredType(t *testing.T) {
+	testCases := []struct {
+		Name               string
+		AudioPreferredType string
+		ErrorAssert        assert.ErrorAssertionFunc
+	}{
+		{
+			Name:               "ok",
+			AudioPreferredType: "newtype",
+			ErrorAssert:        assert.NoError,
+		},
+	}
+	for i := range testCases {
+		tc := testCases[i]
+		t.Run(tc.Name, func(t *testing.T) {
+			configReloader, anki, initialConfig := NewTestReloader(t)
+			err := configReloader.UpdateAudioPreferredType(tc.AudioPreferredType)
+			tc.ErrorAssert(t, err)
+			if err != nil {
+				return
+			}
 			initialConfig.AudioPreferredType = tc.AudioPreferredType
 			assert.Equal(t, initialConfig, anki.client.Config())
 		})

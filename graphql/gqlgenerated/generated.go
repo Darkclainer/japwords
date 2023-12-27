@@ -212,14 +212,15 @@ type ComplexityRoot struct {
 	}
 
 	Mutation struct {
-		AddAnkiNote             func(childComplexity int, request *anki.AddNoteRequest) int
-		CreateAnkiDeck          func(childComplexity int, input *gqlmodel.CreateAnkiDeckInput) int
-		CreateDefaultAnkiNote   func(childComplexity int, input *gqlmodel.CreateDefaultAnkiNoteInput) int
-		SetAnkiConfigAudio      func(childComplexity int, input gqlmodel.SetAnkiConfigAudioInput) int
-		SetAnkiConfigConnection func(childComplexity int, input gqlmodel.SetAnkiConfigConnectionInput) int
-		SetAnkiConfigDeck       func(childComplexity int, input gqlmodel.SetAnkiConfigDeckInput) int
-		SetAnkiConfigMapping    func(childComplexity int, input gqlmodel.SetAnkiConfigMappingInput) int
-		SetAnkiConfigNote       func(childComplexity int, input gqlmodel.SetAnkiConfigNote) int
+		AddAnkiNote                     func(childComplexity int, request *anki.AddNoteRequest) int
+		CreateAnkiDeck                  func(childComplexity int, input *gqlmodel.CreateAnkiDeckInput) int
+		CreateDefaultAnkiNote           func(childComplexity int, input *gqlmodel.CreateDefaultAnkiNoteInput) int
+		SetAnkiConfigAudioField         func(childComplexity int, input gqlmodel.SetAnkiConfigAudioFieldInput) int
+		SetAnkiConfigAudioPreferredType func(childComplexity int, input gqlmodel.SetAnkiConfigAudioPreferredTypeInput) int
+		SetAnkiConfigConnection         func(childComplexity int, input gqlmodel.SetAnkiConfigConnectionInput) int
+		SetAnkiConfigDeck               func(childComplexity int, input gqlmodel.SetAnkiConfigDeckInput) int
+		SetAnkiConfigMapping            func(childComplexity int, input gqlmodel.SetAnkiConfigMappingInput) int
+		SetAnkiConfigNote               func(childComplexity int, input gqlmodel.SetAnkiConfigNote) int
 	}
 
 	PitchShape struct {
@@ -254,8 +255,12 @@ type ComplexityRoot struct {
 		TemplateError func(childComplexity int) int
 	}
 
-	SetAnkiConfigAudioResult struct {
+	SetAnkiConfigAudioFieldResult struct {
 		Error func(childComplexity int) int
+	}
+
+	SetAnkiConfigAudioPreferredTypeResult struct {
+		Nothing func(childComplexity int) int
 	}
 
 	SetAnkiConfigConnectionResult struct {
@@ -297,7 +302,8 @@ type MutationResolver interface {
 	SetAnkiConfigDeck(ctx context.Context, input gqlmodel.SetAnkiConfigDeckInput) (*gqlmodel.SetAnkiConfigDeckResult, error)
 	SetAnkiConfigNote(ctx context.Context, input gqlmodel.SetAnkiConfigNote) (*gqlmodel.SetAnkiConfigNoteResult, error)
 	SetAnkiConfigMapping(ctx context.Context, input gqlmodel.SetAnkiConfigMappingInput) (*gqlmodel.SetAnkiConfigMappingResult, error)
-	SetAnkiConfigAudio(ctx context.Context, input gqlmodel.SetAnkiConfigAudioInput) (*gqlmodel.SetAnkiConfigAudioResult, error)
+	SetAnkiConfigAudioField(ctx context.Context, input gqlmodel.SetAnkiConfigAudioFieldInput) (*gqlmodel.SetAnkiConfigAudioFieldResult, error)
+	SetAnkiConfigAudioPreferredType(ctx context.Context, input gqlmodel.SetAnkiConfigAudioPreferredTypeInput) (*gqlmodel.SetAnkiConfigAudioPreferredTypeResult, error)
 	CreateAnkiDeck(ctx context.Context, input *gqlmodel.CreateAnkiDeckInput) (*gqlmodel.CreateAnkiDeckResult, error)
 	CreateDefaultAnkiNote(ctx context.Context, input *gqlmodel.CreateDefaultAnkiNoteInput) (*gqlmodel.CreateDefaultAnkiNoteResult, error)
 	AddAnkiNote(ctx context.Context, request *anki.AddNoteRequest) (*gqlmodel.AnkiAddNoteResult, error)
@@ -873,17 +879,29 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.CreateDefaultAnkiNote(childComplexity, args["input"].(*gqlmodel.CreateDefaultAnkiNoteInput)), true
 
-	case "Mutation.setAnkiConfigAudio":
-		if e.complexity.Mutation.SetAnkiConfigAudio == nil {
+	case "Mutation.setAnkiConfigAudioField":
+		if e.complexity.Mutation.SetAnkiConfigAudioField == nil {
 			break
 		}
 
-		args, err := ec.field_Mutation_setAnkiConfigAudio_args(context.TODO(), rawArgs)
+		args, err := ec.field_Mutation_setAnkiConfigAudioField_args(context.TODO(), rawArgs)
 		if err != nil {
 			return 0, false
 		}
 
-		return e.complexity.Mutation.SetAnkiConfigAudio(childComplexity, args["input"].(gqlmodel.SetAnkiConfigAudioInput)), true
+		return e.complexity.Mutation.SetAnkiConfigAudioField(childComplexity, args["input"].(gqlmodel.SetAnkiConfigAudioFieldInput)), true
+
+	case "Mutation.setAnkiConfigAudioPreferredType":
+		if e.complexity.Mutation.SetAnkiConfigAudioPreferredType == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_setAnkiConfigAudioPreferredType_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.SetAnkiConfigAudioPreferredType(childComplexity, args["input"].(gqlmodel.SetAnkiConfigAudioPreferredTypeInput)), true
 
 	case "Mutation.setAnkiConfigConnection":
 		if e.complexity.Mutation.SetAnkiConfigConnection == nil {
@@ -1067,12 +1085,19 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.RenderedFields.TemplateError(childComplexity), true
 
-	case "SetAnkiConfigAudioResult.error":
-		if e.complexity.SetAnkiConfigAudioResult.Error == nil {
+	case "SetAnkiConfigAudioFieldResult.error":
+		if e.complexity.SetAnkiConfigAudioFieldResult.Error == nil {
 			break
 		}
 
-		return e.complexity.SetAnkiConfigAudioResult.Error(childComplexity), true
+		return e.complexity.SetAnkiConfigAudioFieldResult.Error(childComplexity), true
+
+	case "SetAnkiConfigAudioPreferredTypeResult.nothing":
+		if e.complexity.SetAnkiConfigAudioPreferredTypeResult.Nothing == nil {
+			break
+		}
+
+		return e.complexity.SetAnkiConfigAudioPreferredTypeResult.Nothing(childComplexity), true
 
 	case "SetAnkiConfigConnectionResult.error":
 		if e.complexity.SetAnkiConfigConnectionResult.Error == nil {
@@ -1162,7 +1187,8 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 		ec.unmarshalInputFuriganaInput,
 		ec.unmarshalInputLemmaInput,
 		ec.unmarshalInputPitchShapeInput,
-		ec.unmarshalInputSetAnkiConfigAudioInput,
+		ec.unmarshalInputSetAnkiConfigAudioFieldInput,
+		ec.unmarshalInputSetAnkiConfigAudioPreferredTypeInput,
 		ec.unmarshalInputSetAnkiConfigConnectionInput,
 		ec.unmarshalInputSetAnkiConfigDeckInput,
 		ec.unmarshalInputSetAnkiConfigMappingInput,
@@ -1472,17 +1498,29 @@ type SetAnkiConfigMappingResult {
 }
 
 extend type Mutation {
-  setAnkiConfigAudio(input: SetAnkiConfigAudioInput!): SetAnkiConfigAudioResult!
+  setAnkiConfigAudioField(input: SetAnkiConfigAudioFieldInput!): SetAnkiConfigAudioFieldResult!
 }
 
-input SetAnkiConfigAudioInput {
+input SetAnkiConfigAudioFieldInput {
   audioField: String!
+}
+
+type SetAnkiConfigAudioFieldResult {
+  error: ValidationError
+}
+
+extend type Mutation {
+  setAnkiConfigAudioPreferredType(input: SetAnkiConfigAudioPreferredTypeInput!): SetAnkiConfigAudioPreferredTypeResult!
+}
+
+input SetAnkiConfigAudioPreferredTypeInput {
   audioPreferredType: String!
 }
 
-type SetAnkiConfigAudioResult {
-  error: ValidationError
+type SetAnkiConfigAudioPreferredTypeResult  {
+  nothing: Boolean
 }
+
 
 extend type Mutation {
   createAnkiDeck(input: CreateAnkiDeckInput): CreateAnkiDeckResult!
@@ -1721,13 +1759,28 @@ func (ec *executionContext) field_Mutation_createDefaultAnkiNote_args(ctx contex
 	return args, nil
 }
 
-func (ec *executionContext) field_Mutation_setAnkiConfigAudio_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+func (ec *executionContext) field_Mutation_setAnkiConfigAudioField_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 gqlmodel.SetAnkiConfigAudioInput
+	var arg0 gqlmodel.SetAnkiConfigAudioFieldInput
 	if tmp, ok := rawArgs["input"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
-		arg0, err = ec.unmarshalNSetAnkiConfigAudioInput2githubᚗcomᚋDarkclainerᚋjapwordsᚋgraphqlᚋgqlmodelᚐSetAnkiConfigAudioInput(ctx, tmp)
+		arg0, err = ec.unmarshalNSetAnkiConfigAudioFieldInput2githubᚗcomᚋDarkclainerᚋjapwordsᚋgraphqlᚋgqlmodelᚐSetAnkiConfigAudioFieldInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_setAnkiConfigAudioPreferredType_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 gqlmodel.SetAnkiConfigAudioPreferredTypeInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalNSetAnkiConfigAudioPreferredTypeInput2githubᚗcomᚋDarkclainerᚋjapwordsᚋgraphqlᚋgqlmodelᚐSetAnkiConfigAudioPreferredTypeInput(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -5373,8 +5426,8 @@ func (ec *executionContext) fieldContext_Mutation_setAnkiConfigMapping(ctx conte
 	return fc, nil
 }
 
-func (ec *executionContext) _Mutation_setAnkiConfigAudio(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Mutation_setAnkiConfigAudio(ctx, field)
+func (ec *executionContext) _Mutation_setAnkiConfigAudioField(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_setAnkiConfigAudioField(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -5387,7 +5440,7 @@ func (ec *executionContext) _Mutation_setAnkiConfigAudio(ctx context.Context, fi
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().SetAnkiConfigAudio(rctx, fc.Args["input"].(gqlmodel.SetAnkiConfigAudioInput))
+		return ec.resolvers.Mutation().SetAnkiConfigAudioField(rctx, fc.Args["input"].(gqlmodel.SetAnkiConfigAudioFieldInput))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -5399,12 +5452,12 @@ func (ec *executionContext) _Mutation_setAnkiConfigAudio(ctx context.Context, fi
 		}
 		return graphql.Null
 	}
-	res := resTmp.(*gqlmodel.SetAnkiConfigAudioResult)
+	res := resTmp.(*gqlmodel.SetAnkiConfigAudioFieldResult)
 	fc.Result = res
-	return ec.marshalNSetAnkiConfigAudioResult2ᚖgithubᚗcomᚋDarkclainerᚋjapwordsᚋgraphqlᚋgqlmodelᚐSetAnkiConfigAudioResult(ctx, field.Selections, res)
+	return ec.marshalNSetAnkiConfigAudioFieldResult2ᚖgithubᚗcomᚋDarkclainerᚋjapwordsᚋgraphqlᚋgqlmodelᚐSetAnkiConfigAudioFieldResult(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Mutation_setAnkiConfigAudio(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Mutation_setAnkiConfigAudioField(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Mutation",
 		Field:      field,
@@ -5413,9 +5466,9 @@ func (ec *executionContext) fieldContext_Mutation_setAnkiConfigAudio(ctx context
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
 			case "error":
-				return ec.fieldContext_SetAnkiConfigAudioResult_error(ctx, field)
+				return ec.fieldContext_SetAnkiConfigAudioFieldResult_error(ctx, field)
 			}
-			return nil, fmt.Errorf("no field named %q was found under type SetAnkiConfigAudioResult", field.Name)
+			return nil, fmt.Errorf("no field named %q was found under type SetAnkiConfigAudioFieldResult", field.Name)
 		},
 	}
 	defer func() {
@@ -5425,7 +5478,66 @@ func (ec *executionContext) fieldContext_Mutation_setAnkiConfigAudio(ctx context
 		}
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Mutation_setAnkiConfigAudio_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+	if fc.Args, err = ec.field_Mutation_setAnkiConfigAudioField_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_setAnkiConfigAudioPreferredType(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_setAnkiConfigAudioPreferredType(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().SetAnkiConfigAudioPreferredType(rctx, fc.Args["input"].(gqlmodel.SetAnkiConfigAudioPreferredTypeInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*gqlmodel.SetAnkiConfigAudioPreferredTypeResult)
+	fc.Result = res
+	return ec.marshalNSetAnkiConfigAudioPreferredTypeResult2ᚖgithubᚗcomᚋDarkclainerᚋjapwordsᚋgraphqlᚋgqlmodelᚐSetAnkiConfigAudioPreferredTypeResult(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_setAnkiConfigAudioPreferredType(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "nothing":
+				return ec.fieldContext_SetAnkiConfigAudioPreferredTypeResult_nothing(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type SetAnkiConfigAudioPreferredTypeResult", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_setAnkiConfigAudioPreferredType_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -6575,8 +6687,8 @@ func (ec *executionContext) fieldContext_RenderedFields_fields(ctx context.Conte
 	return fc, nil
 }
 
-func (ec *executionContext) _SetAnkiConfigAudioResult_error(ctx context.Context, field graphql.CollectedField, obj *gqlmodel.SetAnkiConfigAudioResult) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_SetAnkiConfigAudioResult_error(ctx, field)
+func (ec *executionContext) _SetAnkiConfigAudioFieldResult_error(ctx context.Context, field graphql.CollectedField, obj *gqlmodel.SetAnkiConfigAudioFieldResult) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_SetAnkiConfigAudioFieldResult_error(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -6603,9 +6715,9 @@ func (ec *executionContext) _SetAnkiConfigAudioResult_error(ctx context.Context,
 	return ec.marshalOValidationError2ᚖgithubᚗcomᚋDarkclainerᚋjapwordsᚋgraphqlᚋgqlmodelᚐValidationError(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_SetAnkiConfigAudioResult_error(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_SetAnkiConfigAudioFieldResult_error(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
-		Object:     "SetAnkiConfigAudioResult",
+		Object:     "SetAnkiConfigAudioFieldResult",
 		Field:      field,
 		IsMethod:   false,
 		IsResolver: false,
@@ -6617,6 +6729,47 @@ func (ec *executionContext) fieldContext_SetAnkiConfigAudioResult_error(ctx cont
 				return ec.fieldContext_ValidationError_message(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type ValidationError", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _SetAnkiConfigAudioPreferredTypeResult_nothing(ctx context.Context, field graphql.CollectedField, obj *gqlmodel.SetAnkiConfigAudioPreferredTypeResult) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_SetAnkiConfigAudioPreferredTypeResult_nothing(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Nothing, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*bool)
+	fc.Result = res
+	return ec.marshalOBoolean2ᚖbool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_SetAnkiConfigAudioPreferredTypeResult_nothing(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "SetAnkiConfigAudioPreferredTypeResult",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
 		},
 	}
 	return fc, nil
@@ -9295,14 +9448,14 @@ func (ec *executionContext) unmarshalInputPitchShapeInput(ctx context.Context, o
 	return it, nil
 }
 
-func (ec *executionContext) unmarshalInputSetAnkiConfigAudioInput(ctx context.Context, obj interface{}) (gqlmodel.SetAnkiConfigAudioInput, error) {
-	var it gqlmodel.SetAnkiConfigAudioInput
+func (ec *executionContext) unmarshalInputSetAnkiConfigAudioFieldInput(ctx context.Context, obj interface{}) (gqlmodel.SetAnkiConfigAudioFieldInput, error) {
+	var it gqlmodel.SetAnkiConfigAudioFieldInput
 	asMap := map[string]interface{}{}
 	for k, v := range obj.(map[string]interface{}) {
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"audioField", "audioPreferredType"}
+	fieldsInOrder := [...]string{"audioField"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -9318,6 +9471,26 @@ func (ec *executionContext) unmarshalInputSetAnkiConfigAudioInput(ctx context.Co
 				return it, err
 			}
 			it.AudioField = data
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputSetAnkiConfigAudioPreferredTypeInput(ctx context.Context, obj interface{}) (gqlmodel.SetAnkiConfigAudioPreferredTypeInput, error) {
+	var it gqlmodel.SetAnkiConfigAudioPreferredTypeInput
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"audioPreferredType"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
 		case "audioPreferredType":
 			var err error
 
@@ -11211,9 +11384,16 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
-		case "setAnkiConfigAudio":
+		case "setAnkiConfigAudioField":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._Mutation_setAnkiConfigAudio(ctx, field)
+				return ec._Mutation_setAnkiConfigAudioField(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "setAnkiConfigAudioPreferredType":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_setAnkiConfigAudioPreferredType(ctx, field)
 			})
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
@@ -11617,19 +11797,55 @@ func (ec *executionContext) _RenderedFields(ctx context.Context, sel ast.Selecti
 	return out
 }
 
-var setAnkiConfigAudioResultImplementors = []string{"SetAnkiConfigAudioResult"}
+var setAnkiConfigAudioFieldResultImplementors = []string{"SetAnkiConfigAudioFieldResult"}
 
-func (ec *executionContext) _SetAnkiConfigAudioResult(ctx context.Context, sel ast.SelectionSet, obj *gqlmodel.SetAnkiConfigAudioResult) graphql.Marshaler {
-	fields := graphql.CollectFields(ec.OperationContext, sel, setAnkiConfigAudioResultImplementors)
+func (ec *executionContext) _SetAnkiConfigAudioFieldResult(ctx context.Context, sel ast.SelectionSet, obj *gqlmodel.SetAnkiConfigAudioFieldResult) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, setAnkiConfigAudioFieldResultImplementors)
 
 	out := graphql.NewFieldSet(fields)
 	deferred := make(map[string]*graphql.FieldSet)
 	for i, field := range fields {
 		switch field.Name {
 		case "__typename":
-			out.Values[i] = graphql.MarshalString("SetAnkiConfigAudioResult")
+			out.Values[i] = graphql.MarshalString("SetAnkiConfigAudioFieldResult")
 		case "error":
-			out.Values[i] = ec._SetAnkiConfigAudioResult_error(ctx, field, obj)
+			out.Values[i] = ec._SetAnkiConfigAudioFieldResult_error(ctx, field, obj)
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var setAnkiConfigAudioPreferredTypeResultImplementors = []string{"SetAnkiConfigAudioPreferredTypeResult"}
+
+func (ec *executionContext) _SetAnkiConfigAudioPreferredTypeResult(ctx context.Context, sel ast.SelectionSet, obj *gqlmodel.SetAnkiConfigAudioPreferredTypeResult) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, setAnkiConfigAudioPreferredTypeResultImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("SetAnkiConfigAudioPreferredTypeResult")
+		case "nothing":
+			out.Values[i] = ec._SetAnkiConfigAudioPreferredTypeResult_nothing(ctx, field, obj)
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -13067,23 +13283,42 @@ func (ec *executionContext) marshalNRenderedFields2ᚖgithubᚗcomᚋDarkclainer
 	return ec._RenderedFields(ctx, sel, v)
 }
 
-func (ec *executionContext) unmarshalNSetAnkiConfigAudioInput2githubᚗcomᚋDarkclainerᚋjapwordsᚋgraphqlᚋgqlmodelᚐSetAnkiConfigAudioInput(ctx context.Context, v interface{}) (gqlmodel.SetAnkiConfigAudioInput, error) {
-	res, err := ec.unmarshalInputSetAnkiConfigAudioInput(ctx, v)
+func (ec *executionContext) unmarshalNSetAnkiConfigAudioFieldInput2githubᚗcomᚋDarkclainerᚋjapwordsᚋgraphqlᚋgqlmodelᚐSetAnkiConfigAudioFieldInput(ctx context.Context, v interface{}) (gqlmodel.SetAnkiConfigAudioFieldInput, error) {
+	res, err := ec.unmarshalInputSetAnkiConfigAudioFieldInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNSetAnkiConfigAudioResult2githubᚗcomᚋDarkclainerᚋjapwordsᚋgraphqlᚋgqlmodelᚐSetAnkiConfigAudioResult(ctx context.Context, sel ast.SelectionSet, v gqlmodel.SetAnkiConfigAudioResult) graphql.Marshaler {
-	return ec._SetAnkiConfigAudioResult(ctx, sel, &v)
+func (ec *executionContext) marshalNSetAnkiConfigAudioFieldResult2githubᚗcomᚋDarkclainerᚋjapwordsᚋgraphqlᚋgqlmodelᚐSetAnkiConfigAudioFieldResult(ctx context.Context, sel ast.SelectionSet, v gqlmodel.SetAnkiConfigAudioFieldResult) graphql.Marshaler {
+	return ec._SetAnkiConfigAudioFieldResult(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNSetAnkiConfigAudioResult2ᚖgithubᚗcomᚋDarkclainerᚋjapwordsᚋgraphqlᚋgqlmodelᚐSetAnkiConfigAudioResult(ctx context.Context, sel ast.SelectionSet, v *gqlmodel.SetAnkiConfigAudioResult) graphql.Marshaler {
+func (ec *executionContext) marshalNSetAnkiConfigAudioFieldResult2ᚖgithubᚗcomᚋDarkclainerᚋjapwordsᚋgraphqlᚋgqlmodelᚐSetAnkiConfigAudioFieldResult(ctx context.Context, sel ast.SelectionSet, v *gqlmodel.SetAnkiConfigAudioFieldResult) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
 		}
 		return graphql.Null
 	}
-	return ec._SetAnkiConfigAudioResult(ctx, sel, v)
+	return ec._SetAnkiConfigAudioFieldResult(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNSetAnkiConfigAudioPreferredTypeInput2githubᚗcomᚋDarkclainerᚋjapwordsᚋgraphqlᚋgqlmodelᚐSetAnkiConfigAudioPreferredTypeInput(ctx context.Context, v interface{}) (gqlmodel.SetAnkiConfigAudioPreferredTypeInput, error) {
+	res, err := ec.unmarshalInputSetAnkiConfigAudioPreferredTypeInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNSetAnkiConfigAudioPreferredTypeResult2githubᚗcomᚋDarkclainerᚋjapwordsᚋgraphqlᚋgqlmodelᚐSetAnkiConfigAudioPreferredTypeResult(ctx context.Context, sel ast.SelectionSet, v gqlmodel.SetAnkiConfigAudioPreferredTypeResult) graphql.Marshaler {
+	return ec._SetAnkiConfigAudioPreferredTypeResult(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNSetAnkiConfigAudioPreferredTypeResult2ᚖgithubᚗcomᚋDarkclainerᚋjapwordsᚋgraphqlᚋgqlmodelᚐSetAnkiConfigAudioPreferredTypeResult(ctx context.Context, sel ast.SelectionSet, v *gqlmodel.SetAnkiConfigAudioPreferredTypeResult) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._SetAnkiConfigAudioPreferredTypeResult(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalNSetAnkiConfigConnectionInput2githubᚗcomᚋDarkclainerᚋjapwordsᚋgraphqlᚋgqlmodelᚐSetAnkiConfigConnectionInput(ctx context.Context, v interface{}) (gqlmodel.SetAnkiConfigConnectionInput, error) {

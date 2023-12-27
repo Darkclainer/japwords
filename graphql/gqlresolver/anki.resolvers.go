@@ -134,15 +134,24 @@ func (r *mutationResolver) SetAnkiConfigMapping(ctx context.Context, input gqlmo
 	return &gqlmodel.SetAnkiConfigMappingResult{}, nil
 }
 
-// SetAnkiConfigAudio is the resolver for the setAnkiConfigAudio field.
-func (r *mutationResolver) SetAnkiConfigAudio(ctx context.Context, input gqlmodel.SetAnkiConfigAudioInput) (*gqlmodel.SetAnkiConfigAudioResult, error) {
-	err := r.ankiConfig.UpdateAudio(input.AudioField, input.AudioPreferredType)
+// SetAnkiConfigAudioField is the resolver for the setAnkiConfigAudioField field.
+func (r *mutationResolver) SetAnkiConfigAudioField(ctx context.Context, input gqlmodel.SetAnkiConfigAudioFieldInput) (*gqlmodel.SetAnkiConfigAudioFieldResult, error) {
+	err := r.ankiConfig.UpdateAudioField(input.AudioField)
 	if validationErr, _ := convertAnkiValidationError(ctx, err); validationErr != nil {
-		return &gqlmodel.SetAnkiConfigAudioResult{
+		return &gqlmodel.SetAnkiConfigAudioFieldResult{
 			Error: validationErr,
 		}, nil
 	}
-	return &gqlmodel.SetAnkiConfigAudioResult{}, err
+	return &gqlmodel.SetAnkiConfigAudioFieldResult{}, err
+}
+
+// SetAnkiConfigAudioPreferredType is the resolver for the setAnkiConfigAudioPreferredType field.
+func (r *mutationResolver) SetAnkiConfigAudioPreferredType(ctx context.Context, input gqlmodel.SetAnkiConfigAudioPreferredTypeInput) (*gqlmodel.SetAnkiConfigAudioPreferredTypeResult, error) {
+	err := r.ankiConfig.UpdateAudioPreferredType(input.AudioPreferredType)
+	if err != nil {
+		return nil, err
+	}
+	return &gqlmodel.SetAnkiConfigAudioPreferredTypeResult{}, nil
 }
 
 // CreateAnkiDeck is the resolver for the createAnkiDeck field.

@@ -237,13 +237,20 @@ type RenderedFields struct {
 	Fields        []*RenderedField `json:"fields"`
 }
 
-type SetAnkiConfigAudioInput struct {
-	AudioField         string `json:"audioField"`
+type SetAnkiConfigAudioFieldInput struct {
+	AudioField string `json:"audioField"`
+}
+
+type SetAnkiConfigAudioFieldResult struct {
+	Error *ValidationError `json:"error,omitempty"`
+}
+
+type SetAnkiConfigAudioPreferredTypeInput struct {
 	AudioPreferredType string `json:"audioPreferredType"`
 }
 
-type SetAnkiConfigAudioResult struct {
-	Error *ValidationError `json:"error,omitempty"`
+type SetAnkiConfigAudioPreferredTypeResult struct {
+	Nothing *bool `json:"nothing,omitempty"`
 }
 
 type SetAnkiConfigConnectionInput struct {

@@ -205,17 +205,29 @@ type SetAnkiConfigMappingResult {
 }
 
 extend type Mutation {
-  setAnkiConfigAudio(input: SetAnkiConfigAudioInput!): SetAnkiConfigAudioResult!
+  setAnkiConfigAudioField(input: SetAnkiConfigAudioFieldInput!): SetAnkiConfigAudioFieldResult!
 }
 
-input SetAnkiConfigAudioInput {
+input SetAnkiConfigAudioFieldInput {
   audioField: String!
+}
+
+type SetAnkiConfigAudioFieldResult {
+  error: ValidationError
+}
+
+extend type Mutation {
+  setAnkiConfigAudioPreferredType(input: SetAnkiConfigAudioPreferredTypeInput!): SetAnkiConfigAudioPreferredTypeResult!
+}
+
+input SetAnkiConfigAudioPreferredTypeInput {
   audioPreferredType: String!
 }
 
-type SetAnkiConfigAudioResult {
-  error: ValidationError
+type SetAnkiConfigAudioPreferredTypeResult  {
+  nothing: Boolean
 }
+
 
 extend type Mutation {
   createAnkiDeck(input: CreateAnkiDeckInput): CreateAnkiDeckResult!

@@ -175,7 +175,7 @@ func (cr *ConfigReloader) UpdateMapping(mapping map[string]string) error {
 	})
 }
 
-func (cr *ConfigReloader) UpdateAudio(field, preferredType string) error {
+func (cr *ConfigReloader) UpdateAudioField(field string) error {
 	if field != "" {
 		if err := validateFieldName(field); err != nil {
 			return &ValidationError{Msg: err.Error()}
@@ -183,6 +183,12 @@ func (cr *ConfigReloader) UpdateAudio(field, preferredType string) error {
 	}
 	return cr.updateConfigFn(func(uc *config.UserConfig) error {
 		uc.Anki.Audio.Field = field
+		return nil
+	})
+}
+
+func (cr *ConfigReloader) UpdateAudioPreferredType(preferredType string) error {
+	return cr.updateConfigFn(func(uc *config.UserConfig) error {
 		uc.Anki.Audio.PreferredType = preferredType
 		return nil
 	})
