@@ -1,8 +1,8 @@
-import { FieldHookConfig, useField } from 'formik';
+import { FieldConfig, useField } from 'formik';
 import TextInput from './TextInput';
 import { ComponentPropsWithoutRef, forwardRef } from 'react';
 
-export type TextFieldProps = FieldHookConfig<string> &
+export type TextFieldProps = FieldConfig<string> &
   ComponentPropsWithoutRef<'input'> & {
     inputClassName?: string;
   };
