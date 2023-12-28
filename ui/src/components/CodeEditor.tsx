@@ -23,8 +23,8 @@ export default function CodeEditor({ id, value, onValueChange, onBlur }: CodeEdi
     // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
     <div
       className={clsx(
-        'overflow-y-scroll min-h-[7.5rem] max-h-60',
-        'bg-white ring-blue focus:outline-none',
+        `overflow-y-scroll, max-h-60 min-h-[7.5rem]
+         bg-white ring-blue focus:outline-none`,
         inFocus ? 'ring-[3px]' : 'ring-1',
       )}
       onClick={() => {
@@ -38,7 +38,7 @@ export default function CodeEditor({ id, value, onValueChange, onBlur }: CodeEdi
       }}
     >
       <Editor
-        className="text-lg min-h-full font-mono"
+        className="min-h-full font-mono text-lg"
         preClassName="!pl-14 !break-all"
         textareaClassName="!pl-14 !break-all focus:outline-none"
         textareaId={textareaId}
@@ -65,7 +65,7 @@ function hightlightWithNumbers(input: string, hightlight: (src: string) => strin
         .split('\n')
         .map((line, i) => (
           <div key={i}>
-            <span className="absolute text-dark-gray h-6 left-0 text-right w-10">{i + 1}</span>
+            <span className="absolute left-0 h-6 w-10 text-right text-dark-gray">{i + 1}</span>
             {line}
             {'\n'}
           </div>

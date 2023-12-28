@@ -10,9 +10,9 @@ export default function ErrorPage() {
 
   return (
     <div className="flex flex-col place-items-center">
-      <h1 className="text-3xl text-dark-blue font-bold p-4 pt-12">Error has occured!</h1>
+      <h1 className="p-4 pt-12 text-3xl font-bold text-dark-blue">Error has occured!</h1>
       <ErrorDetails />
-      <h2 className="text-xl p-4">
+      <h2 className="p-4 text-xl">
         <button onClick={() => navigate(0)} className="text-blue">
           Refresh page
         </button>{' '}

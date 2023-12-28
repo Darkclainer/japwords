@@ -151,7 +151,7 @@ function NoteSelectBody({
         dialogInputLabel="Input new note type name"
       />
       {currentNoteExists && (
-        <p className="text-error-red text-lg">Selected note type does not exists</p>
+        <p className="text-lg text-error-red">Selected note type does not exists</p>
       )}
     </>
   );

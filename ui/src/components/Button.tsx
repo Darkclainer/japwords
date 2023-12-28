@@ -29,9 +29,9 @@ export default forwardRef<HTMLButtonElement, ButtonProps>(function Button(props:
   return (
     <button
       className={clsx(
-        'px-3 py-6 text-2xl',
+        `rounded-md px-3 py-6
+         text-2xl text-white transition-colors duration-200`,
         variantClasses,
-        'text-white rounded-md transition-colors duration-200',
         className,
       )}
       ref={ref}

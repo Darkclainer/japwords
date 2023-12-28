@@ -6,6 +6,8 @@ module.exports = {
   tabWidth: 2,
   useTabs: false,
   endOfLine: 'auto',
+  plugins: ['prettier-plugin-tailwindcss'],
+  tailwindFunctions: ['clsx'],
 };
 
 // {

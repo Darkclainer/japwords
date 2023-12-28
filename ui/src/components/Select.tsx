@@ -18,13 +18,9 @@ export const SelectTrigger = forwardRef<
     <Select.Trigger
       data-error={hasError || null}
       className={clsx(
-        'py-1 px-2',
-        'bg-white',
-        'ring-1 ring-blue data-disabled:ring-dark-gray data-error:ring-error-red',
-        'text-xl text-black data-disabled:text-dark-gray data-error:text-error-red',
-        'flex flex-row justify-between',
-        'overflow-x-hidden',
-        'group/trigger',
+        `group/trigger flex flex-row justify-between overflow-x-hidden bg-white
+         px-2 py-1 text-xl text-black ring-1 ring-blue
+         data-error:text-error-red data-error:ring-error-red data-disabled:text-dark-gray data-disabled:ring-dark-gray`,
         className,
       )}
       {...props}
@@ -32,11 +28,7 @@ export const SelectTrigger = forwardRef<
     >
       {children}
       <Select.Icon className="">
-        <TriangleDownIcon
-          className={clsx(
-            'inline group-data-state-open/trigger:rotate-180 text-black group-data-disabled/trigger:text-dark-gray group-data-error/trigger:text-error-red',
-          )}
-        />
+        <TriangleDownIcon className="inline text-black group-data-error/trigger:text-error-red group-data-disabled/trigger:text-dark-gray group-data-state-open/trigger:rotate-180" />
       </Select.Icon>
     </Select.Trigger>
   );
@@ -49,12 +41,10 @@ export const SelectContent = forwardRef<
   return (
     <Select.Content
       className={clsx(
-        'bg-white',
-        'ring-1 ring-blue',
-        'text-xl',
-        'w-radix-select-trigger-width',
-        'max-h-radix-select-content-available-height',
-        'group/content',
+        `group/content bg-white
+         text-xl ring-1 ring-blue
+         max-h-radix-select-content-available-height
+         w-radix-select-trigger-width`,
         className,
       )}
       sideOffset={0}
@@ -73,7 +63,7 @@ export const SelectSeparator = forwardRef<
 >(function SelectSeparator({ children, className, ...props }, forwardedRef) {
   return (
     <Select.Separator
-      className={clsx('h-px bg-blue mx-2', className)}
+      className={clsx('mx-2 h-px bg-blue', className)}
       {...props}
       ref={forwardedRef}
     >
@@ -119,11 +109,10 @@ export const SelectItem = forwardRef<
   return (
     <Select.Item
       className={clsx(
-        'flex flex-row items-center justify-between',
-        'radix-highlighted:text-blue',
-        'm-1',
-        'px-1',
-        'oveflow-x-hidden',
+        `oveflow-x-hidden m-1 flex flex-row
+         items-center justify-between
+         px-1
+         radix-highlighted:text-blue`,
         className,
       )}
       {...props}

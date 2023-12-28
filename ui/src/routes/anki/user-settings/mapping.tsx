@@ -156,7 +156,7 @@ function Mapping({
   return (
     <>
       <div className="flex flex-col gap-2.5">
-        <div className="flex flex-col text-xl gap-8">
+        <div className="flex flex-col gap-8 text-xl">
           <ul>
             <Field className="pb-2">
               <FieldColumn className="font-bold">Note Field Name</FieldColumn>
@@ -164,7 +164,7 @@ function Mapping({
               <FieldColumn className="flex flex-row gap-3 font-bold">
                 <div>Rendered Value</div>
                 <div className="self-center">
-                  {renderLoading && <LoadingIcon className="w-5 h-5" />}
+                  {renderLoading && <LoadingIcon className="h-5 w-5" />}
                 </div>
               </FieldColumn>
             </Field>
@@ -337,12 +337,12 @@ function EditFieldForm({
 
       <div className="flex flex-col gap-2.5">
         <Label.Root className="text-2xl">
-          <div className="flex gap-2 justify-between place-items-center">
+          <div className="flex place-items-center justify-between gap-2">
             <div>Result:</div>
-            <div>{renderUpdating && <LoadingIcon className="w-5 h-5" />}</div>
+            <div>{renderUpdating && <LoadingIcon className="h-5 w-5" />}</div>
           </div>
         </Label.Root>
-        <div className="h-40 bg-mid-gray overflow-y-auto whitespace-pre-wrap p-2">
+        <div className="h-40 overflow-y-auto whitespace-pre-wrap bg-mid-gray p-2">
           <div>{renderedField?.result}</div>
           <div className="text-error-red">
             {renderedField?.error && 'Error: ' + renderedField?.error}
@@ -350,7 +350,7 @@ function EditFieldForm({
         </div>
       </div>
 
-      <div className="flex gap-5 max-w-md">
+      <div className="flex max-w-md gap-5">
         <Button
           ref={updateButtonRef}
           disabled={fieldUpdating || renderUpdating || isError}
@@ -395,7 +395,7 @@ function Field({ children, className }: { children: ReactNode; className?: strin
   return (
     <li
       className={clsx(
-        'grid grid-cols-3 grid-cols-[minmax(160px,_15%)_auto_minmax(220px,_30%)] py-1 gap-x-5 even:bg-mid-gray',
+        'grid grid-cols-3 grid-cols-[minmax(160px,_15%)_auto_minmax(220px,_30%)] gap-x-5 py-1 even:bg-mid-gray',
         className,
       )}
     >

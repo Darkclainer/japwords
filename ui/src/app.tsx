@@ -63,7 +63,7 @@ export default function App() {
     <>
       <ApolloProvider client={apolloClient}>
         <HealthStatusProvider>
-          <div className="flex flex-col md:max-w-screen-xl mx-auto min-h-screen bg-white px-4">
+          <div className="mx-auto flex min-h-screen flex-col bg-white px-4 md:max-w-screen-xl">
             <RouterProvider router={router} />
           </div>
         </HealthStatusProvider>

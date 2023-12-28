@@ -115,12 +115,12 @@ export default function Search() {
   }, [navigation.state]);
 
   return (
-    <div className="flex flex-col flex-1">
+    <div className="flex flex-1 flex-col">
       <Form className="group relative" onSubmit={handleSubmit}>
-        <LensIcon className="absolute left-3 top-1/2 w-5 h-5 -mt-2.5 text-slate-400 pointer-events-none group-focus-within:text-blue-500" />
+        <LensIcon className="text-slate-400 group-focus-within:text-blue-500 pointer-events-none absolute left-3 top-1/2 -mt-2.5 h-5 w-5" />
         <input
           id="query"
-          className="focus:ring-2 focus:outline-none appearance-none w-full text-lg leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 pl-10 ring-1 ring-blue shadow-sm"
+          className="text-slate-900 placeholder-slate-400 w-full appearance-none rounded-md py-2 pl-10 text-lg leading-6 shadow-sm ring-1 ring-blue focus:outline-none focus:ring-2"
           type="text"
           aria-label="Enter japanese word"
           placeholder="Enter japanese word..."
@@ -132,7 +132,7 @@ export default function Search() {
       <div
         className={clsx(
           'flex flex-1',
-          navigation.state == 'loading' && 'opacity-30 transition-opacity duration-300 delay-300',
+          navigation.state == 'loading' && 'opacity-30 transition-opacity delay-300 duration-300',
         )}
       >
         {lemmas && lemmas.length != 0 ? (

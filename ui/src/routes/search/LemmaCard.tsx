@@ -20,13 +20,13 @@ export type LemmaCardProps = {
 
 export default function LemmaCard({ lemmaBag, toast, previewLemma }: LemmaCardProps) {
   return (
-    <div className="shadow-md rounded-md bg-gray my-4 px-10 py-2">
+    <div className="my-4 rounded-md bg-gray px-10 py-2 shadow-md">
       <div className="flex flex-col divide-y divide-blue">
         <LemmaCardItem render={true}>
           <LemmaTitle word={lemmaBag.slug} toast={toast} />
         </LemmaCardItem>
         <LemmaCardItem render={lemmaBag.slug.hiragana !== '' || lemmaBag.audio.length > 0}>
-          <div className="flex flex-row justify-between items-start">
+          <div className="flex flex-row items-start justify-between">
             <Hiragana word={lemmaBag.slug} />
             {lemmaBag.audio.length > 0 && <AudioControls audios={lemmaBag.audio} />}
           </div>
@@ -73,7 +73,7 @@ function LemmaTitle(props: { word: Word; toast: ToastFunction }) {
           e.stopPropagation();
           copyKanji();
         }}
-        className="hover:text-blue active:text-dark-blue transition-colors duration-300"
+        className="transition-colors duration-300 hover:text-blue active:text-dark-blue"
       >
         <h1 className="text-6xl">
           <RenderWord word={word} />
@@ -116,12 +116,12 @@ function Senses({
   previewLemma: (lemma: LemmaNoteInfo) => Promise<void>;
 }) {
   return (
-    <ol className="text-lg -mx-4">
+    <ol className="-mx-4 text-lg">
       {projectedLemmas.map((projectedLemma, index) => {
         const lemma = projectedLemma.lemma;
         return (
           <li
-            className="mb-3 p-4 last:mb-0 hover:bg-[#fdfdfd] rounded-xl flex flex-row justify-between"
+            className="mb-3 flex flex-row justify-between rounded-xl p-4 last:mb-0 hover:bg-[#fdfdfd]"
             key={index}
           >
             <div>
@@ -133,17 +133,17 @@ function Senses({
             </div>
             <div
               className={clsx(
-                'pl-16 w-max shrink-0 flex flex-col place-content-center gap-1',
+                'flex w-max shrink-0 flex-col place-content-center gap-1 pl-16',
                 projectedLemma.noteID ? 'text-blue/60' : 'text-blue',
               )}
             >
               <button
-                className="underline underline-offset-4 hover:text-green active:text-dark-green transition-color transition-colors duration-300"
+                className="transition-color underline underline-offset-4 transition-colors duration-300 hover:text-green active:text-dark-green"
                 onClick={() => previewLemma(projectedLemma)}
               >
                 Add to Anki
               </button>
-              <div className="text-xs self-center">
+              <div className="self-center text-xs">
                 {projectedLemma.noteID && '(already exists)'}
               </div>
             </div>
@@ -158,7 +158,7 @@ function LemmaForms({ forms }: { forms: Word[] }) {
   return (
     <>
       <p className="text-lg text-blue">Other Forms</p>
-      <div className="text-2xl flex flex-col">
+      <div className="flex flex-col text-2xl">
         {forms.map((form, index) => {
           return (
             <p key={index}>
@@ -194,7 +194,7 @@ function RenderFurigana(props: { furigana: Furigana }) {
       <>
         {furigana.kanji}
         <rp>[</rp>
-        <rt className="text-dark-gray text-lg">{furigana.hiragana}</rt>
+        <rt className="text-lg text-dark-gray">{furigana.hiragana}</rt>
         <rp>]</rp>
       </>
     );
@@ -242,9 +242,9 @@ function AudioControls({ audios }: { audios: Audio[] }) {
           handleMouseUp();
         }}
       >
-        <PlayIcon className="h-10 w-10 fill-blue hover:fill-green active:fill-dark-green transition-color transition-colors duration-300" />
+        <PlayIcon className="transition-color h-10 w-10 fill-blue transition-colors duration-300 hover:fill-green active:fill-dark-green" />
       </button>
-      <p className="text-dark-gray my-auto text-lg leading-5">
+      <p className="my-auto text-lg leading-5 text-dark-gray">
         Listen to
         <br />
         pronunciation

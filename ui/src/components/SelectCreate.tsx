@@ -187,7 +187,7 @@ export default function SelectCreate({
           {(props) => {
             return (
               <Form className="flex flex-col gap-2.5">
-                <Label.Root className="text-blue text-lg" htmlFor={dialogInputId}>
+                <Label.Root className="text-lg text-blue" htmlFor={dialogInputId}>
                   {dialogInputLabel}
                 </Label.Root>
                 <TextField
@@ -196,7 +196,7 @@ export default function SelectCreate({
                   inputClassName="my-2.5 w-full shrink-0"
                   id={dialogInputId}
                 />
-                <p className="text-error-red text-lg">
+                <p className="text-lg text-error-red">
                   <ErrorMessage name="name" />
                 </p>
                 <Button type="submit" disabled={props.isSubmitting}>

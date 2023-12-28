@@ -27,7 +27,7 @@ export default function AnkiConnectionSettings() {
   return (
     <div className="flex flex-col gap-8">
       <div>
-        <p className="text-blue text-lg">
+        <p className="text-lg text-blue">
           <span className="font-bold">Note:</span>
           <br />
           To use this application with{' '}
@@ -194,7 +194,7 @@ function FormTextField({ name, label, ...rest }: FormTextFieldProps) {
       {label && <Label.Root htmlFor={inputId}>{label}</Label.Root>}
       <div className="flex  flex-col  gap-2.5">
         <TextField id={inputId} name={name} {...rest} />
-        <p className="text-error-red text-lg">
+        <p className="text-lg text-error-red">
           <ErrorMessage name={name} />
         </p>
       </div>
@@ -205,8 +205,8 @@ function FormTextField({ name, label, ...rest }: FormTextFieldProps) {
 function StatusBox({ status }: { status: HealthStatusOk | HealthStatusLoading }) {
   const { iconKind, title, titleClassName, body } = getStatusBoxContent(status);
   return (
-    <div className="flex flex-row justify-start items-start gap-2 basis-16">
-      <StatusIcon className="w-10 h-10" kind={iconKind} />
+    <div className="flex basis-16 flex-row items-start justify-start gap-2">
+      <StatusIcon className="h-10 w-10" kind={iconKind} />
       <div className="text-2xl">
         <h1 className={clsx('text-bold leading-10', titleClassName)}>{title}</h1>
         {body}

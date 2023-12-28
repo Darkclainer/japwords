@@ -147,7 +147,7 @@ function DeckSelectBody({
         dialogTitle="Create deck"
         dialogInputLabel="Input new deck name"
       />
-      {currentDeckExists && <p className="text-error-red text-lg">Selected deck does not exists</p>}
+      {currentDeckExists && <p className="text-lg text-error-red">Selected deck does not exists</p>}
     </>
   );
 }

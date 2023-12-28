@@ -47,9 +47,9 @@ export default function AddNoteDialog({
       <Dialog.Title className="mb-2.5 text-2xl font-bold text-blue">Add note to Anki</Dialog.Title>
 
       {addLemmaRequest === undefined ? (
-        <div className="flex p-8 text-2xl gap-5 justify-center place-items-center">
+        <div className="flex place-items-center justify-center gap-5 p-8 text-2xl">
           <div>
-            <LoadingIcon className="w-8 h-8" />
+            <LoadingIcon className="h-8 w-8" />
           </div>
           <div>Loading...</div>
         </div>
@@ -229,7 +229,7 @@ function AddNoteForm({ addLemmaRequest, setOpen, setLemmaNotes, toast }: AddNote
             }
           />
           <AudioSelectPerField audioPerField={audioPerField} />
-          <div className="flex flex-row gap-8 mt-4">
+          <div className="mt-4 flex flex-row gap-8">
             <Button type="submit" className="basis-52" disabled={props.isSubmitting}>
               Add Note
             </Button>

@@ -30,7 +30,7 @@ export function DialogModal({
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <Dialog.Portal>
-        <Dialog.Overlay className="fixed grid place-items-center top-0 left-0 right-0 bottom-0 overflow-y-auto overflow-x-hidden backdrop-blur-sm bg-blue/60">
+        <Dialog.Overlay className="fixed bottom-0 left-0 right-0 top-0 grid place-items-center overflow-y-auto overflow-x-hidden bg-blue/60 backdrop-blur-sm">
           <Dialog.Content
             className={clsx('relative bg-gray p-10', widthVariant)}
             onCloseAutoFocus={onCloseAutoFocus}

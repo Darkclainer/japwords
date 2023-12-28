@@ -19,8 +19,8 @@ export default function Root() {
     <>
       <header>
         <nav>
-          <div className="flex flex-row gap-x-4 pt-11 pb-5 pl-2 justify-between">
-            <div className="flex flex-row gap-x-4 items-center text-2xl text-blue">
+          <div className="flex flex-row justify-between gap-x-4 pb-5 pl-2 pt-11">
+            <div className="flex flex-row items-center gap-x-4 text-2xl text-blue">
               <NavLink
                 to={lastSearch == location.pathname ? 'search' : lastSearch}
                 className={activeBold}
@@ -31,11 +31,11 @@ export default function Root() {
                 Anki Settings
               </NavLink>
             </div>
-            <HealthStatusIcon className="w-10 h-10" />
+            <HealthStatusIcon className="h-10 w-10" />
           </div>
         </nav>
       </header>
-      <main className="flex flex-col flex-1">
+      <main className="flex flex-1 flex-col">
         <Outlet></Outlet>
       </main>
     </>

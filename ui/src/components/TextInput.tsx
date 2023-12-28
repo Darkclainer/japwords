@@ -13,12 +13,9 @@ const TextInput = forwardRef<React.ElementRef<'input'>, TextInputProps>(function
     <input
       data-error={hasError || null}
       className={clsx(
-        'appearance-none py-1 px-2 shadow-sm',
-        'leading-6 placeholder-slate-400',
-        'text-xl',
-        'focus:!text-black data-error:text-error-red',
-        'ring-1 focus:ring-[3px] focus:outline-none',
-        'ring-blue data-error:ring-error-red',
+        `placeholder-slate-400 appearance-none px-2 py-1 text-xl leading-6 shadow-sm
+         ring-1 ring-blue focus:!text-black focus:outline-none focus:ring-[3px]
+         data-error:text-error-red data-error:ring-error-red`,
         className,
       )}
       {...other}

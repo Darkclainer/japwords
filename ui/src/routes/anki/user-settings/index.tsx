@@ -26,9 +26,9 @@ export default function AnkiUserSettings() {
     );
   }
   return (
-    <div className="flex flex-col items-center gap-5 text-xl my-8">
-      <div className="flex flex-row gap-3 items-center">
-        <StatusIcon className="w-10 h-10" kind={errorProps.iconKind} />
+    <div className="my-8 flex flex-col items-center gap-5 text-xl">
+      <div className="flex flex-row items-center gap-3">
+        <StatusIcon className="h-10 w-10" kind={errorProps.iconKind} />
         <h1 className="text-3xl">{errorProps.head}</h1>
       </div>
       <div>{errorProps.body}</div>
@@ -62,7 +62,7 @@ function AnkiUserSettingsControls() {
 function Notice() {
   return (
     <div>
-      <p className="text-blue text-lg">
+      <p className="text-lg text-blue">
         <span className="font-bold">Note:</span>
         <br />
         After you{' '}
@@ -174,8 +174,8 @@ function StatusBox({ ankiState }: { ankiState: AnkiStateOk }) {
     });
   }
   return (
-    <div className="flex flex-row justify-start items-start gap-2 basis-16">
-      <StatusIcon className="w-10 h-10" kind={errors.length == 0 ? 'OK' : 'Error'} />
+    <div className="flex basis-16 flex-row items-start justify-start gap-2">
+      <StatusIcon className="h-10 w-10" kind={errors.length == 0 ? 'OK' : 'Error'} />
       <div className="text-2xl">
         <h1
           className={clsx(
