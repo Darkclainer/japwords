@@ -1,6 +1,8 @@
 package main
 
 import (
+	"os"
+
 	"github.com/magefile/mage/mg"
 	"github.com/magefile/mage/sh"
 )
@@ -18,6 +20,8 @@ func (Run) UI() error {
 
 // UI run backend development server
 func (Run) Server() error {
+	// in case you running from clean git clone
+	os.MkdirAll("ui/dist", 0o700)
 	return sh.RunV(
 		"go",
 		"run",
