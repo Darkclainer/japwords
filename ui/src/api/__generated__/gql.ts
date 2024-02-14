@@ -18,6 +18,8 @@ const documents = {
     "\n  mutation UpdateConnectionConfig($addr: String!, $apiKey: String!) {\n    setAnkiConfigConnection(input: { addr: $addr, apiKey: $apiKey }) {\n      error {\n          ... on ValidationError {\n            paths\n            message\n          }\n        }\n      }\n  }\n": types.UpdateConnectionConfigDocument,
     "\n  query GetAnkiState {\n    Anki {\n      decks {\n        decks\n        error {\n          __typename\n        }\n      }\n      notes {\n        notes\n        error {\n          __typename\n        }\n      }\n      noteFields {\n        noteFields \n        error {\n          ... on Error {\n            message\n          }\n        }\n      }\n    }\n  }\n": types.GetAnkiStateDocument,
     "\n  query GetAnkiConfig {\n    AnkiConfig {\n      deck\n      noteType\n      mapping {\n        key\n        value\n      }\n      audioField\n      audioPreferredType\n    }\n  }\n": types.GetAnkiConfigDocument,
+    "\n  mutation SetAnkiConfigAudioField($field: String!) {\n    setAnkiConfigAudioField(input: { audioField: $field }) {\n      error {\n          message\n      }\n    }\n  }\n": types.SetAnkiConfigAudioFieldDocument,
+    "\n  mutation SetAnkiConfigAudioPreferredType($preferredType: String!) {\n    setAnkiConfigAudioPreferredType(input: { audioPreferredType: $preferredType }) {\n      nothing\n    }\n  }\n": types.SetAnkiConfigAudioPreferredTypeDocument,
     "\n  mutation SetAnkiConfigCurrentDeck($name: String!) {\n    setAnkiConfigDeck(input: { name: $name }) {\n      error {\n          message\n      }\n    }\n  }\n": types.SetAnkiConfigCurrentDeckDocument,
     "\n  mutation CreateAnkiDeck($name: String!) {\n    createAnkiDeck(input: { name: $name }) {\n      ankiError {\n        ... on Error {\n          message\n        }\n      }\n      error {\n        ... on CreateAnkiDeckAlreadyExists {\n          message\n        }\n        ... on ValidationError {\n          message\n        }\n        ... on Error {\n          message\n        }\n      \n      }\n    }\n  }\n": types.CreateAnkiDeckDocument,
     "\n  query RenderFields($fields: [String!]!) {\n    RenderFields(fields: $fields) {\n      fields {\n        result\n        error\n      }\n    }\n  }\n": types.RenderFieldsDocument,
@@ -63,6 +65,14 @@ export function gql(source: "\n  query GetAnkiState {\n    Anki {\n      decks {
  * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function gql(source: "\n  query GetAnkiConfig {\n    AnkiConfig {\n      deck\n      noteType\n      mapping {\n        key\n        value\n      }\n      audioField\n      audioPreferredType\n    }\n  }\n"): (typeof documents)["\n  query GetAnkiConfig {\n    AnkiConfig {\n      deck\n      noteType\n      mapping {\n        key\n        value\n      }\n      audioField\n      audioPreferredType\n    }\n  }\n"];
+/**
+ * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function gql(source: "\n  mutation SetAnkiConfigAudioField($field: String!) {\n    setAnkiConfigAudioField(input: { audioField: $field }) {\n      error {\n          message\n      }\n    }\n  }\n"): (typeof documents)["\n  mutation SetAnkiConfigAudioField($field: String!) {\n    setAnkiConfigAudioField(input: { audioField: $field }) {\n      error {\n          message\n      }\n    }\n  }\n"];
+/**
+ * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function gql(source: "\n  mutation SetAnkiConfigAudioPreferredType($preferredType: String!) {\n    setAnkiConfigAudioPreferredType(input: { audioPreferredType: $preferredType }) {\n      nothing\n    }\n  }\n"): (typeof documents)["\n  mutation SetAnkiConfigAudioPreferredType($preferredType: String!) {\n    setAnkiConfigAudioPreferredType(input: { audioPreferredType: $preferredType }) {\n      nothing\n    }\n  }\n"];
 /**
  * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */

@@ -13,7 +13,7 @@ import { GET_ANKI_CONFIG, GET_ANKI_STATE } from './api';
 
 type NoteSelectProps = {
   currentNote: string;
-  ankiNotes: string[] | null;
+  ankiNotes?: string[];
 };
 
 export function NoteSelect(props: NoteSelectProps) {

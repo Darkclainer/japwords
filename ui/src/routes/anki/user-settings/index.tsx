@@ -11,6 +11,7 @@ import { GET_ANKI_CONFIG, GET_ANKI_STATE } from './api';
 import { DeckSelect } from './deck';
 import { MappingEdit } from './mapping';
 import { NoteSelect } from './note';
+import AudioEdit from './audio';
 
 export default function AnkiUserSettings() {
   const [ankiState, errorProps] = useAnkiStateOrError();
@@ -43,18 +44,31 @@ function AnkiUserSettingsControls() {
   const { data: state } = useSuspenseQuery(GET_ANKI_STATE, {
     fetchPolicy: 'network-only',
   });
-  config.AnkiConfig.mapping;
+  const ankiNoteFields = state.Anki.noteFields.noteFields;
   return (
     <>
-      <DeckSelect currentDeck={config.AnkiConfig.deck} ankiDecks={state.Anki.decks.decks ?? null} />
+      <DeckSelect
+        currentDeck={config.AnkiConfig.deck}
+        ankiDecks={state.Anki.decks.decks ?? undefined}
+      />
       <NoteSelect
         currentNote={config.AnkiConfig.noteType}
-        ankiNotes={state.Anki.notes.notes ?? null}
+        ankiNotes={state.Anki.notes.notes ?? undefined}
       />
-      <MappingEdit
-        mapping={config.AnkiConfig.mapping}
-        ankiNoteFields={state.Anki.noteFields.noteFields ?? null}
-      />
+      {ankiNoteFields ? (
+        <>
+          <MappingEdit mapping={config.AnkiConfig.mapping} ankiNoteFields={ankiNoteFields} />
+          <AudioEdit
+            audioField={config.AnkiConfig.audioField}
+            audioPreferredType={config.AnkiConfig.audioPreferredType}
+            ankiNoteFields={ankiNoteFields}
+          />
+        </>
+      ) : (
+        <div className="text-center text-2xl text-error-red">
+          Mapping and audio mapping settings are unavailable until note type is selected
+        </div>
+      )}
     </>
   );
 }

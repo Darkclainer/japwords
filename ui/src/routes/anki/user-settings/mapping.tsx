@@ -28,7 +28,7 @@ import { apolloErrorToast } from '../../../lib/styled-toast';
 import { GET_ANKI_CONFIG } from './api';
 
 type MappingEditProps = {
-  ankiNoteFields: string[] | null;
+  ankiNoteFields: string[];
   mapping: AnkiMappingElement[];
 };
 
@@ -36,17 +36,9 @@ export function MappingEdit(props: MappingEditProps) {
   return (
     <div className="flex flex-col gap-2.5">
       <Label.Root className="text-2xl">Mapping:</Label.Root>
-      {props.ankiNoteFields ? (
-        <Mapping ankiNoteFields={props.ankiNoteFields} mapping={props.mapping} />
-      ) : (
-        <Unavailable />
-      )}
+      <Mapping {...props} />
     </div>
   );
-}
-
-function Unavailable() {
-  return <p className="text-xl">Mapping unavailable</p>;
 }
 
 const GET_RENDERED_FIELDS = gql(`
@@ -76,13 +68,7 @@ const SET_ANKI_CONFIG_MAPPING = gql(`
   }
 `);
 
-function Mapping({
-  ankiNoteFields,
-  mapping,
-}: {
-  ankiNoteFields: string[];
-  mapping: AnkiMappingElement[];
-}) {
+function Mapping({ ankiNoteFields, mapping }: MappingEditProps) {
   // we get useful state form response
   const [fields, missingFields] = useMemo(
     () => extractFields(ankiNoteFields, mapping),

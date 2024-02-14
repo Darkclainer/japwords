@@ -283,7 +283,8 @@ export type Mutation = {
   addAnkiNote: AnkiAddNoteResult;
   createAnkiDeck: CreateAnkiDeckResult;
   createDefaultAnkiNote: CreateDefaultAnkiNoteResult;
-  setAnkiConfigAudio: SetAnkiConfigAudioResult;
+  setAnkiConfigAudioField: SetAnkiConfigAudioFieldResult;
+  setAnkiConfigAudioPreferredType: SetAnkiConfigAudioPreferredTypeResult;
   setAnkiConfigConnection: SetAnkiConfigConnectionResult;
   setAnkiConfigDeck: SetAnkiConfigDeckResult;
   setAnkiConfigMapping: SetAnkiConfigMappingResult;
@@ -306,8 +307,13 @@ export type MutationCreateDefaultAnkiNoteArgs = {
 };
 
 
-export type MutationSetAnkiConfigAudioArgs = {
-  input: SetAnkiConfigAudioInput;
+export type MutationSetAnkiConfigAudioFieldArgs = {
+  input: SetAnkiConfigAudioFieldInput;
+};
+
+
+export type MutationSetAnkiConfigAudioPreferredTypeArgs = {
+  input: SetAnkiConfigAudioPreferredTypeInput;
 };
 
 
@@ -390,14 +396,22 @@ export type RenderedFields = {
   templateError?: Maybe<Scalars['String']['output']>;
 };
 
-export type SetAnkiConfigAudioInput = {
+export type SetAnkiConfigAudioFieldInput = {
   audioField: Scalars['String']['input'];
+};
+
+export type SetAnkiConfigAudioFieldResult = {
+  __typename?: 'SetAnkiConfigAudioFieldResult';
+  error?: Maybe<ValidationError>;
+};
+
+export type SetAnkiConfigAudioPreferredTypeInput = {
   audioPreferredType: Scalars['String']['input'];
 };
 
-export type SetAnkiConfigAudioResult = {
-  __typename?: 'SetAnkiConfigAudioResult';
-  error?: Maybe<ValidationError>;
+export type SetAnkiConfigAudioPreferredTypeResult = {
+  __typename?: 'SetAnkiConfigAudioPreferredTypeResult';
+  nothing?: Maybe<Scalars['Boolean']['output']>;
 };
 
 export type SetAnkiConfigConnectionInput = {
@@ -486,6 +500,20 @@ export type GetAnkiConfigQueryVariables = Exact<{ [key: string]: never; }>;
 
 export type GetAnkiConfigQuery = { __typename?: 'Query', AnkiConfig: { __typename?: 'AnkiConfig', deck: string, noteType: string, audioField: string, audioPreferredType: string, mapping: Array<{ __typename?: 'AnkiMappingElement', key: string, value: string }> } };
 
+export type SetAnkiConfigAudioFieldMutationVariables = Exact<{
+  field: Scalars['String']['input'];
+}>;
+
+
+export type SetAnkiConfigAudioFieldMutation = { __typename?: 'Mutation', setAnkiConfigAudioField: { __typename?: 'SetAnkiConfigAudioFieldResult', error?: { __typename?: 'ValidationError', message: string } | null } };
+
+export type SetAnkiConfigAudioPreferredTypeMutationVariables = Exact<{
+  preferredType: Scalars['String']['input'];
+}>;
+
+
+export type SetAnkiConfigAudioPreferredTypeMutation = { __typename?: 'Mutation', setAnkiConfigAudioPreferredType: { __typename?: 'SetAnkiConfigAudioPreferredTypeResult', nothing?: boolean | null } };
+
 export type SetAnkiConfigCurrentDeckMutationVariables = Exact<{
   name: Scalars['String']['input'];
 }>;
@@ -555,6 +583,8 @@ export const GetConnectionConfigDocument = {"kind":"Document","definitions":[{"k
 export const UpdateConnectionConfigDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"UpdateConnectionConfig"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"addr"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"apiKey"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"setAnkiConfigConnection"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"addr"},"value":{"kind":"Variable","name":{"kind":"Name","value":"addr"}}},{"kind":"ObjectField","name":{"kind":"Name","value":"apiKey"},"value":{"kind":"Variable","name":{"kind":"Name","value":"apiKey"}}}]}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"error"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"InlineFragment","typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"ValidationError"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"paths"}},{"kind":"Field","name":{"kind":"Name","value":"message"}}]}}]}}]}}]}}]} as unknown as DocumentNode<UpdateConnectionConfigMutation, UpdateConnectionConfigMutationVariables>;
 export const GetAnkiStateDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetAnkiState"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"Anki"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"decks"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"decks"}},{"kind":"Field","name":{"kind":"Name","value":"error"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"__typename"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"notes"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"notes"}},{"kind":"Field","name":{"kind":"Name","value":"error"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"__typename"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"noteFields"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"noteFields"}},{"kind":"Field","name":{"kind":"Name","value":"error"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"InlineFragment","typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Error"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"message"}}]}}]}}]}}]}}]}}]} as unknown as DocumentNode<GetAnkiStateQuery, GetAnkiStateQueryVariables>;
 export const GetAnkiConfigDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetAnkiConfig"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"AnkiConfig"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"deck"}},{"kind":"Field","name":{"kind":"Name","value":"noteType"}},{"kind":"Field","name":{"kind":"Name","value":"mapping"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"key"}},{"kind":"Field","name":{"kind":"Name","value":"value"}}]}},{"kind":"Field","name":{"kind":"Name","value":"audioField"}},{"kind":"Field","name":{"kind":"Name","value":"audioPreferredType"}}]}}]}}]} as unknown as DocumentNode<GetAnkiConfigQuery, GetAnkiConfigQueryVariables>;
+export const SetAnkiConfigAudioFieldDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"SetAnkiConfigAudioField"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"field"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"setAnkiConfigAudioField"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"audioField"},"value":{"kind":"Variable","name":{"kind":"Name","value":"field"}}}]}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"error"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"message"}}]}}]}}]}}]} as unknown as DocumentNode<SetAnkiConfigAudioFieldMutation, SetAnkiConfigAudioFieldMutationVariables>;
+export const SetAnkiConfigAudioPreferredTypeDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"SetAnkiConfigAudioPreferredType"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"preferredType"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"setAnkiConfigAudioPreferredType"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"audioPreferredType"},"value":{"kind":"Variable","name":{"kind":"Name","value":"preferredType"}}}]}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"nothing"}}]}}]}}]} as unknown as DocumentNode<SetAnkiConfigAudioPreferredTypeMutation, SetAnkiConfigAudioPreferredTypeMutationVariables>;
 export const SetAnkiConfigCurrentDeckDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"SetAnkiConfigCurrentDeck"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"name"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"setAnkiConfigDeck"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"name"},"value":{"kind":"Variable","name":{"kind":"Name","value":"name"}}}]}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"error"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"message"}}]}}]}}]}}]} as unknown as DocumentNode<SetAnkiConfigCurrentDeckMutation, SetAnkiConfigCurrentDeckMutationVariables>;
 export const CreateAnkiDeckDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"CreateAnkiDeck"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"name"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"createAnkiDeck"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"name"},"value":{"kind":"Variable","name":{"kind":"Name","value":"name"}}}]}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"ankiError"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"InlineFragment","typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Error"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"message"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"error"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"InlineFragment","typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"CreateAnkiDeckAlreadyExists"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"message"}}]}},{"kind":"InlineFragment","typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"ValidationError"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"message"}}]}},{"kind":"InlineFragment","typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Error"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"message"}}]}}]}}]}}]}}]} as unknown as DocumentNode<CreateAnkiDeckMutation, CreateAnkiDeckMutationVariables>;
 export const RenderFieldsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"RenderFields"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"fields"}},"type":{"kind":"NonNullType","type":{"kind":"ListType","type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"RenderFields"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"fields"},"value":{"kind":"Variable","name":{"kind":"Name","value":"fields"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"fields"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"result"}},{"kind":"Field","name":{"kind":"Name","value":"error"}}]}}]}}]}}]} as unknown as DocumentNode<RenderFieldsQuery, RenderFieldsQueryVariables>;

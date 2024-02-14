@@ -46,7 +46,7 @@ const CREATE_DECK = gql(`
 
 type DeckSelectProps = {
   currentDeck: string;
-  ankiDecks: string[] | null;
+  ankiDecks?: string[];
 };
 
 export function DeckSelect(props: DeckSelectProps) {
